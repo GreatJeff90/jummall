@@ -1,65 +1,244 @@
-import Image from "next/image";
+import { 
+  Search, 
+  ShoppingBag, 
+  User, 
+  Heart, 
+  Menu, 
+  Phone, 
+  ChevronDown, 
+  Eye, 
+  Star, 
+  Facebook, 
+  Twitter, 
+  Instagram 
+} from "lucide-react";
 
 export default function Home() {
+  const categories = [
+    { name: "Phones & Tablets", icon: "📱" },
+    { name: "Computing", icon: "💻" },
+    { name: "Electronics", icon: "📺" },
+    { name: "Fashion", icon: "👕" },
+    { name: "Home & Office", icon: "🏠" },
+  ];
+
+  const trendingProducts = [
+    { id: 1, name: "Navy Blue Shorts", price: 15.00, oldPrice: 25.00, badge: "SALE", img: "🩳" },
+    { id: 2, name: "Black Polo Shirt", price: 22.00, oldPrice: 30.00, badge: "NEW", img: "👕" },
+    { id: 3, name: "Red Classic Tee", price: 18.00, oldPrice: 22.00, badge: "SALE", img: "👕" },
+    { id: 4, name: "White Graphic Jersey", price: 45.00, oldPrice: 60.00, badge: "HOT", img: "🎽" },
+    { id: 5, name: "Brown Cargo Pants", price: 35.00, oldPrice: 50.00, badge: "SALE", img: "👖" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#F8F9FA] text-slate-900 font-sans">
+      
+      {/* --- HEADER SECTION --- */}
+      <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
+        <div className="bg-slate-900 text-white py-1.5 px-4 text-center text-[10px] md:text-xs font-medium uppercase tracking-widest">
+          Free Delivery on orders over $500!
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4 md:gap-8">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="bg-sky-600 p-1.5 rounded-lg shadow-lg shadow-sky-200">
+              <ShoppingBag className="text-white w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <span className="text-xl md:text-2xl font-black tracking-tighter">JUMMALL</span>
+          </div>
+
+          <div className="hidden md:flex flex-1 max-w-2xl bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-sky-500 transition-all">
+            <input type="text" placeholder="Search products..." className="flex-1 bg-transparent px-5 py-2.5 outline-none text-sm" />
+            <button className="bg-sky-600 px-5 text-white hover:bg-sky-700 transition-colors">
+              <Search size={18} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-6">
+            <div className="hidden sm:flex flex-col items-end text-right">
+              <span className="text-[10px] text-gray-400 font-bold uppercase">Hotline</span>
+              <span className="text-xs md:text-sm font-black">+234 905 599 9998</span>
+            </div>
+            <div className="flex gap-4">
+              <div className="relative cursor-pointer hover:text-sky-600">
+                <User className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="relative cursor-pointer hover:text-sky-600">
+                <Heart className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-slate-600 cursor-pointer" />
+                <span className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold">3</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Categories Bar (Desktop) */}
+        <div className="hidden md:block border-t border-gray-100 bg-white">
+          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <button className="bg-sky-600 text-white px-6 py-3 flex items-center gap-2 font-bold text-xs">
+                <Menu size={16} /> ALL CATEGORIES <ChevronDown size={14} />
+              </button>
+              <nav className="flex gap-6 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <a href="#" className="hover:text-sky-600">Home</a>
+                <a href="#" className="hover:text-sky-600">Shop</a>
+                <a href="#" className="hover:text-sky-600">Blog</a>
+                <a href="#" className="hover:text-sky-600">Contact</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* --- HERO SECTION --- */}
+        <section className="p-4 md:p-8">
+          <div className="max-w-7xl mx-auto bg-sky-600 rounded-[2rem] p-8 md:p-20 relative overflow-hidden flex items-center min-h-[400px]">
+            <div className="z-10 relative text-white max-w-lg">
+              <p className="text-sky-200 font-bold uppercase tracking-[0.2em] text-xs mb-4">Limited Edition</p>
+              <h1 className="text-4xl md:text-7xl font-black leading-[1.1] mb-6">
+                The Best Phone <br /> Collection 2026
+              </h1>
+              <button className="bg-white text-sky-600 px-10 py-4 rounded-xl font-bold hover:scale-105 transition-transform shadow-xl">
+                Shop Collection
+              </button>
+            </div>
+            <div className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[120%] bg-white/10 rounded-full blur-3xl" />
+          </div>
+
+          <div className="max-w-5xl mx-auto grid grid-cols-3 md:grid-cols-5 gap-4 mt-[-40px] px-4 relative z-20">
+            {categories.map((cat, i) => (
+              <div key={i} className="bg-white p-4 md:p-6 rounded-2xl shadow-xl shadow-slate-200/50 flex flex-col items-center hover:translate-y-[-5px] transition-all cursor-pointer group border border-gray-50">
+                <span className="text-3xl md:text-4xl mb-2 group-hover:scale-125 transition-transform">{cat.icon}</span>
+                <span className="text-[10px] md:text-xs font-bold text-center text-slate-500 uppercase tracking-tight">{cat.name}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* --- TRENDING PRODUCTS --- */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black">Trending Products</h2>
+              <p className="text-gray-400 text-sm">{"Don't miss out on these favorites"}</p>
+            </div>
+            <button className="text-sky-600 font-bold text-sm hover:underline">View All Items</button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8">
+            {trendingProducts.map((p) => (
+              <div key={p.id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all relative">
+                <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-md z-10 shadow-lg shadow-red-200">
+                  {p.badge}
+                </span>
+                <div className="aspect-square bg-slate-50 flex items-center justify-center text-6xl relative overflow-hidden">
+                  {p.img}
+                  <div className="absolute inset-0 bg-sky-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                    <button className="bg-white p-2 rounded-lg shadow-md hover:bg-sky-600 hover:text-white transition-colors"><Heart size={18} /></button>
+                    <button className="bg-white p-2 rounded-lg shadow-md hover:bg-sky-600 hover:text-white transition-colors"><Eye size={18} /></button>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="flex gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-yellow-400 text-yellow-400" />)}
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-800 mb-2 truncate">{p.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sky-600 font-black">${p.price.toFixed(2)}</span>
+                    <span className="text-gray-300 text-xs line-through">${p.oldPrice.toFixed(2)}</span>
+                  </div>
+                  <button className="w-full mt-4 py-2.5 bg-slate-900 text-white text-[10px] font-black rounded-xl hover:bg-sky-600 transition-colors uppercase tracking-widest">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* --- FEATURED BANNER --- */}
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-[#0092BA] rounded-[2.5rem] p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl shadow-sky-200">
+            <div className="z-10 text-center md:text-left">
+              <h3 className="text-white/80 font-bold uppercase tracking-widest text-[10px] mb-2">{"Editor's Choice"}</h3>
+              <h2 className="text-white text-4xl md:text-6xl font-black leading-tight mb-8">
+                Samsung Galaxy <br /> Tab S6, Wifi Tablet
+              </h2>
+              <button className="bg-black text-white px-10 py-4 rounded-xl font-bold hover:bg-gray-900 transition-all">
+                Explore Tablet
+              </button>
+            </div>
+            <div className="w-full md:w-[450px] h-64 md:h-80 bg-white/20 rounded-3xl border-4 border-white/30 flex items-center justify-center text-white text-xl font-black italic relative z-10">
+              TAB S6 VISUAL
+            </div>
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+          </div>
+        </section>
+
+        {/* --- NEWSLETTER --- */}
+        <section className="bg-slate-900 mt-20 py-16 px-4">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Join the Club</h2>
+              <p className="text-slate-400">Subscribe for early access to drops and 10% off your first order.</p>
+            </div>
+            <div className="flex w-full md:w-auto gap-3">
+              <input type="email" placeholder="email@example.com" className="bg-slate-800 border border-slate-700 px-6 py-4 rounded-2xl w-full md:w-80 outline-none focus:border-sky-500 text-white transition-all" />
+              <button className="bg-sky-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-sky-700 transition-colors">
+                Join
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-slate-400">
+          <div>
+            <div className="flex items-center gap-2 mb-6 text-white">
+              <div className="bg-sky-600 p-1 rounded-md"><ShoppingBag size={20} /></div>
+              <span className="text-xl font-black tracking-tighter">JUMMALL</span>
+            </div>
+            <p className="text-sm leading-relaxed mb-6 italic">
+              {"One store, endless possibilities. Bringing premium tech to your doorstep since 2026."}
+            </p>
+            <div className="flex gap-4">
+              <Facebook size={18} className="hover:text-sky-500 cursor-pointer transition-colors" />
+              <Twitter size={18} className="hover:text-sky-500 cursor-pointer transition-colors" />
+              <Instagram size={18} className="hover:text-sky-500 cursor-pointer transition-colors" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">Shop</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="hover:text-white cursor-pointer transition-colors">Phones & Tablets</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Laptops</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Accessories</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">Help</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="hover:text-white cursor-pointer transition-colors">Contact Support</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Track Order</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Returns</li>
+            </ul>
+          </div>
+          <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+            <h4 className="text-white font-bold mb-4 uppercase text-[10px] tracking-widest">Store Address</h4>
+            <p className="text-xs mb-2">University of Port Harcourt,</p>
+            <p className="text-xs mb-4">Rivers State, Nigeria</p>
+            <p className="text-sky-500 font-bold text-sm underline cursor-pointer">+234 905 599 9998</p>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-800 text-center text-[10px] font-bold uppercase tracking-widest text-slate-600">
+          © 2026 Jummall. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }
