@@ -1,8 +1,33 @@
-import { Search, ShoppingBag, User, Heart, Menu, Phone, ChevronDown } from "lucide-react";
+'use client';
+
+import { 
+  Search, ShoppingBag, User, Heart, Menu, Phone, ChevronDown, 
+  ChevronRight, Laptop, Smartphone, Gamepad2, Utensils, 
+  Shirt, HeartPulse, Lamp, Luggage, Baby, Car, Home, Sparkles 
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Navbar() {
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  const categories = [
+    { name: "New Arrivals", icon: <Sparkles size={18} /> },
+    { name: "Electronics", icon: <Laptop size={18} />, hasSub: true },
+    { name: "Computers", icon: <Laptop size={18} />, hasSub: true },
+    { name: "Phones & Tablets", icon: <Smartphone size={18} />, hasSub: true },
+    { name: "Gaming", icon: <Gamepad2 size={18} />, hasSub: true },
+    { name: "Kitchen Items", icon: <Utensils size={18} />, hasSub: true },
+    { name: "Fashion", icon: <Shirt size={18} />, hasSub: true },
+    { name: "Health & Beauty", icon: <HeartPulse size={18} />, hasSub: true },
+    { name: "Lighting & Home fixture", icon: <Lamp size={18} />, hasSub: true },
+    { name: "Luggage & Travel gear", icon: <Luggage size={18} /> },
+    { name: "Baby & Kids", icon: <Baby size={18} />, hasSub: true },
+    { name: "Automobile", icon: <Car size={18} />, hasSub: true },
+    { name: "Home decor", icon: <Home size={18} /> },
+  ];
+
   return (
     <header className="w-full bg-white font-sans sticky top-0 z-50 shadow-sm">
       {/* 1. Top Announcement Bar */}
@@ -14,20 +39,14 @@ export default function Navbar() {
       <div className="border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4 md:gap-8">
           
-          {/* Logo - Full Image */}
+          {/* Logo */}
           <Link href="/" className="group shrink-0">
             <div className="relative w-[120px] h-[40px] md:w-[150px] md:h-[50px] transition-transform group-hover:scale-105">
-              <Image 
-                src="/jummall-logo.png" 
-                alt="Jummall Logo" 
-                fill 
-                className="object-contain"
-                priority
-              />
+              <Image src="/jummall-logo.png" alt="Jummall Logo" fill className="object-contain" priority />
             </div>
           </Link>
 
-          {/* Search Bar - Hidden on small mobile, visible on tablet+ */}
+          {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-2xl group">
             <div className="flex w-full items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-50 transition-all">
               <input 
@@ -75,12 +94,46 @@ export default function Navbar() {
       <div className="bg-white border-b border-gray-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            {/* Category Button */}
-            <button className="bg-sky-600 text-white px-6 py-3.5 flex items-center gap-3 font-black text-[11px] uppercase tracking-widest rounded-t-sm">
-              <Menu size={18} />
-              {"All Categories"}
-              <ChevronDown size={14} />
-            </button>
+            
+            {/* Category Button & Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                className="bg-slate-900 text-white px-6 py-3.5 flex items-center gap-12 font-black text-[11px] uppercase tracking-widest rounded-t-sm hover:bg-sky-600 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Menu size={18} />
+                  {"All Categories"}
+                </div>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* The Dropdown Menu */}
+              {isCategoryOpen && (
+                <div className="absolute top-full left-0 w-64 bg-white border border-gray-100 shadow-2xl z-[60] py-2 animate-in slide-in-from-top-2 duration-200">
+                  {categories.map((cat, i) => (
+                    <div key={i} className="group/item">
+                      <Link 
+                        href="#" 
+                        className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4 text-slate-600 group-hover/item:text-sky-600 transition-colors">
+                          <span className="text-slate-400 group-hover/item:text-sky-600">{cat.icon}</span>
+                          <span className="text-sm font-semibold">{cat.name}</span>
+                        </div>
+                        {cat.hasSub && (
+                          <ChevronRight size={14} className="text-slate-300 group-hover/item:text-sky-600" />
+                        )}
+                      </Link>
+                      {/* Divider line except last item */}
+                      {i !== categories.length - 1 && (
+                        <div className="mx-5 h-[1px] bg-gray-50" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Links */}
             <nav className="flex gap-8 text-[11px] font-black text-slate-500 uppercase tracking-widest">

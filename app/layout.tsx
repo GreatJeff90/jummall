@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jummall | Premium Tech Marketplace",
+  title: "Jummall E-commerce Marketplace",
   description: "One store, endless possibilities",
 };
 

@@ -95,7 +95,7 @@ export default function LoginPage() {
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
                   <span className="text-slate-500 group-hover:text-slate-800 transition-colors">Remember me</span>
                 </label>
-                <a href="#" className="text-sky-600 font-bold hover:underline">Forgot password?</a>
+                <a href="./forgot-password" className="text-sky-600 font-bold hover:underline">Forgot password?</a>
               </div>
 
               <button className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
               <div className="text-center pt-4">
                 <span className="text-xs text-slate-400 font-medium">{"Don't have an account? "}</span>
-                <a href="#" className="text-sky-600 font-black text-xs hover:underline uppercase tracking-tighter">Register now</a>
+                <a href="./register" className="text-sky-600 font-black text-xs hover:underline uppercase tracking-tighter">Register now</a>
               </div>
             </form>
           </div>
