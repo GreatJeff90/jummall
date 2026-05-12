@@ -1,13 +1,7 @@
 import { 
-  Search, 
   ShoppingBag, 
-  User, 
-  Heart, 
-  Menu, 
-  Phone, 
-  ChevronDown, 
   Eye, 
-  Star, 
+  Heart,
   // Facebook as FacebookIcon, 
   // Twitter as TwitterIcon, 
   // Instagram as InstagramIcon 
@@ -33,55 +27,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-900 font-sans">
       
-      {/* --- HEADER SECTION --- */}
-      <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
-        <div className="bg-slate-900 text-white py-1.5 px-4 text-center text-[10px] md:text-xs font-medium uppercase tracking-widest">
-          Free Delivery on orders over $500!
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4 md:gap-8">
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="bg-sky-600 p-1.5 rounded-lg shadow-lg shadow-sky-200">
-              <ShoppingBag className="text-white w-5 h-5 md:w-6 md:h-6" />
-            </div>
-            <span className="text-xl md:text-2xl font-black tracking-tighter">JUMMALL</span>
-          </div>
-
-          <div className="hidden md:flex flex-1 max-w-2xl bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-sky-500 transition-all">
-            <input type="text" placeholder="Search products..." className="flex-1 bg-transparent px-5 py-2.5 outline-none text-sm" />
-            <button className="bg-sky-600 px-5 text-white hover:bg-sky-700 transition-colors">
-              <Search size={18} />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="hidden sm:flex flex-col items-end text-right">
-              <span className="text-[10px] text-gray-400 font-bold uppercase">Hotline</span>
-              <span className="text-xs md:text-sm font-black">+234 905 599 9998</span>
-            </div>
-            <div className="flex gap-4">
-              <User className="w-5 h-5 md:w-6 md:h-6 text-slate-600 cursor-pointer hover:text-sky-600" />
-              <Heart className="w-5 h-5 md:w-6 md:h-6 text-slate-600 cursor-pointer hover:text-sky-600" />
-              <div className="relative">
-                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-slate-600 cursor-pointer" />
-                <span className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold">3</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main>
         {/* --- HERO SECTION --- */}
         <section className="p-4 md:p-8">
           <div className="max-w-7xl mx-auto bg-sky-600 rounded-[2rem] p-8 md:p-20 relative overflow-hidden flex items-center min-h-[400px]">
             <div className="z-10 relative text-white max-w-lg text-center md:text-left">
-              <p className="text-sky-200 font-bold uppercase tracking-[0.2em] text-xs mb-4">Limited Edition</p>
+              <p className="text-sky-200 font-bold uppercase tracking-[0.2em] text-xs mb-4">{"Limited Edition"}</p>
               <h1 className="text-4xl md:text-7xl font-black leading-[1.1] mb-6">
-                The Best Phone <br /> Collection 2026
+                {"The Best Phone"} <br /> {"Collection 2026"}
               </h1>
               <button className="bg-white text-sky-600 px-10 py-4 rounded-xl font-bold hover:scale-105 transition-transform shadow-xl">
-                Shop Collection
+                {"Shop Collection"}
               </button>
             </div>
             <div className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[120%] bg-white/10 rounded-full blur-3xl" />
@@ -89,7 +45,7 @@ export default function Home() {
 
           <div className="max-w-5xl mx-auto grid grid-cols-3 md:grid-cols-5 gap-4 mt-[-40px] px-4 relative z-20">
             {categories.map((cat, i) => (
-              <div key={i} className="bg-white p-4 md:p-6 rounded-2xl shadow-xl flex flex-col items-center hover:translate-y-[-5px] transition-all cursor-pointer group">
+              <div key={i} className="bg-white p-4 md:p-6 rounded-2xl shadow-xl flex flex-col items-center hover:translate-y-[-5px] transition-all cursor-pointer group border border-gray-50">
                 <span className="text-3xl md:text-4xl mb-2 group-hover:scale-125 transition-transform">{cat.icon}</span>
                 <span className="text-[10px] md:text-xs font-bold text-center text-slate-500 uppercase tracking-tight">{cat.name}</span>
               </div>
@@ -101,7 +57,7 @@ export default function Home() {
         <section className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex justify-between items-end mb-8 border-b border-gray-200 pb-4">
             <div>
-              <h2 className="text-2xl md:text-3xl font-black">Trending Products</h2>
+              <h2 className="text-2xl md:text-3xl font-black">{"Trending Products"}</h2>
               <p className="text-gray-400 text-sm">{"Don't miss out on these favorites"}</p>
             </div>
           </div>
@@ -114,6 +70,10 @@ export default function Home() {
                 </span>
                 <div className="aspect-square bg-slate-50 flex items-center justify-center text-6xl relative overflow-hidden">
                   {p.img}
+                  <div className="absolute inset-0 bg-sky-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                    <button className="bg-white p-2 rounded-lg shadow-md hover:bg-sky-600 hover:text-white transition-colors"><Heart size={18} /></button>
+                    <button className="bg-white p-2 rounded-lg shadow-md hover:bg-sky-600 hover:text-white transition-colors"><Eye size={18} /></button>
+                  </div>
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-bold text-slate-800 mb-2 truncate">{p.name}</h3>
@@ -122,7 +82,7 @@ export default function Home() {
                     <span className="text-gray-300 text-xs line-through">${p.oldPrice.toFixed(2)}</span>
                   </div>
                   <button className="w-full mt-4 py-2.5 bg-slate-900 text-white text-[10px] font-black rounded-xl hover:bg-sky-600 transition-colors uppercase tracking-widest">
-                    Add to Cart
+                    {"Add to Cart"}
                   </button>
                 </div>
               </div>
@@ -132,19 +92,20 @@ export default function Home() {
 
         {/* --- FEATURED BANNER --- */}
         <section className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-[#0092BA] rounded-[2.5rem] p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+          <div className="bg-[#0092BA] rounded-[2.5rem] p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-2xl shadow-sky-200">
             <div className="z-10 text-center md:text-left text-white">
               <h3 className="text-white/80 font-bold uppercase tracking-widest text-[10px] mb-2">{"Editor's Choice"}</h3>
               <h2 className="text-4xl md:text-6xl font-black leading-tight mb-8">
-                Samsung Galaxy <br /> Tab S6, Wifi Tablet
+                {"Samsung Galaxy"} <br /> {"Tab S6, Wifi Tablet"}
               </h2>
-              <button className="bg-black text-white px-10 py-4 rounded-xl font-bold hover:bg-gray-900 transition-all shadow-2xl">
-                Explore Tablet
+              <button className="bg-black text-white px-10 py-4 rounded-xl font-bold hover:bg-gray-900 transition-all">
+                {"Explore Tablet"}
               </button>
             </div>
             <div className="w-full md:w-[450px] h-64 md:h-80 bg-white/20 rounded-3xl border-4 border-white/30 flex items-center justify-center text-white text-xl font-black italic relative z-10">
-              TAB S6 VISUAL
+              {"TAB S6 VISUAL"}
             </div>
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
           </div>
         </section>
       </main>
@@ -153,36 +114,36 @@ export default function Home() {
       <footer className="bg-slate-900 mt-20 py-12 px-4">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-slate-400">
           <div>
-            <div className="flex items-center gap-2 mb-6 text-white">
+            <div className="flex items-center gap-2 mb-6 text-white font-black tracking-tighter text-xl uppercase">
               <div className="bg-sky-600 p-1 rounded-md"><ShoppingBag size={20} /></div>
-              <span className="text-xl font-black tracking-tighter">JUMMALL</span>
+              {"JUMMALL"}
             </div>
             <p className="text-sm italic mb-6">
               {"One store, endless possibilities. Bringing premium tech to your doorstep."}
             </p>
             <div className="flex gap-4">
-              {/* <FacebookIcon size={18} className="hover:text-sky-500 cursor-pointer" />
-              <TwitterIcon size={18} className="hover:text-sky-500 cursor-pointer" />
-              <InstagramIcon size={18} className="hover:text-sky-500 cursor-pointer" /> */}
+              {/* <FacebookIcon size={18} className="hover:text-sky-500 cursor-pointer transition-colors" />
+              <TwitterIcon size={18} className="hover:text-sky-500 cursor-pointer transition-colors" />
+              <InstagramIcon size={18} className="hover:text-sky-500 cursor-pointer transition-colors" /> */}
             </div>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">Support</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="hover:text-white cursor-pointer">Help Center</li>
-              <li className="hover:text-white cursor-pointer">Track Order</li>
-              <li className="hover:text-white cursor-pointer">Returns</li>
+            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">{"Support"}</h4>
+            <ul className="space-y-3 text-sm font-medium">
+              <li className="hover:text-white cursor-pointer transition-colors">{"Help Center"}</li>
+              <li className="hover:text-white cursor-pointer transition-colors">{"Track Order"}</li>
+              <li className="hover:text-white cursor-pointer transition-colors">{"Returns"}</li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">Store</h4>
-            <p className="text-xs mb-2">University of Port Harcourt,</p>
-            <p className="text-xs mb-4">Rivers State, Nigeria</p>
-            <p className="text-sky-500 font-bold text-sm underline cursor-pointer">+234 905 599 9998</p>
+            <h4 className="text-white font-bold mb-6 uppercase text-[10px] tracking-widest">{"Store"}</h4>
+            <p className="text-xs mb-2">{"University of Port Harcourt,"}</p>
+            <p className="text-xs mb-4">{"Rivers State, Nigeria"}</p>
+            <p className="text-sky-500 font-bold text-sm underline cursor-pointer">{"+234 905 599 9998"}</p>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-800 text-center text-[10px] font-bold uppercase tracking-widest text-slate-600">
-          © 2026 Jummall. Designed by Great Jeff Pam.
+          {"© 2026 Jummall. Designed by Great Jeff Pam."}
         </div>
       </footer>
     </div>
