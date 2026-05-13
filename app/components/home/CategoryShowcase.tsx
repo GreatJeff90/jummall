@@ -29,7 +29,7 @@ const categories = [
   {
     name: "Kitchen Items",
     count: 0,
-    image: "/kitchen-category-img.png", // Assuming this follows the naming convention
+    image: "/kitchen-items-category-img.png", // Assuming this follows the naming convention
     href: "/category/kitchen",
   },
 ];

@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import NewsletterModal from "./components/modals/NewLetterModal";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Configuring Montserrat with the weights needed for the UI in image_3c8130.png
+const montserrat = Montserrat({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"], // 500/600 is ideal for the nav text in image_3c8130.png
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -27,17 +24,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      {/* Adding suppressHydrationWarning here prevents extension-based errors 
-          (like Grammarly or DarkReader) from breaking the React hydration process.
-      */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-full flex flex-col`}
+        className={`${montserrat.className} antialiased min-h-full flex flex-col`}
         suppressHydrationWarning
       >
         {/* Persistent Header */}
         <Navbar />
         
-        {/* Page Content - flex-grow ensures the footer stays at the bottom */}
+        {/* Page Content */}
         <main className="flex-grow">
           {children}
         </main>
@@ -45,7 +39,7 @@ export default function RootLayout({
         {/* Persistent Footer */}
         <Footer />
 
-        {/* This modal will trigger automatically based on the logic in its component */}
+        {/* This modal triggers automatically based on internal logic */}
         <NewsletterModal />
       </body>
     </html>
