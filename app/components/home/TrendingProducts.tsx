@@ -43,7 +43,7 @@ export default function TrendingProducts() {
     <section className="max-w-7xl mx-auto px-4 py-16">
       {/* Header with Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 border-b border-gray-100 pb-4">
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+        <h2 className="text-3xl   text-slate-900 tracking-tight">
           Trending <span className="text-[#22A7D0]">Products</span>
         </h2>
         <div className="flex items-center gap-6 mt-4 md:mt-0">
@@ -51,7 +51,7 @@ export default function TrendingProducts() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm font-bold transition-colors ${
+              className={`text-sm   transition-colors ${
                 activeTab === tab ? 'text-[#22A7D0]' : 'text-slate-400 hover:text-slate-900'
               }`}
             >
@@ -71,7 +71,7 @@ export default function TrendingProducts() {
               {product.badge.map((b) => (
                 <span 
                   key={b} 
-                  className={`text-[9px] uppercase font-black px-1.5 py-0.5 rounded text-white shadow-sm ${
+                  className={`text-[9px] uppercase   px-1.5 py-0.5 rounded text-white shadow-sm ${
                     b === 'Hot' ? 'bg-orange-500' : b === 'New' ? 'bg-teal-500' : 'bg-red-500'
                   }`}
                 >
@@ -110,19 +110,19 @@ export default function TrendingProducts() {
             {/* Product Details */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-400">JUMMALL OFFICIAL STORE</span>
+                <span className="text-[10px]   text-slate-400">JUMMALL OFFICIAL STORE</span>
                 <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
                   <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
                 </div>
               </div>
-              <Link href="#" className="text-sm font-bold text-slate-800 hover:text-[#22A7D0] transition-colors leading-tight line-clamp-2 h-10">
+              <Link href="#" className="text-sm   text-slate-800 hover:text-[#22A7D0] transition-colors leading-tight line-clamp-2 h-10">
                 {product.name}
               </Link>
               <div className="flex items-center gap-0.5 text-orange-400">
                 {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
-                <span className="text-[10px] text-slate-400 font-bold ml-1">(50 reviews)</span>
+                <span className="text-[10px] text-slate-400   ml-1">(50 reviews)</span>
               </div>
-              <p className="text-sm font-black text-slate-900 tracking-tight">
+              <p className="text-sm   text-slate-900 tracking-tight">
                 ₦{product.price.toLocaleString()}
               </p>
             </div>

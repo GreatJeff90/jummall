@@ -22,8 +22,8 @@ export default function ForgotPasswordPage() {
               <div className="absolute inset-0 bg-white/20" />
               
               <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
-                <h1 className="text-5xl font-black tracking-tight text-[#0F172A]">Forgot Password</h1>
-                <p className="text-sm text-slate-500 mt-2 font-bold uppercase tracking-widest flex items-center gap-2">
+                <h1 className="text-5xl   tracking-tight text-[#0F172A]">Forgot Password</h1>
+                <p className="text-sm text-slate-500 mt-2   uppercase tracking-widest flex items-center gap-2">
                   Home <span className="text-slate-300">/</span> <span className="text-sky-600">Login</span>
                 </p>
               </div>
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
              </div>
-            <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-4">Forgot Password</h2>
+            <h2 className="text-3xl   text-slate-800 tracking-tight mb-4">Forgot Password</h2>
             <p className="text-sm text-slate-500 leading-relaxed font-medium">
               {"Lost your password? Please enter your username or email address. You will receive a link to create a new password via email."}
             </p>
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           <form className="w-full space-y-6" onSubmit={(e) => e.preventDefault()}>
             {/* Email Field */}
             <div className="w-full">
-              <label className="text-xs font-bold text-slate-700 mb-2 block ml-1">
+              <label className="text-xs   text-slate-700 mb-2 block ml-1">
                 Email
               </label>
               <div className="relative group">
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             {/* Submit Button */}
-            <button className="w-full bg-[#010F1C] text-white py-4.5 rounded-lg font-black text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-md">
+            <button className="w-full bg-[#010F1C] text-white py-4.5 rounded-lg   text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-md">
               Send Password Reset Link
             </button>
 
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
             <div className="text-center pt-2">
               <Link 
                 href="/login" 
-                className="text-sky-500 font-bold text-xs hover:underline tracking-tight transition-all"
+                className="text-sky-500   text-xs hover:underline tracking-tight transition-all"
               >
                 Back to login page
               </Link>

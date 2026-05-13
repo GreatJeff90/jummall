@@ -21,8 +21,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-white/20" />
         
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
-          <h1 className="text-5xl font-black tracking-tight text-[#0F172A]">Login</h1>
-          <p className="text-sm text-slate-500 mt-2 font-bold uppercase tracking-widest flex items-center gap-2">
+          <h1 className="text-5xl   tracking-tight text-[#0F172A]">Login</h1>
+          <p className="text-sm text-slate-500 mt-2   uppercase tracking-widest flex items-center gap-2">
             Home <span className="text-slate-300">/</span> <span className="text-sky-600">Login</span>
           </p>
         </div>
@@ -51,7 +51,7 @@ export default function LoginPage() {
                 <Lock size={20} />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight">Login to your account</h2>
+                <h2 className="text-2xl   text-slate-800 tracking-tight">Login to your account</h2>
                 <p className="text-sm text-slate-500 mt-2 leading-relaxed">
                   {"Your personal data will be used to support your experience throughout this website, to manage access to your account."}
                 </p>
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div>
-                <label className="text-xs font-bold text-slate-700 mb-2 block ml-1">
+                <label className="text-xs   text-slate-700 mb-2 block ml-1">
                   Email or phone
                 </label>
                 <div className="relative group">
@@ -74,7 +74,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 mb-2 block ml-1">
+                <label className="text-xs   text-slate-700 mb-2 block ml-1">
                   Password
                 </label>
                 <div className="relative group">
@@ -95,16 +95,16 @@ export default function LoginPage() {
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
                   <span className="text-slate-500 group-hover:text-slate-800 transition-colors">Remember me</span>
                 </label>
-                <a href="./forgot-password" className="text-sky-600 font-bold hover:underline">Forgot password?</a>
+                <a href="./forgot-password" className="text-sky-600   hover:underline">Forgot password?</a>
               </div>
 
-              <button className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+              <button className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl   text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
                 Login <ArrowRight size={18} />
               </button>
 
               <div className="text-center pt-4">
                 <span className="text-xs text-slate-400 font-medium">{"Don't have an account? "}</span>
-                <a href="./register" className="text-sky-600 font-black text-xs hover:underline uppercase tracking-tighter">Register now</a>
+                <a href="./register" className="text-sky-600   text-xs hover:underline uppercase tracking-tighter">Register now</a>
               </div>
             </form>
           </div>

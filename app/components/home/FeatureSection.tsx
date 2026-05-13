@@ -37,7 +37,7 @@ export default function FeatureSection() {
                 {feature.icon}
               </div>
               <div>
-                <h3 className="text-[17px] font-black text-slate-900 leading-tight">
+                <h3 className="text-[17px]   text-slate-900 leading-tight">
                   {feature.title}
                 </h3>
                 <p className="text-sm text-slate-400 mt-1 font-medium">

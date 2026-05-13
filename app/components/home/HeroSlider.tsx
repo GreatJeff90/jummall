@@ -74,18 +74,18 @@ export default function HeroSlider() {
           <div className="max-w-7xl mx-auto px-6 md:px-16 w-full grid grid-cols-1 md:grid-cols-2 items-center gap-8">
             {/* Content Side */}
             <div className={`z-20 ${slide.textColor} animate-in slide-in-from-left-10 duration-700`}>
-              <p className="text-sm md:text-lg font-bold mb-4 opacity-90">
+              <p className="text-sm md:text-lg   mb-4 opacity-90">
                 {slide.subtitle}
               </p>
-              <h1 className="text-4xl md:text-7xl font-black leading-[1.1] mb-6">
+              <h1 className="text-4xl md:text-7xl   leading-[1.1] mb-6">
                 {slide.title}
               </h1>
-              <p className={`text-lg md:text-xl font-bold mb-10 ${slide.accentColor}`}>
+              <p className={`text-lg md:text-xl   mb-10 ${slide.accentColor}`}>
                 {slide.offer}
               </p>
               <Link 
                 href="/shop"
-                className="inline-block bg-white text-slate-900 px-10 py-4 rounded-lg font-black hover:scale-105 transition-transform shadow-xl"
+                className="inline-block bg-white text-slate-900 px-10 py-4 rounded-lg   hover:scale-105 transition-transform shadow-xl"
               >
                 {slide.buttonText}
               </Link>

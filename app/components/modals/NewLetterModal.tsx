@@ -43,7 +43,7 @@ export default function NewsletterModal() {
           <p className="text-gray-400 text-sm font-medium uppercase tracking-widest mb-2">
             Newsletter
           </p>
-          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">
+          <h2 className="text-3xl md:text-4xl   text-slate-900 mb-4">
             Subscribe Now
           </h2>
           <p className="text-slate-500 text-sm mb-8 leading-relaxed">
@@ -52,7 +52,7 @@ export default function NewsletterModal() {
 
           <form className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-2">
+              <label className="block text-xs   text-slate-800 mb-2">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <input 
@@ -63,7 +63,7 @@ export default function NewsletterModal() {
               />
             </div>
             
-            <button className="w-full bg-[#22A7D0] hover:bg-[#1a8bad] text-white py-3.5 rounded-md font-bold transition-colors shadow-lg shadow-sky-200">
+            <button className="w-full bg-[#22A7D0] hover:bg-[#1a8bad] text-white py-3.5 rounded-md   transition-colors shadow-lg shadow-sky-200">
               Subscribe
             </button>
 

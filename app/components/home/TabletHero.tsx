@@ -41,14 +41,14 @@ export default function TabletHero() {
         <div className="container mx-auto px-8 md:px-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 relative z-10">
           {/* Text Content */}
           <div className="text-white space-y-4 md:space-y-6">
-            <p className="font-bold tracking-[0.25em] text-[10px] md:text-xs uppercase opacity-90">
+            <p className="  tracking-[0.25em] text-[10px] md:text-xs uppercase opacity-90">
               {slides[current].subtitle}
             </p>
-            <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-[1.1] transition-all duration-700">
+            <h1 className="text-3xl md:text-6xl lg:text-7xl   leading-[1.1] transition-all duration-700">
               {slides[current].title}
             </h1>
             <div className="pt-4 md:pt-6">
-              <button className="bg-[#010F1C] text-white px-10 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300">
+              <button className="bg-[#010F1C] text-white px-10 py-3.5 rounded-lg   text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300">
                 Shop Now
               </button>
             </div>
