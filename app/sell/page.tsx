@@ -47,16 +47,9 @@ const features = [
   }
 ];
 
-const faqs = [
-  { q: "How do I become a vendor on JUMMALL?", a: "You can sign up by clicking the 'Become a Seller' button. Fill in your business details, upload your ID, and wait for verification." },
-  { q: "What products can I sell?", a: "You can sell electronics, fashion, home decor, and much more. Please refer to our prohibited items list for more details." },
-  { q: "How do I get paid?", a: "Payments are processed via our secure escrow system and settled to your provided bank account after successful delivery." },
-  { q: "Who handles delivery?", a: "You can choose to use JUMMALL logistics partners or handle delivery yourself if you meet our service level agreements." },
-  { q: "What support do I get as a vendor?", a: "Every vendor gets a dedicated account manager and access to our 24/7 vendor support portal." }
-];
+
 
 export default function SellOnJummall() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
     <main className="bg-white min-h-screen">
