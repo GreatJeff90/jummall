@@ -50,7 +50,7 @@ export default function VendorTestimonials() {
       />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <h3 className="text-center text-slate-400 font-bold mb-12">Vendor Testimonials</h3>
+        <h3 className="text-center text-slate-400   mb-12">Vendor Testimonials</h3>
         
         <div className="flex items-center justify-center gap-4 md:gap-12">
           {/* Navigation Arrows */}
@@ -86,7 +86,7 @@ export default function VendorTestimonials() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-black text-slate-800">{testimonials[current].name}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                <p className="text-[10px]   text-slate-400 uppercase tracking-tight">
                   {testimonials[current].role}
                 </p>
               </div>

@@ -20,10 +20,10 @@ export default function SellHero() {
           <p className="text-slate-600 text-lg font-medium mb-4">
             Join thousands of vendors reaching millions of customers.
           </p>
-          <h2 className="text-5xl md:text-7xl font-black text-[#001F3F] leading-[1.1] mb-10 font-montserrat">
+          <h2 className="text-5xl md:text-7xl   text-[#001F3F] leading-[1.1] mb-10 font-montserrat">
             Grow Your Business with <span className="text-[#149fcd]">JUMMALL</span>
           </h2>
-          <button className="bg-white text-[#149fcd] px-10 py-4 rounded-xl font-bold text-sm shadow-sm hover:shadow-md transition-all">
+          <button className="bg-white text-[#149fcd] px-10 py-4 rounded-xl   text-sm shadow-sm hover:shadow-md transition-all">
             Start Selling Today
           </button>
         </div>

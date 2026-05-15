@@ -53,7 +53,7 @@ export default function VendorFaq() {
               onClick={() => toggleFaq(index)}
               className="w-full px-8 py-7 flex items-center justify-between text-left group hover:bg-slate-50 transition-colors"
             >
-              <span className={`text-lg font-bold transition-colors ${
+              <span className={`text-lg   transition-colors ${
                 openIndex === index ? 'text-[#149fcd]' : 'text-[#149fcd]'
               }`}>
                 {item.q}

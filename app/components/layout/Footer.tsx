@@ -31,7 +31,7 @@ export default function Footer() {
 
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10 relative z-10">
           <div className="text-white text-center lg:text-left">
-            <p className="text-[14px] font-bold uppercase tracking-wide mb-2">
+            <p className="text-[14px]   uppercase tracking-wide mb-2">
               {"Be among the first 50 and get 5% off your first order"}
             </p>
             <h2 className="text-[42px] md:text-[50px]   leading-tight">
@@ -55,7 +55,7 @@ export default function Footer() {
                 placeholder="Enter Your Email" 
                 className="flex-1 px-8 py-5 outline-none text-slate-500 text-[16px] font-medium" 
               />
-              <button className="bg-[#010F1C] text-white px-10 py-5 font-bold text-[16px] hover:bg-slate-900 transition-all">
+              <button className="bg-[#010F1C] text-white px-10 py-5   text-[16px] hover:bg-slate-900 transition-all">
                 {"Subscribe"}
               </button>
             </div>

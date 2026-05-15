@@ -78,7 +78,7 @@ export default function ContactPage() {
                 <Mail size={24} />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">support@jummall.com</p>
+                <p className="text-sm   text-slate-800">support@jummall.com</p>
                 <p className="text-lg   text-slate-900">+234 703 9340 610</p>
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function ContactPage() {
                 <SiYoutube size={24} />
               </div>
               <div className="space-y-4">
-                <p className="text-sm font-bold text-slate-800">Find on social media</p>
+                <p className="text-sm   text-slate-800">Find on social media</p>
                 <div className="flex gap-3">
                   {[SiFacebook, SiX, SiInstagram, SiYoutube].map((Icon, i) => (
                     <Link key={i} href="#" className="w-9 h-9 border border-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-sky-500 hover:border-sky-500 transition-all">

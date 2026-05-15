@@ -77,7 +77,7 @@ export default function Navbar() {
                   <div className="bg-white border border-gray-200 p-3 rounded-full"><User size={24} /></div>
                   <div className="text-left text-slate-900">
                     <p className="text-xs text-gray-500 leading-none mb-1">Hello, Guest</p>
-                    <p className="text-sm font-bold">Login / Register</p>
+                    <p className="text-sm  ">Login / Register</p>
                   </div>
                 </Link>
               </div>
@@ -100,14 +100,14 @@ export default function Navbar() {
 
               {!isSticky && (
                 <div className="relative">
-                  <button onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="bg-[#149fcd] text-white px-8 py-4 flex items-center gap-16 font-bold text-sm">
+                  <button onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="bg-[#149fcd] text-white px-8 py-4 flex items-center gap-16   text-sm">
                     <div className="flex items-center gap-3"><Menu size={20} />All Categories</div>
                     <ChevronDown size={16} />
                   </button>
                 </div>
               )}
 
-              <nav className={`flex gap-10 text-sm font-bold text-slate-900 ${isSticky ? 'py-4' : 'py-4'}`}>
+              <nav className={`flex gap-10 text-sm   text-slate-900 ${isSticky ? 'py-4' : 'py-4'}`}>
                 {[
                   { name: 'Home', path: '/' },
                   { name: 'Shop', path: '/shop' },
@@ -131,16 +131,16 @@ export default function Navbar() {
                 <div className="flex items-center gap-3 mr-4">
                   <Phone size={22} className="text-[#149fcd]" />
                   <div className="text-left leading-tight">
-                    <p className="text-[10px] text-slate-900 font-bold uppercase">Hotline:</p>
+                    <p className="text-[10px] text-slate-900   uppercase">Hotline:</p>
                     <p className="text-sm   text-slate-900 tracking-tight">+2349055999998</p>
                   </div>
                 </div>
               )}
               
               <div className="flex items-center gap-4">
-                <div className="relative cursor-pointer"><ArrowLeftRight size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white font-bold">0</span></div>
-                <div className="relative cursor-pointer"><Heart size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white font-bold">0</span></div>
-                <div className="relative cursor-pointer"><ShoppingBag size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white font-bold">0</span></div>
+                <div className="relative cursor-pointer"><ArrowLeftRight size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white  ">0</span></div>
+                <div className="relative cursor-pointer"><Heart size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white  ">0</span></div>
+                <div className="relative cursor-pointer"><ShoppingBag size={24} className="text-slate-800" /><span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white  ">0</span></div>
               </div>
             </div>
 

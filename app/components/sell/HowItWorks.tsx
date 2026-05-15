@@ -40,7 +40,7 @@ export default function HowItWorks() {
               onClick={() => setActiveStep(activeStep === index ? null : index)}
               className="w-full px-8 py-6 flex items-center justify-between text-left transition-colors hover:bg-slate-50 group"
             >
-              <span className={`text-lg font-bold transition-colors ${
+              <span className={`text-lg   transition-colors ${
                 activeStep === index ? 'text-[#149fcd]' : 'text-slate-900 group-hover:text-[#149fcd]'
               }`}>
                 {step.title}
