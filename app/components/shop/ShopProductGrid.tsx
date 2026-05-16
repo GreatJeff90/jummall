@@ -1,6 +1,7 @@
 'use client';
 
 import Image from "next/image";
+import Link from "next/link"; // Imported Link for navigation
 import { 
   Star, 
   CheckCircle2, 
@@ -38,7 +39,7 @@ const shopProducts: Product[] = [
   { id: 7, name: "Female Tracksuit", vendor: "Glorious God's Boutique and Stores", price: 9999, image: "/img-20260508-wa0098-600x600.jpg", badges: ["Hot"] },
   { id: 8, name: "Mini Dress Gown", vendor: "Glorious God's Boutique and Stores", price: 9999, image: "/img-20260508-wa0096-600x600.jpg", badges: ["Hot"] },
   
-  // ... (Repeat or add the other image paths to reach 24 products)
+  // Row 3
   { id: 9, name: "Elegant Evening Gown", vendor: "Glorious God's Boutique and Stores", price: 14999, image: "/img-20260508-wa0088-600x600.jpg", badges: ["New"] },
   { id: 10, name: "Summer Floral Gown", vendor: "Glorious God's Boutique and Stores", price: 11000, image: "/img-20260508-wa0094-600x600.jpg", badges: ["Sale"] },
   { id: 11, name: "White Wedding Gown", vendor: "Glorious God's Boutique and Stores", price: 45000, image: "/img-20260508-wa0097-1-600x600.jpg", badges: ["New"] },
@@ -58,7 +59,7 @@ export default function ShopProductGrid() {
             <List size={20} />
           </button>
           <span className="ml-4 text-[13px] font-medium text-slate-400">
-            Showing 1 - 24 of 228 products
+            Showing 1 - 12 of 12 products
           </span>
         </div>
 
@@ -83,16 +84,22 @@ export default function ShopProductGrid() {
       {/* --- Main Product Grid --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
         {shopProducts.map((product) => (
-          <div key={product.id} className="group flex flex-col cursor-pointer">
+          <div key={product.id} className="group flex flex-col">
             
+            {/* Image Wrapper Block */}
             <div className="relative aspect-square bg-[#F3F4F6] rounded-[2.5rem] overflow-hidden mb-4 shadow-sm">
-              <Image 
-                src={product.image} 
-                alt={product.name} 
-                fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
               
+              {/* Dynamic Route wrapping the Main product Image */}
+              <Link href={`/shop/${product.id}`} className="absolute inset-0 z-10 block">
+                <Image 
+                  src={product.image} 
+                  alt={product.name} 
+                  fill 
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </Link>
+              
+              {/* Product Badges */}
               <div className="absolute top-4 right-5 flex flex-wrap gap-1 justify-end z-20">
                 {product.badges.map((badge) => (
                   <span 
@@ -113,9 +120,15 @@ export default function ShopProductGrid() {
                 <button className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-slate-700 hover:bg-[#149fcd] hover:text-white shadow-lg transition-colors">
                   <ShoppingBag size={20} />
                 </button>
-                <button className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-slate-700 hover:bg-[#149fcd] hover:text-white shadow-lg transition-colors">
+                
+                {/* Eye Icon points directly to details page */}
+                <Link 
+                  href={`/shop/${product.id}`}
+                  className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-slate-700 hover:bg-[#149fcd] hover:text-white shadow-lg transition-colors"
+                >
                   <Eye size={20} />
-                </button>
+                </Link>
+                
                 <button className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-slate-700 hover:bg-[#149fcd] hover:text-white shadow-lg transition-colors">
                   <Heart size={20} />
                 </button>
@@ -125,15 +138,18 @@ export default function ShopProductGrid() {
               </div>
             </div>
 
+            {/* Product Meta details */}
             <div className="space-y-2 px-1">
               <p className="text-[13px] text-gray-400 font-medium">{product.vendor}</p>
               
-              <div className="flex items-center gap-2 text-[#149fcd]">
-                <CheckCircle2 size={16} className="fill-[#149fcd] text-white shrink-0" />
-                <h3 className="text-[15px] font-bold text-[#2D3748] leading-tight line-clamp-2">
-                  {product.name}
-                </h3>
-              </div>
+              <Link href={`/shop/${product.id}`} className="block group/title">
+                <div className="flex items-center gap-2 text-[#149fcd]">
+                  <CheckCircle2 size={16} className="fill-[#149fcd] text-white shrink-0" />
+                  <h3 className="text-[15px] font-bold text-[#2D3748] leading-tight line-clamp-2 group-hover/title:text-[#149fcd] transition-colors">
+                    {product.name}
+                  </h3>
+                </div>
+              </Link>
 
               <div className="flex items-center gap-0.5 text-gray-200">
                 {[...Array(5)].map((_, i) => <Star key={i} size={15} fill="currentColor" />)}
@@ -151,6 +167,7 @@ export default function ShopProductGrid() {
                 )}
               </div>
             </div>
+
           </div>
         ))}
       </div>
