@@ -71,21 +71,23 @@ export default function HeroSlider() {
              <div className="absolute top-10 right-20 w-64 h-64 border-[40px] border-white rounded-full blur-2xl" />
           </div>
 
-          <div className="max-w-7xl mx-auto px-6 md:px-16 w-full grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+          <div className="max-w-7xl mx-auto px-4 md:px-16 w-full grid grid-cols-1 md:grid-cols-2 items-center gap-8">
             {/* Content Side */}
             <div className={`z-20 ${slide.textColor} animate-in slide-in-from-left-10 duration-700`}>
-              <p className="text-sm md:text-lg   mb-4 opacity-90">
+              <p className="text-sm md:text-lg mb-4 opacity-90 font-medium uppercase tracking-wider">
                 {slide.subtitle}
               </p>
-              <h1 className="text-4xl md:text-7xl   leading-[1.1] mb-6">
+              <h1 className="text-4xl md:text-6xl font-black leading-[1.1] mb-6 font-montserrat tracking-tight">
                 {slide.title}
               </h1>
-              <p className={`text-lg md:text-xl   mb-10 ${slide.accentColor}`}>
+              <p className={`text-lg md:text-xl font-bold mb-10 ${slide.accentColor}`}>
                 {slide.offer}
               </p>
+              
+              {/* Linked Shop Redirect Route Layout Button */}
               <Link 
                 href="/shop"
-                className="inline-block bg-white text-slate-900 px-10 py-4 rounded-lg   hover:scale-105 transition-transform shadow-xl"
+                className="inline-block bg-white text-slate-900 px-10 py-4 rounded-lg font-black text-xs uppercase tracking-widest hover:scale-105 hover:bg-sky-500 hover:text-white transition-all duration-300 shadow-xl"
               >
                 {slide.buttonText}
               </Link>
@@ -98,7 +100,7 @@ export default function HeroSlider() {
                 alt={slide.title}
                 fill
                 className="object-contain"
-                priority
+                priority={index === 0}
               />
             </div>
           </div>
@@ -108,15 +110,15 @@ export default function HeroSlider() {
       {/* Navigation Arrows */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full text-white backdrop-blur-sm transition-all"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300"
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={20} className="stroke-[2.5]" />
       </button>
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full text-white backdrop-blur-sm transition-all"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300"
       >
-        <ChevronRight size={24} />
+        <ChevronRight size={20} className="stroke-[2.5]" />
       </button>
 
       {/* Pagination Dots */}
@@ -125,8 +127,8 @@ export default function HeroSlider() {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`h-2 transition-all rounded-full ${
-              current === i ? "w-8 bg-white" : "w-2 bg-white/40"
+            className={`h-2 transition-all rounded-full duration-300 ${
+              current === i ? "w-8 bg-white shadow-sm" : "w-2 bg-white/40"
             }`}
           />
         ))}

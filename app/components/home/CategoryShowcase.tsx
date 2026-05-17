@@ -6,31 +6,31 @@ const categories = [
     name: "Electronics",
     count: 5,
     image: "/electronics-category-img.png",
-    href: "/category/electronics",
+    href: "/categories/electronics",
   },
   {
     name: "Computers",
     count: 3,
     image: "/computers-category-img.png",
-    href: "/category/computers",
+    href: "/categories/computers",
   },
   {
     name: "Phones & Tablets",
     count: 16,
     image: "/phone-tablets.png",
-    href: "/category/phones-tablets",
+    href: "/categories/phones-tablets",
   },
   {
     name: "Gaming",
     count: 0,
     image: "/gaming-category-img.png",
-    href: "/category/gaming",
+    href: "/categories/gaming",
   },
   {
     name: "Kitchen Items",
     count: 0,
     image: "/kitchen-items-category-img.png", // Assuming this follows the naming convention
-    href: "/category/kitchen",
+    href: "/categories/kitchen",
   },
 ];
 

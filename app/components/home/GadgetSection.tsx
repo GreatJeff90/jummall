@@ -71,12 +71,11 @@ export default function GadgetSection() {
       {/* Sidebar Area */}
       <div className="w-full md:w-1/4 flex flex-col gap-6">
         
-        {/* Fixed Height removed: Changed h-[650px] to min-h-[650px] */}
         <div className="border-2 border-orange-500 rounded-lg p-6 flex flex-col bg-white min-h-[650px] relative overflow-hidden">
           
           {/* Top Section: Title and List */}
           <div className="relative z-10 flex-grow">
-            <h2 className="text-xl   text-slate-800 mb-2 font-montserrat">Computers</h2>
+            <h2 className="text-xl text-slate-800 mb-2 font-montserrat">Computers</h2>
             <div className="w-20 h-0.5 bg-sky-500 mb-6" />
             <ul className="space-y-2">
               {computerLinks.map((link) => (
@@ -89,9 +88,9 @@ export default function GadgetSection() {
             </ul>
           </div>
           
-          {/* Bottom Section: Link stays at the bottom but moves if list grows */}
+          {/* Bottom Section */}
           <div className="relative z-20 mt-8 pb-10">
-            <Link href="#" className="text-sm   text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors">
+            <Link href="#" className="text-sm text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors">
               More Products <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
@@ -116,8 +115,8 @@ export default function GadgetSection() {
             className="object-cover transition-opacity duration-1000" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/50 via-transparent to-transparent flex flex-col justify-center px-8 text-white z-10">
-            <span className="text-[10px]   tracking-wide mb-1">Only {sidebarSlides[currentSlide].price}</span>
-            <h2 className="text-xl   italic leading-tight max-w-[160px] drop-shadow-md">
+            <span className="text-[10px] tracking-wide mb-1">Only {sidebarSlides[currentSlide].price}</span>
+            <h2 className="text-xl italic leading-tight max-w-[160px] drop-shadow-md">
               {sidebarSlides[currentSlide].title}
             </h2>
           </div>
@@ -142,48 +141,70 @@ export default function GadgetSection() {
           {gadgets.map((item) => (
             <div key={item.id} className="group bg-white p-5 relative border border-slate-50 rounded-lg hover:shadow-xl hover:border-white transition-all duration-300">
                
+               {/* Action layer */}
                <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
-                  {[ShoppingCart, Eye, Heart, RefreshCw].map((Icon, idx) => (
-                    <button key={idx} className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
-                      <Icon size={16}/>
-                    </button>
-                  ))}
+                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
+                    <ShoppingCart size={16}/>
+                  </button>
+                  
+                  {/* Quick View points directly to the product details route */}
+                  <Link 
+                    href={`/shop/${item.id}`}
+                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"
+                  >
+                    <Eye size={16}/>
+                  </Link>
+
+                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
+                    <Heart size={16}/>
+                  </button>
+                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
+                    <RefreshCw size={16}/>
+                  </button>
                </div>
 
+               {/* Badges layer */}
                <div className="absolute top-4 right-4 flex gap-1 z-10">
                 {item.badges.map(b => (
-                  <span key={b} className={`text-[9px]   uppercase px-2 py-0.5 rounded text-white shadow-sm ${b === 'Hot' ? 'bg-orange-500' : 'bg-teal-500'}`}>
+                  <span key={b} className={`text-[9px] uppercase px-2 py-0.5 rounded text-white shadow-sm ${b === 'Hot' ? 'bg-orange-500' : 'bg-teal-500'}`}>
                     {b}
                   </span>
                 ))}
                </div>
 
+               {/* Image Container wrapped inside Link frame */}
                <div className="aspect-square relative mb-4 overflow-hidden rounded-md bg-slate-50">
-                <Image 
-                  src={item.img} 
-                  alt={item.name} 
-                  fill 
-                  className="object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
-                />
+                <Link href={`/shop/${item.id}`} className="absolute inset-0 block z-0">
+                  <Image 
+                    src={item.img} 
+                    alt={item.name} 
+                    fill 
+                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
+                  />
+                </Link>
                </div>
 
+               {/* Product Details Description Frame */}
                <div className="space-y-2">
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px]   text-slate-400">Jummall official</span>
+                  <span className="text-[10px] text-slate-400">Jummall official</span>
                   <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
                     <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
                   </div>
                 </div>
-                <h3 className="text-sm   text-slate-800 line-clamp-2 h-10 group-hover:text-sky-500 transition-colors duration-300 leading-snug">
+
+                {/* Updated anchor location endpoint path link routing */}
+                <Link href={`/shop/${item.id}`} className="text-sm text-slate-800 hover:text-sky-500 transition-colors duration-300 leading-snug line-clamp-2 h-10 block font-medium">
                   {item.name}
-                </h3>
+                </Link>
+
                 <div className="flex items-center gap-0.5 text-orange-400">
                   {[...Array(5)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
-                  <span className="text-[10px]   text-slate-300 ml-1">(0 reviews)</span>
+                  <span className="text-[10px] text-slate-300 ml-1">(0 reviews)</span>
                 </div>
                 <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-lg   text-slate-900 tracking-tight">₦{item.price.toLocaleString()}</span>
-                  {item.oldPrice && <span className="text-xs   text-slate-400 line-through">₦{item.oldPrice.toLocaleString()}</span>}
+                  <span className="text-lg text-slate-900 tracking-tight font-bold">₦{item.price.toLocaleString()}</span>
+                  {item.oldPrice && <span className="text-xs text-slate-400 line-through">₦{item.oldPrice.toLocaleString()}</span>}
                 </div>
                </div>
             </div>

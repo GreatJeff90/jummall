@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
@@ -48,9 +49,12 @@ export default function TabletHero() {
               {slides[current].title}
             </h1>
             <div className="pt-4 md:pt-6">
-              <button className="bg-[#010F1C] text-white px-10 py-3.5 rounded-lg   text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300">
-                Shop Now
-              </button>
+              <Link 
+  href="/shop" 
+  className="inline-block bg-[#010F1C] text-white px-10 py-3.5 rounded-lg text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300 text-center"
+>
+  Shop Now
+</Link>
             </div>
           </div>
 

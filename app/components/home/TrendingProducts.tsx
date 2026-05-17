@@ -43,7 +43,7 @@ export default function TrendingProducts() {
     <section className="max-w-7xl mx-auto px-4 py-16">
       {/* Header with Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 border-b border-gray-100 pb-4">
-        <h2 className="text-3xl   text-slate-900 tracking-tight">
+        <h2 className="text-3xl text-slate-900 tracking-tight">
           Trending <span className="text-[#22A7D0]">Products</span>
         </h2>
         <div className="flex items-center gap-6 mt-4 md:mt-0">
@@ -51,7 +51,7 @@ export default function TrendingProducts() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm   transition-colors ${
+              className={`text-sm transition-colors ${
                 activeTab === tab ? 'text-[#22A7D0]' : 'text-slate-400 hover:text-slate-900'
               }`}
             >
@@ -71,7 +71,7 @@ export default function TrendingProducts() {
               {product.badge.map((b) => (
                 <span 
                   key={b} 
-                  className={`text-[9px] uppercase   px-1.5 py-0.5 rounded text-white shadow-sm ${
+                  className={`text-[9px] uppercase px-1.5 py-0.5 rounded text-white shadow-sm ${
                     b === 'Hot' ? 'bg-orange-500' : b === 'New' ? 'bg-teal-500' : 'bg-red-500'
                   }`}
                 >
@@ -80,52 +80,68 @@ export default function TrendingProducts() {
               ))}
             </div>
 
-            {/* Image Container */}
+            {/* Image Container wrapped inside details link parameter */}
             <div className="relative aspect-[4/5] bg-[#F8F9FA] rounded-xl overflow-hidden mb-4">
-              <Image 
-                src={product.img} 
-                alt={product.name} 
-                fill 
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+              <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
+                <Image 
+                  src={product.img} 
+                  alt={product.name} 
+                  fill 
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              </Link>
               
-              {/* Vertical Hover Actions */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
-                {[
-                  { icon: <ShoppingBag size={16} />, label: "Add to Cart" },
-                  { icon: <Eye size={16} />, label: "Quick View" },
-                  { icon: <Heart size={16} />, label: "Wishlist" },
-                  { icon: <RefreshCw size={16} />, label: "Compare" }
-                ].map((action, i) => (
-                  <button 
-                    key={i} 
-                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all"
-                  >
-                    {action.icon}
-                  </button>
-                ))}
+              {/* Vertical Hover Actions Bar Layer */}
+              <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
+                
+                {/* 1. Add to Cart Button */}
+                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                  <ShoppingBag size={16} />
+                </button>
+
+                {/* 2. Quick View Button converted to active link router */}
+                <Link 
+                  href={`/shop/${product.id}`}
+                  className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all"
+                >
+                  <Eye size={16} />
+                </Link>
+
+                {/* 3. Wishlist Button */}
+                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                  <Heart size={16} />
+                </button>
+
+                {/* 4. Compare Button */}
+                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                  <RefreshCw size={16} />
+                </button>
               </div>
             </div>
 
-            {/* Product Details */}
+            {/* Product Details Area */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <span className="text-[10px]   text-slate-400">JUMMALL OFFICIAL STORE</span>
+                <span className="text-[10px] text-slate-400">JUMMALL OFFICIAL STORE</span>
                 <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
                   <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
                 </div>
               </div>
-              <Link href="#" className="text-sm   text-slate-800 hover:text-[#22A7D0] transition-colors leading-tight line-clamp-2 h-10">
+
+              {/* Dynamic details linking applied to product title card description */}
+              <Link href={`/shop/${product.id}`} className="text-sm text-slate-800 hover:text-[#22A7D0] transition-colors leading-tight line-clamp-2 h-10 block font-medium">
                 {product.name}
               </Link>
+
               <div className="flex items-center gap-0.5 text-orange-400">
                 {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
-                <span className="text-[10px] text-slate-400   ml-1">(50 reviews)</span>
+                <span className="text-[10px] text-slate-400 ml-1">(50 reviews)</span>
               </div>
-              <p className="text-sm   text-slate-900 tracking-tight">
-                ₦{product.price.toLocaleString()}
+              <p className="text-sm text-slate-900 tracking-tight font-bold">
+                ₦{product.price.toLocaleString()}.00
               </p>
             </div>
+
           </div>
         ))}
       </div>

@@ -1,15 +1,26 @@
 'use client';
 
-import { Lock, Eye, ArrowRight } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Handle mock submission to bypass missing API endpoints
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Force route straight to customer dashboard layout
+    router.push('/customer/overview');
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-900 font-sans flex flex-col">
       
       {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
       <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">
-        {/* Background Image using fill and object-cover */}
         <Image 
           src="/breadcrumb-1.jpg" 
           alt="Login Header Background" 
@@ -17,12 +28,11 @@ export default function LoginPage() {
           className="object-cover"
           priority
         />
-        {/* Darker overlay for text readability if needed */}
         <div className="absolute inset-0 bg-white/20" />
         
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
-          <h1 className="text-5xl   tracking-tight text-[#0F172A]">Login</h1>
-          <p className="text-sm text-slate-500 mt-2   uppercase tracking-widest flex items-center gap-2">
+          <h1 className="text-5xl tracking-tight text-[#0F172A]">Login</h1>
+          <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
             Home <span className="text-slate-300">/</span> <span className="text-sky-600">Login</span>
           </p>
         </div>
@@ -51,16 +61,17 @@ export default function LoginPage() {
                 <Lock size={20} />
               </div>
               <div>
-                <h2 className="text-2xl   text-slate-800 tracking-tight">Login to your account</h2>
+                <h2 className="text-2xl text-slate-800 tracking-tight">Login to your account</h2>
                 <p className="text-sm text-slate-500 mt-2 leading-relaxed">
                   {"Your personal data will be used to support your experience throughout this website, to manage access to your account."}
                 </p>
               </div>
             </div>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {/* Linked real functional submission handler directly here */}
+            <form className="space-y-6" onSubmit={handleLogin}>
               <div>
-                <label className="text-xs   text-slate-700 mb-2 block ml-1">
+                <label className="text-xs text-slate-700 mb-2 block ml-1">
                   Email or phone
                 </label>
                 <div className="relative group">
@@ -74,18 +85,24 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="text-xs   text-slate-700 mb-2 block ml-1">
+                <label className="text-xs text-slate-700 mb-2 block ml-1">
                   Password
                 </label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-600 transition-colors" size={18} />
+                  
                   <input 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="Password" 
                     className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm"
                   />
-                  <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-600">
-                    <Eye size={18} />
+                  
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -95,16 +112,17 @@ export default function LoginPage() {
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
                   <span className="text-slate-500 group-hover:text-slate-800 transition-colors">Remember me</span>
                 </label>
-                <a href="./forgot-password" className="text-sky-600   hover:underline">Forgot password?</a>
+                <a href="./forgot-password" className="text-sky-600 hover:underline">Forgot password?</a>
               </div>
 
-              <button className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl   text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
+              {/* Ensure button type is explicit for form action execution */}
+              <button type="submit" className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
                 Login <ArrowRight size={18} />
               </button>
 
               <div className="text-center pt-4">
                 <span className="text-xs text-slate-400 font-medium">{"Don't have an account? "}</span>
-                <a href="./register" className="text-sky-600   text-xs hover:underline uppercase tracking-tighter">Register now</a>
+                <a href="./register" className="text-sky-600 text-xs hover:underline uppercase tracking-tighter">Register now</a>
               </div>
             </form>
           </div>
