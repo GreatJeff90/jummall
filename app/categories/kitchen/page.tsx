@@ -5,10 +5,10 @@ import Image from "next/image";
 import { LayoutGrid, List, ChevronDown } from "lucide-react";
 
 // Modularized Category Component Imports
-import GamingSidebar from "../../components/categories/GamingSidebar"
+import KitchenSidebar from "../../components/categories/KitchenSidebar"
 import EmptyGrid from "../../components/categories/EmptyGrid";
 
-export default function GamingCategoryPage() {
+export default function ComputersCategoryPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   return (
@@ -43,13 +43,13 @@ export default function GamingCategoryPage() {
           
           {/* ================= SIDEBAR FILTERS (LEFT) ================= */}
           <div className="w-full lg:w-[280px] shrink-0">
-            <GamingSidebar />
+            <KitchenSidebar />
           </div>
 
           {/* ================= ARCHIVE PRODUCT LIST (RIGHT) ================= */}
           <div className="flex-1 space-y-8">
             <h2 className="text-2xl font-black text-slate-800 tracking-tight font-montserrat">
-              Gaming
+              Kitchen
             </h2>
 
             {/* --- Toolbar Metrics & Display Options Line Row --- */}
@@ -72,7 +72,7 @@ export default function GamingCategoryPage() {
                   <List size={16} />
                 </button>
                 <span className="ml-2 text-xs font-medium text-slate-400">
-                  0 Products found
+                  3 Products found
                 </span>
               </div>
 
@@ -97,7 +97,7 @@ export default function GamingCategoryPage() {
             </div>
 
             {/* --- Dynamic Product Grid Content Render --- */}
-            <EmptyGrid />
+            <EmptyGrid  />
 
           </div>
 
