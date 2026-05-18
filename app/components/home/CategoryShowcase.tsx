@@ -29,14 +29,26 @@ const categories = [
   {
     name: "Kitchen Items",
     count: 0,
-    image: "/kitchen-items-category-img.png", // Assuming this follows the naming convention
+    image: "/kitchen-items-category-img.png", 
     href: "/categories/kitchen",
+  },
+  {
+    name: "Fashion Items",
+    count: 69,
+    image: "/chic-accessories-on-white-background.png", // Assuming this follows the naming convention
+    href: "/categories/fashion",
+  },
+  {
+    name: "Phone Accessories",
+    count: 16,
+    image: "/phone-accessories-category-img.png", // Assuming this follows the naming convention
+    href: "/categories/phone-accessories",
   },
 ];
 
 export default function CategoryShowcase() {
   return (
-    <section className="bg-[#F0F5F7] py-16 px-4">
+    <section className="bg-[#f3f5f7] py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap justify-center gap-8 md:gap-12 lg:gap-16">
           {categories.map((cat, i) => (
