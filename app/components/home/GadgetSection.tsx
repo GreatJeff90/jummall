@@ -80,7 +80,7 @@ export default function GadgetSection() {
             <ul className="space-y-2">
               {computerLinks.map((link) => (
                 <li key={link}>
-                  <Link href="#" className="text-[11px] font-medium text-slate-600 hover:text-orange-500 flex items-center gap-2 transition-colors">
+                  <Link href="/shop" className="text-[11px] font-medium text-slate-600 hover:text-orange-500 flex items-center gap-2 transition-colors">
                     <span className="w-1 h-1 bg-slate-300 rounded-full" /> {link}
                   </Link>
                 </li>
@@ -90,7 +90,7 @@ export default function GadgetSection() {
           
           {/* Bottom Section */}
           <div className="relative z-20 mt-8 pb-10">
-            <Link href="#" className="text-sm text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors">
+            <Link href="/shop" className="text-sm text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors">
               More Products <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

@@ -80,7 +80,7 @@ export default function NewArrivals() {
               <ul className="space-y-2">
                 {arrivalLinks.map((link) => (
                   <li key={link}>
-                    <Link href={`/shop?query=${link.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="text-[11px] font-medium text-slate-600 hover:text-rose-500 flex items-center gap-2 transition-colors">
+                    <Link href={`/shop`} className="text-[11px] font-medium text-slate-600 hover:text-rose-500 flex items-center gap-2 transition-colors">
                       <span className="w-1 h-1 bg-slate-300 rounded-full" /> {link}
                     </Link>
                   </li>
