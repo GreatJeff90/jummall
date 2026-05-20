@@ -9,14 +9,26 @@ const categories = [
   {
     name: "Electronics",
     count: 5,
-    image: "/electronics-category-img.png",
+    image: "/electronics-category-img.png", 
     href: "/categories/electronics",
+  },
+  {
+    name: "Mobile Phones",
+    count: 0,
+    image: "/mobile-phones-category-img.png", 
+    href: "/categories/mobile-phones",
   },
   {
     name: "Computers",
     count: 3,
     image: "/computers-category-img.png",
     href: "/categories/computers",
+  },
+  {
+    name: "Tablets",
+    count: 0,
+    image: "/tablets-product-category-img.png",
+    href: "/categories/tablets",
   },
   {
     name: "Phones & Tablets",

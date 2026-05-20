@@ -6,9 +6,9 @@ import { LayoutGrid, List, ChevronDown } from "lucide-react";
 
 // Modularized Category Component Imports
 import ComputersSidebar from "../../components/categories/ComputersSidebar";
-import ComputersGrid from "../../components/categories/ComputersGrid";
+import EmptyGrid from "@/app/components/categories/EmptyGrid";
 
-export default function ComputersCategoryPage() {
+export default function MobilePhonesCategoryPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   return (
@@ -29,10 +29,10 @@ export default function ComputersCategoryPage() {
         
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
           <h1 className="text-5xl font-black tracking-tight text-[#0F172A] font-montserrat">
-            Phones & Tablets
+           Mobile Phones
           </h1>
           <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2 font-medium">
-            Home <span className="text-slate-300">.</span> Products <span className="text-slate-300">.</span> <span className="text-sky-600">Phones & Tablets</span>
+            Home <span className="text-slate-300">.</span> Products <span className="text-slate-300">.</span> <span className="text-sky-600">Mobile Phones</span>
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function ComputersCategoryPage() {
           {/* ================= ARCHIVE PRODUCT LIST (RIGHT) ================= */}
           <div className="flex-1 space-y-8">
             <h2 className="text-2xl font-black text-slate-800 tracking-tight font-montserrat">
-              Phones & Tablets
+              Mobile Phones
             </h2>
 
             {/* --- Toolbar Metrics & Display Options Line Row --- */}
@@ -72,7 +72,7 @@ export default function ComputersCategoryPage() {
                   <List size={16} />
                 </button>
                 <span className="ml-2 text-xs font-medium text-slate-400">
-                  3 Products found
+                  0 Products found
                 </span>
               </div>
 
@@ -97,7 +97,7 @@ export default function ComputersCategoryPage() {
             </div>
 
             {/* --- Dynamic Product Grid Content Render --- */}
-            <ComputersGrid viewMode={viewMode} />
+            <EmptyGrid  />
 
           </div>
 
