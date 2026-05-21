@@ -11,6 +11,7 @@
   "dependencies": {
     "add": "^2.0.6",
     "aspect-ratio": "^2.1.9",
+    "axios": "^1.16.1",
     "badge": "^1.0.3",
     "button": "^1.1.1",
     "card": "^2.5.4",

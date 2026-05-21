@@ -3,12 +3,12 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import NewsletterModal from "./components/modals/NewLetterModal";
+import ModalLayerController from "./components/modals/ModalLayerController";
+import { AuthProvider } from "@/context/AuthContext";
 
-// Configuring Montserrat with the weights needed for the UI in image_3c8130.png
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // 500/600 is ideal for the nav text in image_3c8130.png
+  weight: ["400", "500", "600", "700"],
   variable: "--font-montserrat",
 });
 
@@ -24,23 +24,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body
-        className={`${montserrat.className} antialiased min-h-full flex flex-col`}
-        suppressHydrationWarning
-      >
-        {/* Persistent Header */}
-        <Navbar />
-        
-        {/* Page Content */}
-        <main className="flex-grow">
-          {children}
-        </main>
-        
-        {/* Persistent Footer */}
-        <Footer />
+      <body className={`${montserrat.className} antialiased min-h-full flex flex-col`} suppressHydrationWarning>
+        {/* CRITICAL: AuthProvider MUST be the outermost wrapper so Navbar can consume its hooks! */}
+        <AuthProvider>
+          
+          {/* Now Navbar sits perfectly inside the context channel */}
+          <Navbar />
+          
+          <main className="flex-grow">
+            {children}
+          </main>
+          
+          <Footer />
 
-        {/* This modal triggers automatically based on internal logic */}
-        <NewsletterModal />
+          <ModalLayerController />
+        </AuthProvider>
       </body>
     </html>
   );

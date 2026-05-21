@@ -1,22 +1,36 @@
+'use client';
+
+import React from 'react';
 import { ShoppingBag, MapPin, Settings, MoveRight } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CustomerOverview() {
+  const { user } = useAuth(); // Read live authenticated user data from the context channel
+
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-black text-slate-800 font-montserrat">Overview</h1>
+      <h1 className="text-2xl font-black text-slate-800 font-montserrat text-left">Overview</h1>
 
       {/* Welcome Banner */}
       <div className="bg-white border border-slate-100 p-8 rounded-sm flex flex-col md:flex-row items-center gap-8">
-        <div className="w-20 h-20 rounded-full bg-[#3b4d9b] flex items-center justify-center border-4 border-slate-50 shrink-0">
-          <span className="text-white text-3xl font-bold">N</span>
+        {/* Dynamic Avatar Initial / Image */}
+        <div className="w-20 h-20 rounded-full bg-[#3b4d9b] flex items-center justify-center border-4 border-slate-50 shrink-0 overflow-hidden">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-white text-3xl font-bold">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
+            </span>
+          )}
         </div>
+        
         <div className="text-center md:text-left">
           <h2 className="text-xl font-bold text-slate-800 mb-1">
-            Welcome back, <span className="text-slate-900">Neel Ade!</span>
+            Welcome back, <span className="text-slate-900">{user?.name || 'User'}!</span>
           </h2>
           <p className="text-sm text-slate-400">
-            Manage your account, view orders, and update your preferences from your personal dashboard.
+            {user?.email ? `${user.email} — ` : ''}Manage your account, view orders, and update your preferences from your personal dashboard.
           </p>
         </div>
       </div>

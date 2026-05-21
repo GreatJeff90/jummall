@@ -1,20 +1,59 @@
 'use client';
 
+import React, { useState } from "react";
 import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import axios from "axios";
+import { loginAccount } from "../lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  
+  // --- Form Input State Variables ---
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  
+  // --- Operational State Feedbacks ---
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Handle mock submission to bypass missing API endpoints
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Force route straight to customer dashboard layout
-    router.push('/customer/overview');
-  };
+  // --- REAL FUNCTIONAL SUBMISSION HANDLER ---
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrorMessage(null);
+  setLoading(false);
+
+  if (!username || !password) { // username state variable holds your input field string
+    setErrorMessage("Please fill in all required credentials.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Pass the input string field down under the exact key: 'email'
+    const data = await loginAccount({ 
+      email: username, // Maps your input state value directly onto the required 'email' parameter
+      password 
+    });
+    
+    if (data?.user?.role === "seller") {
+      router.push("/seller/dashboard");
+    } else {
+      router.push("/customer/overview");
+    }
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.data?.detail) {
+      const detail = err.response.data.detail;
+      setErrorMessage(typeof detail === "string" ? detail : JSON.stringify(detail));
+    } else {
+      setErrorMessage("Invalid credentials or account does not exist.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-slate-900 font-sans flex flex-col">
@@ -56,21 +95,27 @@ export default function LoginPage() {
 
           {/* RIGHT SIDE: LOGIN FORM */}
           <div className="w-full md:w-1/2 p-8 md:p-16 border-l border-gray-50 flex flex-col justify-center">
+            
+            {errorMessage && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-[#EF4444] rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm animate-pulse">
+                <span>⚠️ {errorMessage}</span>
+              </div>
+            )}
+
             <div className="flex items-start gap-4 mb-8">
               <div className="bg-sky-50 p-2 rounded-lg text-sky-500 mt-1">
                 <Lock size={20} />
               </div>
-              <div>
+              <div className="text-left">
                 <h2 className="text-2xl text-slate-800 tracking-tight">Login to your account</h2>
                 <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                  {"Your personal data will be used to support your experience throughout this website, to manage access to your account."}
+                  Your personal data will be used to support your experience throughout this website, to manage access to your account.
                 </p>
               </div>
             </div>
 
-            {/* Linked real functional submission handler directly here */}
             <form className="space-y-6" onSubmit={handleLogin}>
-              <div>
+              <div className="text-left">
                 <label className="text-xs text-slate-700 mb-2 block ml-1">
                   Email or phone
                 </label>
@@ -78,13 +123,16 @@ export default function LoginPage() {
                   <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-600 transition-colors" size={18} />
                   <input 
                     type="text" 
+                    required
                     placeholder="Email or Phone number" 
-                    className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm font-semibold"
                   />
                 </div>
               </div>
 
-              <div>
+              <div className="text-left">
                 <label className="text-xs text-slate-700 mb-2 block ml-1">
                   Password
                 </label>
@@ -93,7 +141,10 @@ export default function LoginPage() {
                   
                   <input 
                     type={showPassword ? "text" : "password"} 
+                    required
                     placeholder="Password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm"
                   />
                   
@@ -115,14 +166,17 @@ export default function LoginPage() {
                 <a href="./forgot-password" className="text-sky-600 hover:underline">Forgot password?</a>
               </div>
 
-              {/* Ensure button type is explicit for form action execution */}
-              <button type="submit" className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2">
-                Login <ArrowRight size={18} />
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-[#0F172A] text-white py-4.5 rounded-xl text-sm uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 disabled:opacity-50 font-bold"
+              >
+                {loading ? "Authenticating..." : "Login"} <ArrowRight size={18} />
               </button>
 
               <div className="text-center pt-4">
-                <span className="text-xs text-slate-400 font-medium">{"Don't have an account? "}</span>
-                <a href="./register" className="text-sky-600 text-xs hover:underline uppercase tracking-tighter">Register now</a>
+                <span className="text-xs text-slate-400 font-medium">Don&apos;t have an account? </span>
+                <a href="./register" className="text-sky-600 text-xs hover:underline uppercase tracking-tighter font-bold">Register now</a>
               </div>
             </form>
           </div>

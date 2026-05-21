@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
-import { createAddress } from "../../../lib/api/auth";
+import { fetchMyAddresses, updateAddressDetails } from "../../../../lib/api/auth";
 
-export default function AddAddress() {
+export default function EditAddress() {
+  const params = useParams();
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
+  const addressId = params?.id as string; // Reads target index key from dynamic context block segment
 
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -19,44 +23,81 @@ export default function AddAddress() {
     is_default: false
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.state || !formData.city || !formData.address) {
-      alert("Please execute submission verification inputs on all required structural layout properties.");
-      return;
-    }
+  useEffect(() => {
+    if (!addressId) return;
+    
+    const loadSpecificAddress = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchMyAddresses();
+        const matches = data.find(addr => addr.id === addressId);
+        
+        if (matches) {
+          // Normalize prefix code values out of display string if required
+          const displayPhone = matches.phone.replace("+234", "");
+          setFormData({
+            name: matches.name,
+            phone: displayPhone,
+            email: matches.email,
+            state: matches.state,
+            city: matches.city,
+            address: matches.address,
+            is_default: matches.is_default
+          });
+        } else {
+          alert("Target record details absent in data schema.");
+          router.push("/customer/addresses");
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    loadSpecificAddress();
+  }, [addressId, router]);
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      setSubmitting(true);
-      // Clean prefix phone numbers strings format if input omitted it
+      setUpdating(true);
       const cleanedPhone = formData.phone.startsWith("+234") ? formData.phone : `+234${formData.phone.replace(/\s+/g, "")}`;
       
-      await createAddress({
+      await updateAddressDetails(addressId, {
         ...formData,
         phone: cleanedPhone
       });
 
       router.push("/customer/addresses");
     } catch (err) {
-      console.error(err);
-      alert("Gateway insertion error encountered. Verify properties validation stubs.");
+      alert("Failed to push patch record modifications updating payload.");
     } finally {
-      setSubmitting(false);
+      setUpdating(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white border border-slate-100 rounded-sm p-16 text-center flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
+        <p className="text-xs text-slate-400 font-medium">Reassembling address data hooks...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-left">
       <button onClick={() => router.push("/customer/addresses")} className="flex items-center gap-2 text-xs font-bold text-[#149fcd] hover:underline uppercase tracking-wider">
-        <ArrowLeft size={14} /> Back to address book
+        <ArrowLeft size={14} /> Cancel modifications
       </button>
 
       <div className="bg-white border border-slate-100 rounded-sm p-8 md:p-12 shadow-sm">
-        <h1 className="text-xl font-black text-slate-800 font-montserrat tracking-tight mb-8 uppercase">
-          Add a new address
+        <h1 className="text-xl font-black text-slate-800 font-montserrat uppercase tracking-tight mb-8">
+          Modify address entry
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        <form onSubmit={handleUpdate} className="space-y-6 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
             <div className="space-y-2">
@@ -64,10 +105,9 @@ export default function AddAddress() {
               <input 
                 type="text" 
                 required
-                placeholder="Enter delivery target recipient name"
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors placeholder:text-slate-300"
+                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors"
               />
             </div>
 
@@ -87,40 +127,36 @@ export default function AddAddress() {
                 <input 
                   type="text" 
                   required
-                  placeholder="9060690604"
                   value={formData.phone}
                   onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="flex-1 px-4 py-3 text-sm text-slate-700 outline-none placeholder:text-slate-300"
+                  className="flex-1 px-4 py-3 text-sm text-slate-700 outline-none"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email address</label>
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</label>
               <input 
                 type="email" 
                 required
-                placeholder="e.g: example@domain.com"
                 value={formData.email}
                 onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors placeholder:text-slate-300"
+                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors"
               />
             </div>
 
-            <div className="hidden md:block" />
+            <div className="md:col-span-1" />
 
-            {/* State Dropdown */}
+            {/* State */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">State</label>
               <div className="relative">
                 <select 
-                  required
                   value={formData.state}
                   onChange={e => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                  className={`w-full appearance-none border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] transition-colors bg-white cursor-pointer ${formData.state ? 'text-slate-700' : 'text-slate-300'}`}
+                  className="w-full appearance-none border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors bg-white"
                 >
-                  <option value="" disabled>Select target state region...</option>
                   <option value="Abuja">Abuja</option>
                   <option value="Lagos">Lagos</option>
                   <option value="Rivers">Rivers</option>
@@ -135,23 +171,21 @@ export default function AddAddress() {
               <input 
                 type="text" 
                 required
-                placeholder="Enter metropolitan center node"
                 value={formData.city}
                 onChange={e => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors placeholder:text-slate-300"
+                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors"
               />
             </div>
 
             {/* Address */}
             <div className="space-y-2 md:col-span-2">
-              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Street Address</label>
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Address</label>
               <input 
                 type="text" 
                 required
-                placeholder="Plot identifier block location corridors details"
                 value={formData.address}
                 onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors placeholder:text-slate-300"
+                className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#149fcd] transition-colors"
               />
             </div>
           </div>
@@ -166,18 +200,18 @@ export default function AddAddress() {
               className="w-4 h-4 rounded-sm border-slate-300 text-[#149fcd] focus:ring-[#149fcd] cursor-pointer"
             />
             <label htmlFor="isDefault" className="text-[12px] text-slate-400 font-medium cursor-pointer select-none">
-              Use this address as default shipping fallback node setup.
+              Use this address as default shipping fallback destination node.
             </label>
           </div>
 
-          {/* Create Button */}
+          {/* Submit Button */}
           <div className="pt-4">
             <button 
               type="submit"
-              disabled={submitting}
+              disabled={updating}
               className="bg-[#149fcd] hover:bg-[#118eb8] disabled:bg-slate-300 text-white text-xs font-bold py-3.5 px-10 rounded-sm transition-all shadow-sm uppercase tracking-wider flex items-center gap-2"
             >
-              {submitting ? <Loader2 size={14} className="animate-spin" /> : "Save Address"}
+              {updating ? <Loader2 size={14} className="animate-spin" /> : "Update Address"}
             </button>
           </div>
         </form>
