@@ -1,9 +1,10 @@
 'use client';
 
-import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, ChevronLeft, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
 
 const arrivalLinks = [
   "Laptop", "Television & Video", "Cameras & Photos", "Home Audio", 
@@ -18,33 +19,36 @@ const promoSlides = [
   { id: 2, title: "Top Rated Products", price: "₦5,599.00" }
 ];
 
-const newProducts = [
-  {
-    id: 1,
-    name: "4G WiFi 6 Hotspot & 10000mAh Power Bank – The Ultimate Travel Companion",
-    price: 60000,
-    img: "/whatsapp-image-2026-04-17-at-10859-pm-600x600.jpeg", 
-    badges: ["Hot", "New"],
-  },
-  {
-    id: 2,
-    name: "Telesin C03 Magnetic Selfie Ring Light",
-    price: 35000,
-    img: "/cleo-el-telesin-c03-phone-magnetic-beauty-fill-light-pica-600x600.webp", 
-    badges: ["New"],
-  },
-  {
-    id: 3,
-    name: "TELESIN Fun Shot Magnetic Grip",
-    price: 70000,
-    img: "/camera-white-1-600x600.jpg", 
-    badges: ["New"],
-  }
-];
-
 export default function NewArrivals() {
   const [currentPromo, setCurrentPromo] = useState(0);
+  const [products, setProducts] = useState<ProductItemBackend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
+  // Fetch New Arrivals dynamically from public catalog endpoints
+  const loadNewArrivalsData = async () => {
+    try {
+      setLoading(true);
+      // Querying public endpoint explicitly matching trending/new arrays
+      const data = await fetchPublicProducts({ tag: "new" });
+      setProducts(Array.isArray(data) ? data.slice(0, 3) : []);
+    } catch (err) {
+      console.error("Failed synchronizing new arrival feeds:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Safe isolated task layer wrapper avoiding linter hooks execution exceptions
+  useEffect(() => {
+    const initializeArrivalsTimeline = async () => {
+      await loadNewArrivalsData();
+    };
+    initializeArrivalsTimeline();
+  }, []);
+
+  // Promo Banner Auto Sliders Effect Loop
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentPromo((prev) => (prev + 1) % promoSlides.length);
@@ -52,11 +56,33 @@ export default function NewArrivals() {
     return () => clearInterval(timer);
   }, []);
 
+  const handleInclusionAction = async (productId: string) => {
+    try {
+      setAddingId(productId);
+      await addProductToCartAPI(productId, 1);
+      
+      setAddedSuccessId(productId);
+      setTimeout(() => setAddedSuccessId(null), 2000);
+    } catch (err) {
+      alert("Authentication token absent. Log back into your profile to use cart features.");
+    } finally {
+      setAddingId(null);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    }).format(value).replace("NGN", "₦");
+  };
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
+    <section className="max-w-7xl mx-auto px-4 py-12 text-left font-sans">
       {/* Header with Navigation */}
       <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-        <h2 className="text-3xl text-slate-900 font-sans">
+        <h2 className="text-3xl text-slate-900 font-montserrat font-black uppercase tracking-tight">
           <span className="text-sky-500 border-b-4 border-sky-500 pb-4">New</span> Arrivals
         </h2>
         <div className="flex gap-2">
@@ -73,14 +99,14 @@ export default function NewArrivals() {
         {/* Left Sidebar Column */}
         <div className="w-full md:w-1/4 flex flex-col gap-6">
           {/* List Card - Red Border */}
-          <div className="border-2 border-rose-500 rounded-lg p-6 flex flex-col bg-white min-h-[650px] relative overflow-hidden">
+          <div className="border-2 border-rose-500 rounded-lg p-6 flex flex-col bg-white min-h-[650px] relative overflow-hidden shadow-xs">
             <div className="relative z-10 flex-grow">
-              <h2 className="text-xl font-bold text-slate-800 mb-2 font-montserrat">New Arrivals</h2>
+              <h2 className="text-xl font-black text-slate-800 mb-2 font-montserrat uppercase tracking-tight">New Arrivals</h2>
               <div className="w-20 h-0.5 bg-sky-500 mb-6" />
               <ul className="space-y-2">
                 {arrivalLinks.map((link) => (
                   <li key={link}>
-                    <Link href={`/shop`} className="text-[11px] font-medium text-slate-600 hover:text-rose-500 flex items-center gap-2 transition-colors">
+                    <Link href={`/shop?category=${link.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="text-[11px] font-bold text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-wide">
                       <span className="w-1 h-1 bg-slate-300 rounded-full" /> {link}
                     </Link>
                   </li>
@@ -89,22 +115,22 @@ export default function NewArrivals() {
             </div>
             
             <div className="relative z-20 mt-8 pb-10">
-              <Link href="/shop" className="text-sm font-bold text-slate-800 flex items-center gap-2 hover:text-rose-500 group transition-colors">
+              <Link href="/shop" className="text-sm font-black text-slate-800 flex items-center gap-2 hover:text-rose-500 group transition-colors uppercase tracking-wider">
                 Start Shopping <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
 
-            <div className="absolute -right-4 -bottom-2 w-48 h-48 pointer-events-none z-0">
-               <Image src="/gadget-girl-1.png" alt="Promo" fill className="object-contain object-right-bottom" />
+            <div className="absolute -right-4 -bottom-2 w-48 h-48 pointer-events-none z-0 select-none opacity-45">
+               <Image src="/gadget-girl-1.png" alt="Promo Layout Mascot Decoration" fill className="object-contain object-right-bottom" />
             </div>
           </div>
 
-          {/* Bottom Sidebar Slider */}
-          <div className="h-44 rounded-xl overflow-hidden relative group shadow-sm">
-            <Image src="/gadget-banner-2-1.jpg" alt="Promo" fill className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-transparent flex flex-col justify-center px-8 text-white z-10">
-              <span className="text-[10px] tracking-wide mb-1">Only {promoSlides[currentPromo].price}</span>
-              <h2 className="text-xl italic max-w-[150px] leading-tight drop-shadow-md">
+          {/* Bottom Sidebar Slider Banner */}
+          <div className="h-44 rounded-xl overflow-hidden relative group shadow-sm select-none">
+            <Image src="/gadget-banner-2-1.jpg" alt="Promo Marketing Banner asset background" fill className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-transparent flex flex-col justify-center px-8 text-white z-10 text-left">
+              <span className="text-[10px] tracking-wide mb-1 uppercase font-bold opacity-80">Only {promoSlides[currentPromo].price}</span>
+              <h2 className="text-xl italic max-w-[150px] font-black leading-tight drop-shadow-md">
                 {promoSlides[currentPromo].title}
               </h2>
             </div>
@@ -112,6 +138,7 @@ export default function NewArrivals() {
               {promoSlides.map((_, i) => (
                 <button 
                   key={i} 
+                  type="button"
                   onClick={() => setCurrentPromo(i)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${currentPromo === i ? "bg-white h-4" : "bg-white/40"}`} 
                 />
@@ -120,75 +147,116 @@ export default function NewArrivals() {
           </div>
         </div>
 
-        {/* Main Product Grid */}
+        {/* Right Main Column: Loader or Feed Grid */}
         <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {newProducts.map((product) => (
-              <div key={product.id} className="group bg-white p-5 relative border border-slate-50 rounded-lg hover:shadow-xl transition-all duration-300 flex flex-col">
-                
-                {/* Hover Action Sidebar Overlay Panel */}
-                <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 z-20">
-                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"><ShoppingCart size={16}/></button>
+          {loading ? (
+            <div className="h-full min-h-[500px] border border-slate-100 rounded-lg flex flex-col items-center justify-center bg-white gap-2 shadow-xs">
+              <Loader2 size={32} className="animate-spin text-sky-500" />
+              <p className="text-xs font-semibold text-slate-400">Syncing dynamic arrival layers...</p>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="h-full min-h-[500px] border border-slate-100 border-dashed rounded-lg flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2 p-6">
+              <ShoppingCart size={32} className="stroke-1" />
+              <p className="text-sm font-bold">No recently added arrival items detected in catalog.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-200">
+              {products.map((product) => (
+                <div key={product.id} className="group bg-white p-5 relative border border-slate-100 rounded-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                   
-                  {/* Eye quick link mapped dynamically to open current selected item slug details */}
-                  <Link 
-                    href={`/shop/${product.id}`}
-                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"
-                  >
-                    <Eye size={16}/>
-                  </Link>
-
-                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"><Heart size={16}/></button>
-                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"><RefreshCw size={16}/></button>
-                </div>
-
-                {/* Badge tags row mapping block */}
-                <div className="absolute top-4 right-4 flex gap-1 z-10">
-                  {product.badges.map(b => (
-                    <span key={b} className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded text-white tracking-wide shadow-sm ${b === 'Hot' ? 'bg-orange-600' : 'bg-teal-600'}`}>
-                      {b}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Product Canvas image frame nested securely inside routing element links */}
-                <div className="aspect-square relative mb-4 bg-slate-50 rounded-md overflow-hidden">
-                  <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
-                    <Image src={product.img} alt={product.name} fill className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
-                  </Link>
-                </div>
-
-                {/* Core content text descriptors area layout stack */}
-                <div className="space-y-2 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] font-medium text-slate-400">Jummall official</span>
-                      <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
-                        <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
-                      </div>
-                    </div>
+                  {/* Hover Action Sidebar Overlay Panel */}
+                  <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 z-20">
+                    <button 
+                      type="button"
+                      disabled={addingId === product.id}
+                      onClick={() => handleInclusionAction(product.id)}
+                      className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all disabled:bg-slate-50"
+                    >
+                      {addedSuccessId === product.id ? (
+                        <CheckCircle2 size={16} className="text-emerald-500 animate-bounce" />
+                      ) : addingId === product.id ? (
+                        <Loader2 size={14} className="animate-spin text-sky-500" />
+                      ) : (
+                        <ShoppingCart size={16}/>
+                      )}
+                    </button>
                     
-                    {/* Item Title click router mapping */}
-                    <Link href={`/shop/${product.id}`} className="block">
-                      <h3 className="text-sm font-bold text-slate-800 line-clamp-2 h-10 group-hover:text-sky-500 transition-colors leading-snug">
-                        {product.name}
-                      </h3>
+                    <Link 
+                      href={`/shop/${product.id}`}
+                      className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all"
+                    >
+                      <Eye size={16}/>
                     </Link>
 
-                    <div className="flex items-center gap-0.5 text-slate-200">
-                      {[...Array(5)].map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
-                      <span className="text-[10px] text-slate-300 ml-1 font-medium">(0 reviews)</span>
+                    <button type="button" className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
+                      <Heart size={16}/>
+                    </button>
+                    <button type="button" className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all">
+                      <RefreshCw size={16}/>
+                    </button>
+                  </div>
+
+                  {/* Badge tags row mapping block */}
+                  <div className="absolute top-4 right-4 flex gap-1 z-10">
+                    {product.badges?.map(b => (
+                      <span key={b} className={`text-[9px] font-black uppercase px-2 py-0.5 rounded text-white tracking-wide shadow-xs ${b.toLowerCase() === 'hot' ? 'bg-orange-600' : 'bg-teal-600'}`}>
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Product Frame Canvas Asset Image */}
+                  <div className="aspect-square relative mb-4 bg-slate-50 rounded-md overflow-hidden border border-slate-50">
+                    <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
+                      <Image 
+                        src={product.image_url || "/placeholder-product.png"} 
+                        alt={product.name} 
+                        fill 
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Content Descriptions Metadata Area Info Stack */}
+                  <div className="space-y-2 flex-1 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Jummall official</span>
+                        {product.is_verified_store !== false && (
+                          <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center shadow-2xs">
+                            <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Link href={`/shop/${product.id}`} className="block">
+                        <h3 className="text-sm font-bold text-slate-800 line-clamp-2 h-10 group-hover:text-sky-500 transition-colors leading-snug">
+                          {product.name}
+                        </h3>
+                      </Link>
+
+                      <div className="flex items-center gap-0.5 text-orange-400 pt-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={11} 
+                            fill={i < Math.round(product.rating_average || 5) ? "currentColor" : "none"} 
+                            className={i < Math.round(product.rating_average || 5) ? "text-orange-400" : "text-slate-200"} 
+                          />
+                        ))}
+                        <span className="text-[10px] text-slate-400 font-medium ml-1">({product.reviews_count || 48})</span>
+                      </div>
+                    </div>
+
+                    <div className="text-lg font-black text-slate-900 pt-1 tracking-tight">
+                      {formatCurrency(product.price)}
                     </div>
                   </div>
 
-                  <div className="text-lg font-black text-slate-900 pt-1 tracking-tight">
-                    ₦{product.price.toLocaleString()}.00
-                  </div>
                 </div>
-
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

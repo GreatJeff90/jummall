@@ -79,7 +79,7 @@ export default function ShoppingCartPage() {
   const items = cart?.items || [];
 
   return (
-    <div className="w-full bg-[#f4f7f9]/50 min-h-screen pb-24 text-left font-sans">
+    <div className="w-full bg-[#f8fbfc] min-h-screen pb-24 text-left font-sans">
       
       {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
             <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">

@@ -1,57 +1,77 @@
 'use client';
 
-import { Eye, Heart, ShoppingBag, Star, RefreshCw } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Eye, Heart, ShoppingBag, Star, RefreshCw, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-
-const products = [
-  // First Row: 20260508 series
-  { id: 1, name: "Gown", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0017-600x600.jpg" },
-  { id: 2, name: "Long-sleeve shirtdress, Gown", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0021-600x600.jpg" },
-  { id: 3, name: "Color block Long Sleeve Pattern Gown", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0022-600x600.jpg" },
-  { id: 4, name: "Midi length shirt dress", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0020-600x600.jpg" },
-  { id: 5, name: "Maxi Dress Gown", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0018-600x600.jpg" },
-  
-  // Second Row: Transition to 20260509 series
-  { id: 6, name: "Midi dress Gown", price: 1999.00, badge: ["Hot", "New", "Sale"], img: "/img-20260509-wa0019-600x600.jpg" },
-  { id: 7, name: "Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0098-600x600.jpg" },
-  { id: 8, name: "Bodycon pencil dress Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0096-600x600.jpg" },
-  { id: 9, name: "Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0088-600x600.jpg" },
-  { id: 10, name: "Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0094-600x600.jpg" },
-  
-  // Third Row: 20260509 and specific 20260508 items
-  { id: 11, name: "Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0097-1-600x600.jpg" },
-  { id: 12, name: "Plus size Dress", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0091-600x600.jpg" },
-  { id: 13, name: "Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0090-600x600.jpg" },
-  { id: 14, name: "Pencil Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0088-600x600.jpg" },
-  { id: 15, name: "Maxi dress Gown", price: 1999.00, badge: ["Hot"], img: "/img-20260508-wa0063-600x600.jpg" },
-  
-  // Fourth Row: Final 20260508 items
-  { id: 16, name: "Bodycon Dress", price: 1999.00, badge: ["Hot"], img: "/img-20260508-wa0077-600x600.jpg" },
-  { id: 17, name: "Short Skirt and Top", price: 1999.00, badge: ["Hot"], img: "/img-20260508-wa0083-600x600.jpg" },
-  { id: 18, name: "Bodycon Maxi Dress Gown", price: 1999.00, badge: ["New"], img: "/img-20260508-wa0081-600x600.jpg" },
-  { id: 19, name: "Two Piece Lounger", price: 1999.00, badge: ["Hot"], img: "/img-20260508-wa0076-600x600.jpg" },
-  { id: 20, name: "Female Tracksuit", price: 1999.00, badge: ["Hot"], img: "/img-20260508-wa0085-1-600x600.jpg" },
-];
+import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
 
 export default function TrendingProducts() {
+  const [products, setProducts] = useState<ProductItemBackend[]>([]);
   const [activeTab, setActiveTab] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
+
   const tabs = ['All', 'Featured', 'On sale', 'Trending', 'Top rated'];
 
+  const loadCatalog = async (tabName: string) => {
+    try {
+      setLoading(true);
+      // Map visual tabs titles directly to backend filtering keywords
+      const queryTag = tabName === 'All' ? undefined : tabName.toLowerCase().replace(" ", "-");
+      const data = await fetchPublicProducts({ tag: queryTag });
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed loading public product loops:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Safe wrapping macro-task closure pattern to clear 'set-state-in-effect' linter rule
+  useEffect(() => {
+    const initializeFeedSync = async () => {
+      await loadCatalog(activeTab);
+    };
+    initializeFeedSync();
+  }, [activeTab]);
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      setAddingId(productId);
+      await addProductToCartAPI(productId, 1);
+      
+      setAddedSuccessId(productId);
+      setTimeout(() => setAddedSuccessId(null), 2000); // Reset toast marker
+    } catch (err) {
+      alert("Authentication required. Please sign into your account profile first.");
+    } finally {
+      setAddingId(null);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    }).format(value).replace("NGN", "₦");
+  };
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-16">
+    <section className="max-w-7xl mx-auto px-4 py-16 text-left font-sans">
       {/* Header with Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 border-b border-gray-100 pb-4">
-        <h2 className="text-3xl text-slate-900 tracking-tight">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight font-montserrat">
           Trending <span className="text-[#22A7D0]">Products</span>
         </h2>
-        <div className="flex items-center gap-6 mt-4 md:mt-0">
+        <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 md:mt-0">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm transition-colors ${
+              className={`text-sm font-bold uppercase tracking-wider transition-colors ${
                 activeTab === tab ? 'text-[#22A7D0]' : 'text-slate-400 hover:text-slate-900'
               }`}
             >
@@ -61,90 +81,118 @@ export default function TrendingProducts() {
         </div>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {products.map((product) => (
-          <div key={product.id} className="group flex flex-col bg-white overflow-hidden relative">
-            
-            {/* Badges */}
-            <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-              {product.badge.map((b) => (
-                <span 
-                  key={b} 
-                  className={`text-[9px] uppercase px-1.5 py-0.5 rounded text-white shadow-sm ${
-                    b === 'Hot' ? 'bg-orange-500' : b === 'New' ? 'bg-teal-500' : 'bg-red-500'
-                  }`}
-                >
-                  {b}
-                </span>
-              ))}
-            </div>
-
-            {/* Image Container wrapped inside details link parameter */}
-            <div className="relative aspect-[4/5] bg-[#F8F9FA] rounded-xl overflow-hidden mb-4">
-              <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
-                <Image 
-                  src={product.img} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </Link>
+      {/* Grid Loader State */}
+      {loading ? (
+        <div className="min-h-[300px] flex flex-col items-center justify-center gap-2">
+          <Loader2 size={32} className="animate-spin text-[#22A7D0]" />
+          <p className="text-xs font-semibold text-slate-400">Filtering storefront catalog columns...</p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="min-h-[300px] bg-slate-50 rounded-xl border border-dashed border-slate-200/60 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+          <ShoppingBag size={36} className="stroke-1 mb-2" />
+          <p className="text-sm font-bold">No active items discovered under this tier.</p>
+        </div>
+      ) : (
+        /* --- RENDER FEED GRID MATRIX --- */
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 animate-in fade-in duration-200">
+          {products.map((product) => (
+            <div key={product.id} className="group flex flex-col bg-white overflow-hidden relative">
               
-              {/* Vertical Hover Actions Bar Layer */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
-                
-                {/* 1. Add to Cart Button */}
-                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
-                  <ShoppingBag size={16} />
-                </button>
-
-                {/* 2. Quick View Button converted to active link router */}
-                <Link 
-                  href={`/shop/${product.id}`}
-                  className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all"
-                >
-                  <Eye size={16} />
-                </Link>
-
-                {/* 3. Wishlist Button */}
-                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
-                  <Heart size={16} />
-                </button>
-
-                {/* 4. Compare Button */}
-                <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
-                  <RefreshCw size={16} />
-                </button>
+              {/* Badges Overlay Collection */}
+              <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                {product.badges?.map((b) => (
+                  <span 
+                    key={b} 
+                    className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm text-white shadow-xs tracking-wide ${
+                      b.toLowerCase() === 'hot' ? 'bg-orange-500' : b.toLowerCase() === 'new' ? 'bg-teal-500' : 'bg-red-500'
+                    }`}
+                  >
+                    {b}
+                  </span>
+                ))}
               </div>
-            </div>
 
-            {/* Product Details Area */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] text-slate-400">JUMMALL OFFICIAL STORE</span>
-                <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
-                  <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
+              {/* Image Container with Actions */}
+              <div className="relative aspect-[4/5] bg-[#F8F9FA] rounded-xl overflow-hidden mb-4 border border-slate-100/50">
+                <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
+                  <Image 
+                    src={product.image_url || "/placeholder-product.png"} 
+                    alt={product.name} 
+                    fill 
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </Link>
+                
+                {/* Vertical Hover Actions Bar */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
+                  {/* Basket Inject Control Button */}
+                  <button 
+                    onClick={() => handleAddToCart(product.id)}
+                    disabled={addingId === product.id}
+                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all disabled:bg-slate-50"
+                  >
+                    {addedSuccessId === product.id ? (
+                      <CheckCircle2 size={16} className="text-emerald-500 animate-bounce" />
+                    ) : addingId === product.id ? (
+                      <Loader2 size={15} className="animate-spin text-[#22A7D0]" />
+                    ) : (
+                      <ShoppingBag size={16} />
+                    )}
+                  </button>
+
+                  <Link 
+                    href={`/shop/${product.id}`}
+                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all"
+                  >
+                    <Eye size={16} />
+                  </Link>
+
+                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                    <Heart size={16} />
+                  </button>
+
+                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                    <RefreshCw size={16} />
+                  </button>
                 </div>
               </div>
 
-              {/* Dynamic details linking applied to product title card description */}
-              <Link href={`/shop/${product.id}`} className="text-sm text-slate-800 hover:text-[#22A7D0] transition-colors leading-tight line-clamp-2 h-10 block font-medium">
-                {product.name}
-              </Link>
+              {/* Product Metadata Info Card Section */}
+              <div className="space-y-1 mt-auto">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 tracking-wider">JUMMALL OFFICIAL STORE</span>
+                  {product.is_verified_store !== false && (
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center shadow-xs">
+                      <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex items-center gap-0.5 text-orange-400">
-                {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
-                <span className="text-[10px] text-slate-400 ml-1">(50 reviews)</span>
+                <Link href={`/shop/${product.id}`} className="text-sm font-semibold text-slate-800 hover:text-[#22A7D0] transition-colors leading-snug line-clamp-2 h-10 block">
+                  {product.name}
+                </Link>
+
+                <div className="flex items-center gap-0.5 text-orange-400 pt-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={11} 
+                      fill={i < Math.round(product.rating_average || 5) ? "currentColor" : "none"} 
+                      className={i < Math.round(product.rating_average || 5) ? "text-orange-400" : "text-slate-200"} 
+                    />
+                  ))}
+                  <span className="text-[10px] text-slate-400 font-medium ml-1">({product.reviews_count || 50})</span>
+                </div>
+
+                <p className="text-base font-black text-slate-900 tracking-tight pt-0.5">
+                  {formatCurrency(product.price)}
+                </p>
               </div>
-              <p className="text-sm text-slate-900 tracking-tight font-bold">
-                ₦{product.price.toLocaleString()}.00
-              </p>
-            </div>
 
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

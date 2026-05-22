@@ -428,3 +428,278 @@ export const clearEntireCart = async (): Promise<void> => {
     headers: { Authorization: `Bearer ${token}` }
   });
 };
+
+export interface ProductItemBackend {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category?: string;
+  image_url?: string;
+  badges?: string[]; // Array collections for tags like ["New", "Sale", "Hot"]
+  rating_average?: number;
+  reviews_count?: number;
+  is_verified_store?: boolean;
+}
+
+/**
+ * LIST PUBLIC MARKETPLACE PRODUCTS
+ * @route GET /products
+ */
+export const fetchPublicProducts = async (params?: { category?: string; tag?: string }): Promise<ProductItemBackend[]> => {
+  const response = await api.get("/products", { params });
+  return response.data;
+};
+
+/**
+ * ADD PRODUCT ITEM TO CHECKOUT BASKET REGISTER
+ * @route POST /cart/items
+ */
+export const addProductToCartAPI = async (productId: string, quantity: number = 1) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/cart/items", { product_id: productId, quantity }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface ProductItemBackend {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category?: string;
+  image_url?: string;
+  badges?: string[]; 
+  rating_average?: number;
+  reviews_count?: number;
+  is_verified_store?: boolean;
+  vendor_name?: string; // Add this line right here to satisfy the compiler!
+}
+
+export interface RecentSearchItem {
+  id: string;
+  query: string;
+  created_at: string;
+}
+
+/**
+ * FETCH RECENT SEARCH LOGS
+ * @route GET /search/recent
+ */
+export const fetchRecentSearches = async (): Promise<RecentSearchItem[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/search/recent", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * LOG NEW RECENT SEARCH ENTRY
+ * @route POST /search/recent
+ */
+export const logRecentSearch = async (query: string): Promise<RecentSearchItem> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/search/recent", { query }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * DELETE INDIVIDUAL RECENT QUERY KEY
+ * @route DELETE /search/recent/{query}
+ */
+export const removeSingleSearchQuery = async (query: string): Promise<void> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  await api.delete(`/search/recent/${encodeURIComponent(query)}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+/**
+ * CLEAR ALL RECENT SEARCH ENTRIES
+ * @route DELETE /search/recent
+ */
+export const clearAllRecentSearches = async (): Promise<void> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  await api.delete("/search/recent", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export interface DailyChartPoint {
+  name: string;
+  revenue: number;
+}
+
+export interface SellerAnalyticsOverviewResponse {
+  today_revenue: number;
+  revenue_change_percentage: number;
+  yesterday_revenue: number;
+  total_orders_count: number;
+  total_visitors_count: string; // e.g., "1.8K"
+  conversion_rate: number;      // e.g., 3.4
+  chart_trend_data: DailyChartPoint[];
+}
+
+/**
+ * FETCH SELLER ANALYTICS DASHBOARD OVERVIEW
+ * @route GET /seller/analytics/overview
+ */
+export const fetchSellerAnalyticsOverview = async (): Promise<SellerAnalyticsOverviewResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/seller/analytics/overview", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface VendorProfile {
+  shop_name: string;
+  shop_url: string;
+  shop_phone: string;
+  vendor_type: string;
+  is_verified: boolean;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "customer" | "seller" | "admin";
+  avatar_url?: string;
+  vendor_profile?: VendorProfile; // Add this line right here to satisfy the type compiler!
+}
+
+export interface SellerRecentOrder {
+  id: string;
+  product_name: string;
+  created_at_human: string; // e.g., "10 mins ago"
+  price: number;
+  status: string;           // e.g., "Paid" or "Preparing"
+  fallback_initial: string; // e.g., "P" or "M"
+}
+
+export interface SellerDashboardTask {
+  title: string;
+  subtitle: string;
+  type: "orders" | "chats";
+}
+
+export interface SellerAnalyticsOverviewResponse {
+  today_revenue: number;
+  revenue_change_percentage: number;
+  yesterday_revenue: number;
+  total_orders_count: number;
+  total_visitors_count: string;
+  conversion_rate: number;
+  
+  // Dynamic metrics properties to strip out the hardcoded layers
+  unread_notifications_count: number;
+  pending_orders_count: number;
+  in_transit_orders_count: number;
+  unread_chats_count: number;
+  completed_orders_count: number;
+  
+  action_tasks: SellerDashboardTask[];
+  recent_orders: SellerRecentOrder[];
+}
+
+export interface SellerOrderItemAPI {
+  id: string;
+  customerName: string;
+  productName: string;
+  itemCount: number;
+  price: number;
+  status: 'Awaiting payment' | 'Paid' | 'Preparing' | 'On the way' | 'Ready for handoff' | 'Completed' | 'Cancelled';
+  img: string;
+  isPOD?: boolean;
+}
+
+export interface SellerOrdersResponse {
+  orders: SellerOrderItemAPI[];
+  to_ship_count: number;
+}
+
+/**
+ * FETCH REGISTERED SELLER ORDERS FROM ESCROW BACKEND
+ * @route GET /seller/orders
+ */
+export const fetchSellerOrders = async (params?: { status?: string }): Promise<SellerOrdersResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/seller/orders", {
+    params,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface SellerProductItem {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  sold_count: number;
+  image_url?: string;
+  is_active: boolean;
+}
+
+export interface SellerCatalogMetricsResponse {
+  products: SellerProductItem[];
+  total_catalog_revenue: number;
+  need_restock_count: number;
+}
+
+/**
+ * LIST LOGGED MERCHANT INVENTORY
+ * @route GET /products/mine
+ */
+export const fetchMySellerProducts = async (): Promise<SellerCatalogMetricsResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/products/mine", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * TOGGLE ACTIVE LISTING privilege STATUS
+ * @route PATCH /products/{product_id}
+ */
+export const updateSellerProductStatus = async (productId: string, isActive: boolean): Promise<SellerProductItem> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.patch(`/products/${productId}`, { is_active: isActive }, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * DISMISS/DELETE SINGLE ENTRY 
+ * @route DELETE /products/{product_id}
+ */
+export const deleteSellerProduct = async (productId: string): Promise<void> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  await api.delete(`/products/${productId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+/**
+ * CREATE NEW PRODUCT LISTING ENVELOPE ENTRY
+ * @route POST /products
+ */
+
+export const createSellerProductAPI = async (formData: FormData): Promise<Record<string, unknown>> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/products", formData, {
+    headers: { 
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data" // Necessary wrapper payload formatting for multi-media handling
+    }
+  });
+  return response.data;
+};

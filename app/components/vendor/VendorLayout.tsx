@@ -9,6 +9,7 @@ import {
   Store,
   Camera
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import VendorDashboardView from "./views/VendorDashboardView";
 import VendorOrdersView from "./VendorOrdersView";
 import VendorProductsView from "./VendorProductsView";
@@ -25,6 +26,13 @@ const sidebarItems = [
 
 export default function VendorLayout() {
   const [activeTab, setActiveTab] = useState(0);
+  const { user } = useAuth(); // Hydrate current active merchant data records instantly
+
+  // Generate dynamic profile letter fallback based on user name
+  const getInitials = () => {
+    if (!user?.name) return "JM";
+    return user.name.slice(0, 2).toUpperCase();
+  };
 
   return (
     <div className="min-h-screen bg-[#F6F7F9] font-sans antialiased text-[#010F1C] pb-24 lg:pb-0">
@@ -42,21 +50,25 @@ export default function VendorLayout() {
               
               {/* User Profile / Merchant Identity Header Block Section */}
               <div className="flex items-center gap-3 p-1">
-                <div className="relative w-12 h-12 rounded-full bg-[#E5F4FA] flex items-center justify-center text-white shrink-0 group border border-slate-100">
-                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-purple-600 to-[#149FCD] flex items-center justify-center text-[11px] tracking-tight font-black uppercase text-white shadow-inner">
-                    JM
-                  </div>
+                <div className="relative w-12 h-12 rounded-full bg-[#E5F4FA] flex items-center justify-center text-white shrink-0 group border border-slate-100 overflow-hidden">
+                  {user?.avatar_url ? (
+                    <img src={user.avatar_url} alt="Merchant Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-purple-600 to-[#149FCD] flex items-center justify-center text-[11px] tracking-tight font-black uppercase text-white shadow-inner">
+                      {getInitials()}
+                    </div>
+                  )}
                   {/* Photo Edit Circular Overlay Trigger Indicator */}
-                  <div className="absolute bottom-0 right-0 bg-[#149fcd] text-white p-0.5 rounded-full border border-white translate-x-0.5 translate-y-0.5 shadow-sm opacity-95">
+                  <div className="absolute bottom-0 right-0 bg-[#149fcd] text-white p-0.5 rounded-full border border-white translate-x-0.5 translate-y-0.5 shadow-sm opacity-95 z-20">
                     <Camera size={10} className="stroke-[2.5]" />
                   </div>
                 </div>
                 <div className="min-w-0 text-left">
                   <h2 className="text-[13.5px] font-bold text-slate-800 tracking-tight truncate leading-none">
-                    Neel Ade
+                    {user?.name || "Syncing Store..."}
                   </h2>
                   <p className="text-[11px] font-medium text-slate-400 truncate mt-1.5">
-                    neelorneels@gmail.com
+                    {user?.email || "connecting account..."}
                   </p>
                 </div>
               </div>
@@ -71,6 +83,7 @@ export default function VendorLayout() {
                   
                   return (
                     <button
+                      type="button"
                       key={item.id}
                       onClick={() => setActiveTab(item.id)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-md transition-all duration-200 text-left group ${
@@ -125,10 +138,7 @@ export default function VendorLayout() {
         </div>
       </div>
 
-      {/* ================= STRUCTURAL MOBILE BOTTOM BAR NAVIGATION (SECTIONS §0.4 & §0.5) ================= */}
-      {/* This navigation layer matches the responsive mobile guidelines by converting 
-        the desktop layout row items into a native floating thumb stack panel.
-      */}
+      {/* ================= STRUCTURAL MOBILE BOTTOM BAR NAVIGATION ================= */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#EAEBED] px-2 py-2 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] flex items-center justify-around">
         {sidebarItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -136,6 +146,7 @@ export default function VendorLayout() {
           
           return (
             <button
+              type="button"
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className="flex flex-col items-center justify-center relative min-w-[64px] py-1 transition-all duration-150 rounded-md"
