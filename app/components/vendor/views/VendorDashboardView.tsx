@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { 
   ArrowRight, 
@@ -100,14 +101,17 @@ export default function VendorDashboardView() {
         </div>
 
         {/* Bell Button - Notification Count Hydrated via API */}
-        <button type="button" className="w-11 h-11 bg-white border border-[#EAEBED] rounded-[14px] flex items-center justify-center text-[#010F1C] relative hover:bg-slate-50 transition-colors shrink-0">
-          <Bell size={20} className="stroke-[2]" />
-          {data && data.unread_notifications_count > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#EF4444] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full border border-white shadow-sm animate-pulse">
-              {data.unread_notifications_count}
-            </span>
-          )}
-        </button>
+<Link 
+  href="/notifications" 
+  className="w-11 h-11 bg-white border border-[#EAEBED] rounded-[14px] flex items-center justify-center text-[#010F1C] relative hover:bg-slate-50 transition-colors shrink-0 select-none"
+>
+  <Bell size={20} className="stroke-[2]" />
+  {data && data.unread_notifications_count > 0 && (
+    <span className="absolute -top-1 -right-1 bg-[#EF4444] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full border border-white shadow-sm animate-pulse">
+      {data.unread_notifications_count}
+    </span>
+  )}
+</Link>
       </div>
 
       {/* --- 1.2 DYNAMIC VERIFICATION CHECK BANNER GRID --- */}

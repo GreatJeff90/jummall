@@ -15,6 +15,15 @@ import VendorOrdersView from "./VendorOrdersView";
 import VendorProductsView from "./VendorProductsView";
 import VendorChatsView from "./VendorChatsView";
 import VendorStoreView from "./VendorStoreView";
+import VendorAutoRepliesView from "./VendorAutoRepliesView";
+import VendorEditInfoView from "./VendorEditInfoView";
+import VendorBrandingView from "./VendorBrandingView";
+import VendorBankView from "./VendorBankView";
+import VendorReportsView from "./VendorReportsView";
+import VendorAboutView from "./VendorAboutView";
+import VendorSupportView from "./VendorSupportView";
+import VendorSecurityView from "./VendorSecurityView";
+import VendorPersonalInfoView from "./VendorPersonalInfoView";
 
 const sidebarItems = [
   { id: 0, label: "Dashboard", icon: LayoutDashboard, badge: 0 },
@@ -38,8 +47,8 @@ export default function VendorLayout() {
     <div className="min-h-screen bg-[#F6F7F9] font-sans antialiased text-[#010F1C] pb-24 lg:pb-0">
       
       {/* CRITICAL BREAKPOINT REMINDER: External global site navbars/footers are omitted entirely here.
-        The UI uses a structural layout split: a sticky bottom tab bar for mobile viewports,
-        and a dedicated 270px left navigation card column for desktop monitors.
+         The UI uses a structural layout split: a sticky bottom tab bar for mobile viewports,
+         and a dedicated 270px left navigation card column for desktop monitors.
       */}
       <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
         <div className="flex flex-col lg:flex-row items-start gap-8">
@@ -54,7 +63,7 @@ export default function VendorLayout() {
                   {user?.avatar_url ? (
                     <img src={user.avatar_url} alt="Merchant Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-purple-600 to-[#149FCD] flex items-center justify-center text-[11px] tracking-tight font-black uppercase text-white shadow-inner">
+                    <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-purple-600 to-sky-500 flex items-center justify-center text-[11px] tracking-tight font-black uppercase text-white shadow-inner">
                       {getInitials()}
                     </div>
                   )}
@@ -106,7 +115,7 @@ export default function VendorLayout() {
                         </span>
                       </div>
 
-                      {/* Red Interactive Badge Count Alerts Block */}
+                      {/* Dynamic boundary rendering: counts > 0 inject numbers, 0 yields complete omission */}
                       {item.badge > 0 && (
                         <span className="bg-[#EF4444] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white shrink-0 shadow-sm animate-pulse">
                           {item.badge}
@@ -126,13 +135,25 @@ export default function VendorLayout() {
             </div>
           </aside>
 
-          {/* ================= RIGHT MAIN WORKSPACE FRAME VIEWPORT ================= */}
           <section className="flex-1 w-full space-y-6">
             {activeTab === 0 && <VendorDashboardView />}
             {activeTab === 1 && <VendorOrdersView />}
             {activeTab === 2 && <VendorProductsView />}
             {activeTab === 3 && <VendorChatsView />}
-            {activeTab === 4 && <VendorStoreView />}
+            
+            {/* General setup page components links */}
+            {activeTab === 4 && <VendorStoreView onNavigate={(id) => setActiveTab(id)} />}
+            {activeTab === 5 && <VendorAutoRepliesView onBack={() => setActiveTab(4)} />}
+            {activeTab === 6 && <VendorEditInfoView onBack={() => setActiveTab(4)} />}
+            {activeTab === 7 && <VendorBrandingView onBack={() => setActiveTab(4)} />}
+            {activeTab === 8 && <VendorBankView onBack={() => setActiveTab(4)} />}
+            {activeTab === 9 && <VendorReportsView onBack={() => setActiveTab(4)} />}
+
+            {/* The 4 brand new active Account & Help segments */}
+            {activeTab === 10 && <VendorPersonalInfoView onBack={() => setActiveTab(4)} />}
+            {activeTab === 11 && <VendorSecurityView onBack={() => setActiveTab(4)} />}
+            {activeTab === 12 && <VendorSupportView onBack={() => setActiveTab(4)} />}
+            {activeTab === 13 && <VendorAboutView onBack={() => setActiveTab(4)} />}
           </section>
 
         </div>
@@ -168,7 +189,7 @@ export default function VendorLayout() {
                 {item.label}
               </span>
 
-              {/* Precise inline mobile alert badge bubble counts */}
+              {/* Dynamic boundary rendering for mobile layout viewport metrics */}
               {item.badge > 0 && (
                 <span className="absolute top-1 right-3 bg-[#EF4444] text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white shadow-sm animate-pulse">
                   {item.badge}

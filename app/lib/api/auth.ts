@@ -551,7 +551,7 @@ export interface SellerAnalyticsOverviewResponse {
 export const fetchSellerAnalyticsOverview = async (): Promise<SellerAnalyticsOverviewResponse> => {
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
   const response = await api.get("/seller/analytics/overview", {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` } // Ensure this header block is explicitly present!
   });
   return response.data;
 };
@@ -700,6 +700,545 @@ export const createSellerProductAPI = async (formData: FormData): Promise<Record
       Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data" // Necessary wrapper payload formatting for multi-media handling
     }
+  });
+  return response.data;
+};
+
+export interface ChatMessageBackend {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  created_at_human: string;
+  is_read: boolean;
+}
+
+export interface ChatThreadBackend {
+  id: string;
+  partner_name: string;
+  avatar_gradient_class?: string;
+  initials_fallback?: string;
+  last_message_content: string;
+  updated_at_human: string;
+  unread_messages_count: number;
+  associated_order_id?: string;
+  is_last_message_by_me: boolean;
+}
+
+/**
+ * FETCH VENDOR MESSAGE THREAD GROUPS 
+ * @route GET /chats
+ */
+export const fetchActiveChatThreadsAPI = async (params?: { filter?: string }): Promise<ChatThreadBackend[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/chats", {
+    params,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * MARK AN ENTIRE SPECIFIC THREAD CONVERSATION AS READ
+ * @route POST /chats/{chat_id}/read
+ */
+export const markThreadAsReadAPI = async (chatId: string): Promise<{ success: boolean }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post(`/chats/${chatId}/read`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface StoreMetricsAPI {
+  total_products_count: number;
+  active_products_count: number;
+  total_sold_count: number;
+  rating_average: number;
+  reviews_count: number;
+  profile_completion_percentage: number;
+}
+
+export interface MyStoreProfileResponse {
+  id: string;
+  shop_name: string;
+  shop_url: string;
+  shop_phone: string;
+  location_text: string;
+  is_verified: boolean;
+  is_vacation_mode: boolean;
+  metrics: StoreMetricsAPI;
+}
+
+/**
+ * RETRIEVE AUTHENTICATED MERCHANT PROFILE DATA
+ * @route GET /store/me
+ */
+export const fetchMyStoreProfileAPI = async (): Promise<MyStoreProfileResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/store/me", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * UPDATE MERCHANT STORE PROPERTIES AND lifecycles
+ * @route PATCH /store/me
+ */
+export const updateMyStoreProfileAPI = async (payload: { is_vacation_mode?: boolean; shop_name?: string }): Promise<MyStoreProfileResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.patch("/store/me", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface StorefrontBanner {
+  _id: string;
+  tagline: string;
+  title: string;
+  discount_text: string;
+  price_label: string;
+  image_key: string;
+  image_url: string;
+  sort_order: number;
+}
+
+export interface StorefrontCategory {
+  name: string;
+  slug: string;
+  product_count: number;
+  active_product_count: number;
+}
+
+export interface StorefrontProductItem {
+  _id: string;
+  seller_id: string;
+  name: string;
+  description: string;
+  category: string;
+  condition: 'new' | 'used' | 'refurbished';
+  price: number;
+  compare_at_price: number;
+  sku: string;
+  stock: number;
+  low_stock_threshold: number;
+  tags: string[];
+  images: {
+    object_name: string;
+    url: string;
+    is_main: boolean;
+  }[];
+  sold: number;
+  rating: number;
+  review_count: number;
+  is_active: boolean;
+  is_ad: boolean;
+}
+
+export interface StorefrontHomeResponse {
+  banners: StorefrontBanner[];
+  categories: StorefrontCategory[];
+  trending: StorefrontProductItem[];
+  new_arrivals: StorefrontProductItem[];
+  on_sale: StorefrontProductItem[];
+}
+
+/**
+ * FETCH COMPOSITE HOME LANDING PAGE PAYLOAD
+ * @route GET /storefront/home
+ */
+export const fetchStorefrontHomeData = async (params?: {
+  banner_limit?: number;
+  category_limit?: number;
+  product_limit?: number;
+}): Promise<StorefrontHomeResponse> => {
+  const response = await api.get("/storefront/home", { params });
+  return response.data;
+};
+
+export interface DojahLaunchConfig {
+  app_id: string;
+  public_key: string;
+  widget_id: string;
+  reference_id: string;
+  environment: string;
+  user_data: Record<string, unknown>;
+}
+
+export interface VerificationStatusSummary {
+  status: 'unverified' | 'pending' | 'verified' | 'failed' | 'manual_review';
+  tier: number;
+  failure_reason: string | null;
+  attempt_count: number;
+  submitted_at: string | null;
+  verified_at: string | null;
+}
+
+/**
+ * INITIALIZE DOJAH SDK VERIFICATION SESSION
+ * @route POST /seller/verification/start
+ */
+export const startSellerVerificationAPI = async (): Promise<DojahLaunchConfig> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/seller/verification/start", {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * SUBMIT DOJAH WIDGET RESPONSE CALLBACK SUMMARY LOG
+ * @route POST /seller/verification/complete
+ */
+export const completeSellerVerificationAPI = async (payload: { 
+  reference_id: string; 
+  sdk_result: Record<string, unknown>; 
+}): Promise<{ summary: VerificationStatusSummary }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/seller/verification/complete", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * GET DETAILED MERCHANT KYC RECORD STATUS
+ * @route GET /seller/verification/status
+ */
+export const fetchSellerVerificationStatusAPI = async (): Promise<{ summary: VerificationStatusSummary }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/seller/verification/status", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface AutoReplyRuleAPI {
+  id: string;
+  trigger_type: 'welcome' | 'away';
+  message_content: string;
+  is_enabled: boolean;
+}
+
+/**
+ * LIST ALL ACTIVE AUTO REPLY RULES
+ * @route GET /seller/auto-replies
+ */
+export const fetchAutoRepliesAPI = async (): Promise<AutoReplyRuleAPI[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/seller/auto-replies", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * CREATE A FRESH AUTO REPLY RULE INSTANCE
+ * @route POST /seller/auto-replies
+ */
+export const createAutoReplyAPI = async (payload: { trigger_type: 'welcome' | 'away'; message_content: string; is_enabled: boolean }): Promise<AutoReplyRuleAPI> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/seller/auto-replies", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * PATCH AN EXISTING DYNAMIC AUTO REPLY RULE MATCH 
+ * @route PATCH /seller/auto-replies/{reply_id}
+ */
+export const updateAutoReplyAPI = async (replyId: string, payload: { message_content?: string; is_enabled?: boolean }): Promise<AutoReplyRuleAPI> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.patch(`/seller/auto-replies/${replyId}`, payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface UserProfileResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
+/**
+ * FETCH CURRENT AUTHENTICATED USER DATA
+ * @route GET /auth/me
+ */
+export const fetchAuthMeAPI = async (): Promise<UserProfileResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/auth/me", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * UPDATE AUTHENTICATED USER DATA
+ * @route PATCH /auth/me
+ */
+export const updateAuthMeAPI = async (payload: { name: string }): Promise<UserProfileResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.patch("/auth/me", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * CHANGE AUTHENTICATED USER PASSWORD
+ * @route POST /auth/change-password
+ */
+export const changePasswordAPI = async (payload: Record<string, string>): Promise<{ success: boolean; message?: string }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/auth/change-password", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface NotificationItemAPI {
+  id: string;
+  title: string;
+  message: string;
+  type: 'order' | 'chat' | 'system' | 'promotion';
+  is_read: boolean;
+  created_at_human: string;
+}
+
+export interface UnreadCountResponse {
+  unread_count: number;
+}
+
+/**
+ * FETCH ALL NOTIFICATIONS LOGS
+ * @route GET /notifications
+ */
+export const fetchNotificationsAPI = async (): Promise<NotificationItemAPI[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/notifications", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * MARK ALL OR SPECIFIC NOTIFICATIONS AS READ
+ * @route POST /notifications/read
+ */
+export const markNotificationsAsReadAPI = async (payload?: { notification_ids?: string[] }): Promise<{ success: boolean }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/notifications/read", payload || {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * FETCH GLOBAL REAL-TIME UNREAD COUNTS
+ * @route GET /notifications/unread_count
+ */
+export const fetchNotificationUnreadCountAPI = async (): Promise<UnreadCountResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/notifications/unread_count", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface CreateOrderPayload {
+  items: Array<{
+    product_id: string;
+    quantity: number;
+  }>;
+  shipping_address: {
+    first_name: string;
+    last_name: string;
+    address_line: string;
+    city: string;
+    state: string;
+    phone: string;
+    email: string;
+  };
+}
+
+export interface OrderInstanceAPI {
+  id: string;
+  order_id: string; // fallback alias matching server returns
+  total_amount: number;
+  status: string;
+}
+
+export interface PaystackInitResponse {
+  authorization_url: string;
+  access_code: string;
+  reference: string;
+}
+
+/**
+ * CONSTRUCT NEW BACKEND MARKETPLACE ORDER
+ * @route POST /orders
+ */
+export const createMarketplaceOrderAPI = async (payload: CreateOrderPayload): Promise<OrderInstanceAPI> => {
+  // Let's confirm your active token key matches the storage key used during login
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  
+  const response = await api.post("/orders", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+/**
+ * INITIALIZE PAYSTACK TRANSACTION GATEWAY FOR ACTIVE ORDER
+ * @route POST /orders/{order_id}/pay
+ */
+export const initializeOrderPaymentAPI = async (orderId: string): Promise<PaystackInitResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post(`/orders/${orderId}/pay`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface CartItemAPI {
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string | null;
+  vendor_name?: string;
+}
+
+export interface UserCartResponse {
+  items: CartItemAPI[];
+  subtotal: number;
+}
+
+/**
+ * FETCH PENDING CART SELECTIONS FOR LOGGED-IN CUSTOMER
+ * @route GET /cart/mine
+ */
+export const fetchMyCurrentCartAPI = async (): Promise<UserCartResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/cart/mine", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export interface StorefrontBannerItem {
+  _id: string;
+  tagline: string;
+  title: string;
+  discount_text: string;
+  price_label: string;
+  image_key: string;
+  image_url: string;
+  sort_order: number;
+}
+
+export interface StorefrontCategoryItem {
+  name: string;
+  slug: string;
+  product_count: number;
+  active_product_count: number;
+}
+
+export interface StorefrontProductItem {
+  _id: string;
+  seller_id: string;
+  name: string;
+  description: string;
+  category: string;
+  
+  // Broadened to include refurbished, clearing the type declarations overlap crash
+  condition: 'new' | 'used' | 'refurbished';
+  
+  price: number;
+  compare_at_price: number;
+  sku: string;
+  stock: number;
+  low_stock_threshold: number;
+  tags: string[];
+  images: Array<{
+    object_name: string;
+    url: string;
+    is_main: boolean;
+  }>;
+  specs: Array<{
+    key: string;
+    value: string;
+  }>;
+  promotion?: {
+    discount_percent: number;
+    starts_at: string;
+    ends_at: string;
+    label: string;
+  };
+  has_variants: boolean;
+  is_active: boolean;
+  sold: number;
+  rating: number;
+  review_count: number;
+  is_ad: boolean;
+  seller_accepts_online: boolean;
+  is_first_listing: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StorefrontHomeResponse {
+  banners: StorefrontBannerItem[];
+  categories: StorefrontCategoryItem[];
+  trending: StorefrontProductItem[];
+  new_arrivals: StorefrontProductItem[];
+  on_sale: StorefrontProductItem[];
+}
+
+/**
+ * FETCH PUBLIC STOREFRONT AGGREGATED LANDING FEED DATA
+ * @route GET /storefront/home
+ */
+export const fetchStorefrontHomeAPI = async (): Promise<StorefrontHomeResponse> => {
+  const response = await api.get("/storefront/home");
+  return response.data;
+};
+
+export interface FavouriteProductAPI {
+  _id: string;
+  name: string;
+  sku: string;
+  price: number;
+  images: Array<{ url: string; is_main: boolean }>;
+  is_active: boolean;
+  vendor_name?: string;
+}
+
+/**
+ * LIST ALL ACTIVE FAVORITED ITEMS
+ * @route GET /favourites
+ */
+export const fetchFavouritesAPI = async (): Promise<FavouriteProductAPI[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/favourites", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * REMOVE ITEM FROM FAVOURITES VIA PARAMS ID
+ * @route DELETE /favourites/{product_id}
+ */
+export const removeFavouriteAPI = async (productId: string): Promise<{ success: boolean }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.delete(`/favourites/${productId}`, {
+    headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;
 };

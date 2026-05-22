@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { ShoppingBag, Trash2, ArrowLeftRight, Star } from "lucide-react";
@@ -35,25 +36,24 @@ export default function ComparePage() {
   return (
     <main className="bg-white min-h-screen font-sans">
       
-      {/* --- Banner Header --- */}
-      <div className="bg-[#EDF2F4]/60 border-b border-slate-100 py-12 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <h1 className="text-3xl font-black text-slate-800 font-montserrat">Compare</h1>
-          <div className="text-xs font-medium text-slate-400 mt-2 flex items-center gap-2">
-            <Link href="/" className="hover:text-[#149fcd] text-slate-500">Home</Link> • <span>Compare</span>
-          </div>
-        </div>
-        
-        {/* Absolute Right-Side Graphic Decorative Shapes */}
-        <div className="absolute right-10 bottom-0 top-0 w-1/3 hidden md:flex items-center justify-end opacity-80 pointer-events-none">
-          <div className="relative w-64 h-full">
-            <div className="absolute bottom-4 right-12 w-10 h-24 bg-slate-100 rounded-t-md border-x border-t border-slate-200 flex flex-col justify-between p-1">
-              <div className="w-full h-4 bg-orange-200/40 rounded-sm" />
-              <div className="w-full h-8 bg-blue-200/40 rounded-sm" />
+      {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
+            <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">
+              <Image 
+                src="/breadcrumb-1.jpg" 
+                alt="Login Header Background" 
+                fill 
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-white/20" />
+              
+              <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
+                <h1 className="text-5xl tracking-tight text-[#0F172A]">Compare</h1>
+                <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
+                  Home <span className="text-slate-300">/</span> <span className="text-sky-600">Compare</span>
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
       {/* --- Main Section Container --- */}
       <section className="max-w-7xl mx-auto px-4 py-16">
