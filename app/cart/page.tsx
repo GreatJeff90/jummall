@@ -100,6 +100,8 @@ export default function ShoppingCartPage() {
               </div>
             </div>
 
+
+
       <div className="max-w-7xl mx-auto px-4 md:px-16">
         {/* --- CONDITIONAL SCREEN STATE BOUNDARY --- */}
         {items.length === 0 ? (
