@@ -1406,3 +1406,9 @@ export const fetchProductsByCategoryAPI = async (categorySlug: string): Promise<
   });
   return response.data?.items || response.data || [];
 };
+
+// Add this to app/lib/api/auth.ts if not already present
+export interface BankItemAPI {
+  code: string;
+  name: string;
+}
