@@ -10,14 +10,19 @@ const setTokens = (accessToken: string, refreshToken: string): void => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
+    
+    // Synergize authorization tokens straight down into Edge Cookies for route security
+    document.cookie = `access_token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; ${window.location.protocol === 'https:' ? 'Secure' : ''}`;
   }
 };
 
 const clearTokens = (): void => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', localStorage.getItem('access_token') || '');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    
+    // Cleanly delete the active Edge cookie block
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
   }
 };
 
@@ -25,10 +30,10 @@ const clearTokens = (): void => {
 let isRefreshing = false;
 let failedRequestQueue: Array<{
   resolve: (token: string) => void;
-  reject: (error: unknown) => void; // Fixed: Changed from 'any' to 'unknown' to solve Line 29 error
+  reject: (error: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown | null, token: string | null = null): void => { // Fixed: Changed from 'any' to 'unknown | null' to solve Line 32 error
+const processQueue = (error: unknown | null, token: string | null = null): void => {
   failedRequestQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -42,11 +47,24 @@ const processQueue = (error: unknown | null, token: string | null = null): void 
 // ==========================================
 // AXIOS CLIENT INSTANCE INITIALIZATION
 // ==========================================
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+// Enforce strict configuration environment variable check boundaries
+if (!baseURL) {
+  throw new Error(
+    "\n=========================================================\n" +
+    "CRITICAL INSTANCE INITIALIZATION ERROR:\n" +
+    "NEXT_PUBLIC_API_BASE_URL is missing inside your environment context.\n" +
+    "Please populate your .env.local variables to start local staging channels.\n" +
+    "=========================================================\n"
+  );
+}
+
 export const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://jummall-api-1010705002271.europe-west2.run.app', //
+  baseURL: baseURL.trim(),
   timeout: 15000,
   headers: {
-    'Content-Type': 'application/json', //
+    'Content-Type': 'application/json',
   },
 });
 
@@ -58,7 +76,7 @@ api.interceptors.request.use(
     const accessToken = getAccessToken();
     
     if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`; //
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     
     return config;
@@ -71,7 +89,7 @@ api.interceptors.request.use(
 // ==========================================
 api.interceptors.response.use(
   (response) => response,
-  async (error: unknown) => { // Fixed: Explicitly typed as 'unknown' instead of implicitly inheriting 'any'
+  async (error: unknown) => {
     if (!axios.isAxiosError(error)) {
       return Promise.reject(error);
     }
@@ -84,7 +102,7 @@ api.interceptors.response.use(
 
     const { status } = error.response;
 
-    if (status === 401 && !originalRequest._retry) { //
+    if (status === 401 && !originalRequest._retry) {
       
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
@@ -92,11 +110,11 @@ api.interceptors.response.use(
         })
           .then((token) => {
             if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`; //
+              originalRequest.headers.Authorization = `Bearer ${token}`;
             }
             return api(originalRequest);
           })
-          .catch((err: unknown) => Promise.reject(err)); // Fixed: Changed interceptor map loop parameter from implicit 'any' to 'unknown'
+          .catch((err: unknown) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -107,7 +125,7 @@ api.interceptors.response.use(
       if (!refreshToken) {
         isRefreshing = false;
         clearTokens();
-        if (typeof window !== 'undefined') window.location.href = '/login'; //
+        if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(error);
       }
 
@@ -118,26 +136,27 @@ api.interceptors.response.use(
           { headers: { 'Content-Type': 'application/json' } }
         );
 
-        const { access_token, refresh_token } = refreshResponse.data.tokens; //
+        // Deconstruct refreshed dynamic tokens payload safely
+        const { access_token, refresh_token } = refreshResponse.data.tokens || refreshResponse.data;
 
-        setTokens(access_token, refresh_token); //
+        setTokens(access_token, refresh_token);
 
         api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${access_token}`; //
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
         }
 
         processQueue(null, access_token);
         isRefreshing = false;
 
         return api(originalRequest);
-      } catch (refreshError: unknown) { // Fixed: Changed from 'any' to 'unknown' to solve Line 141 error
+      } catch (refreshError: unknown) {
         processQueue(refreshError, null);
         isRefreshing = false;
         clearTokens();
         
         if (typeof window !== 'undefined') {
-          window.location.href = '/login'; //
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       }
