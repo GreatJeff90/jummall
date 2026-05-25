@@ -1,4 +1,5 @@
 import { api } from "./client";
+import axios from "axios";
 
 // =========================================================
 // TYPE INTERFACES CONTRACT DEFINITIONS
@@ -1241,4 +1242,52 @@ export const removeFavouriteAPI = async (productId: string): Promise<{ success: 
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;
+};
+
+export interface SignedUrlPayload {
+  content_type: string;
+  prefix: 'products' | 'avatars' | 'branding';
+}
+
+export interface SignedUrlResponse {
+  upload_url: string;
+  public_url: string;
+  object_name: string;
+  method: 'PUT';
+  headers: {
+    'Content-Type': string;
+    'Cache-Control'?: string;
+    [key: string]: string | undefined;
+  };
+  max_size_bytes: number;
+}
+
+export interface UploadedImageAsset {
+  object_name: string;
+  url: string;
+  is_main: boolean;
+}
+
+/**
+ * REQUEST SIGNED PUT TRANSACTION METRICS FROM SERVER
+ * @route POST /products/upload-url
+ */
+export const requestSignedUploadUrlAPI = async (payload: SignedUrlPayload): Promise<SignedUrlResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/products/upload-url", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * COMPILATION DISPATCH PROMISE: upload raw binary stream straight to Google Cloud Storage
+ */
+export const uploadFileBinaryToGCS = async (uploadUrl: string, file: File, headers: Record<string, string>) => {
+  // Use a clean axios instance to completely bypass default application bearer headers
+  await axios.put(uploadUrl, file, {
+    headers: {
+      ...headers,
+    }
+  });
 };
