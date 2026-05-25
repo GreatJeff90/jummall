@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { loginSchema, LoginInput } from "@/app/lib/validations";
 import { loginAccount } from "../lib/api/auth";
+import GoogleLoginButton from "../components/auth/GoogleLoginButton";
 
 function LoginFormContent() {
   const router = useRouter();
@@ -39,24 +40,20 @@ function LoginFormContent() {
     setLoading(true);
 
     try {
-      // Pass the validated data parameters down matching endpoint contracts
       const responseData = await loginAccount({ 
         email: data.email.trim(),
         password: data.password 
       });
       
-      // Extract tokens from nested structures if available
       const token = responseData?.access_token || responseData?.tokens?.access_token;
       
       if (token) {
-  (() => {
-    document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; ${window.location.protocol === 'https:' ? 'Secure' : ''}`;
-  })();
-}
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        // eslint-disable-next-line
+        document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax${secure}`;
+      }
 
-      // Check URL parameters for previous route intercept tags
       const nextTargetRoute = searchParams.get("next");
-
       if (nextTargetRoute) {
         router.push(decodeURIComponent(nextTargetRoute));
       } else if (responseData?.user?.role === "seller") {
@@ -116,69 +113,38 @@ function LoginFormContent() {
 
         <form className="space-y-6" onSubmit={handleSubmit(onValidSubmit)}>
           <div className="text-left space-y-1">
-            <label className="text-xs font-bold text-slate-700 ml-1 select-none">
-              Email address <span className="text-red-500">*</span>
-            </label>
+            <label className="text-xs font-bold text-slate-700 ml-1">Email address <span className="text-red-500">*</span></label>
             <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-600 transition-colors" size={18} />
-              <input 
-                type="text" 
-                disabled={loading}
-                placeholder="Enter email address" 
-                {...register("email")}
-                className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm font-semibold text-slate-700"
-              />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input type="text" disabled={loading} placeholder="Enter email address" {...register("email")} className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-4 outline-none focus:border-sky-500 transition-all text-sm font-semibold" />
             </div>
-            {errors.email && <p className="text-red-500 text-[10.5px] font-bold mt-1 ml-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.email.message}</p>}
           </div>
 
           <div className="text-left space-y-1">
-            <label className="text-xs font-bold text-slate-700 ml-1 select-none">
-              Password <span className="text-red-500">*</span>
-            </label>
+            <label className="text-xs font-bold text-slate-700 ml-1">Password <span className="text-red-500">*</span></label>
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-600 transition-colors" size={18} />
-              <input 
-                type={showPassword ? "text" : "password"} 
-                disabled={loading}
-                placeholder="Password" 
-                {...register("password")}
-                className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-50 transition-all text-sm text-slate-700 font-semibold tracking-wide"
-              />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-600 focus:outline-none"
-              >
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input type={showPassword ? "text" : "password"} disabled={loading} placeholder="Password" {...register("password")} className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-sky-500 transition-all text-sm font-semibold" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <p className="text-red-500 text-[10.5px] font-bold mt-1 ml-1">{errors.password.message}</p>}
+            {errors.password && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.password.message}</p>}
           </div>
 
-          <div className="flex items-center justify-between text-xs font-bold select-none">
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" disabled={loading} className="w-4 h-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
-              <span className="text-slate-500 group-hover:text-slate-800 transition-colors">Remember me</span>
-            </label>
-            <Link href="/forgot-password" className="text-sky-600 hover:underline">Forgot password?</Link>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full h-14 bg-[#0F172A] hover:bg-sky-600 text-white py-4 rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none font-black focus:outline-none select-none"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin text-sky-500" /> Authenticating...
-              </>
-            ) : (
-              <>Login <ArrowRight size={18} className="stroke-[2.5]" /></>
-            )}
+          <button type="submit" disabled={loading} className="w-full h-14 bg-[#0F172A] hover:bg-sky-600 text-white rounded-xl text-xs uppercase tracking-widest font-black transition-all flex items-center justify-center gap-2">
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <>Login <ArrowRight size={18} /></>}
           </button>
 
-          <div className="text-center pt-4 select-none">
+          <div className="my-6 flex items-center gap-4">
+            <div className="h-px bg-gray-200 flex-1" />
+            <span className="text-xs text-gray-400 font-bold uppercase">Or continue with</span>
+            <div className="h-px bg-gray-200 flex-1" />
+          </div>
+          <GoogleLoginButton />
+
+          <div className="text-center pt-4">
             <span className="text-xs text-slate-400 font-medium">Don&apos;t have an account? </span>
             <Link href="/register" className="text-sky-600 text-xs hover:underline uppercase tracking-tighter font-bold">Register now</Link>
           </div>
@@ -188,38 +154,18 @@ function LoginFormContent() {
   );
 }
 
-// ================= GLOBAL EXPORT LAYER =================
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-slate-900 font-sans flex flex-col">
-      
-      {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
-      <div className="relative h-44 md:h-32 md:mb-12 w-full flex items-center overflow-hidden border-b border-slate-100 select-none">
-        <Image 
-          src="/breadcrumb-1.jpg" 
-          alt="Login Header Background" 
-          fill 
-          sizes="100vw"
-          className="object-cover"
-          priority
-        />
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col">
+      <div className="relative h-44 md:h-32 w-full flex items-center overflow-hidden border-b border-slate-100">
+        <Image src="/breadcrumb-1.jpg" alt="Header" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-white/20" />
-        
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16 text-left">
-          <h1 className="text-3xl font-black text-[#0F172A] font-montserrat uppercase tracking-tight">Login</h1>
-          <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2 font-bold">
-            <Link href="/" className="hover:text-sky-600">Home</Link> <span className="text-slate-300">/</span> <span className="text-sky-600">Login</span>
-          </p>
+          <h1 className="text-3xl font-black font-montserrat uppercase tracking-tight">Login</h1>
         </div>
       </div>
-
       <main className="flex-grow flex items-start justify-center p-4 md:pt-16 pb-20 relative z-20">
-        <Suspense fallback={
-          <div className="max-w-md w-full bg-white border border-slate-100 rounded-xl p-12 text-center text-slate-400 text-xs font-bold flex flex-col items-center justify-center gap-2 shadow-xs min-h-[300px] select-none">
-            <Loader2 className="animate-spin text-sky-500" size={24} />
-            <span>Assembling workspace authorization routes...</span>
-          </div>
-        }>
+        <Suspense fallback={<div className="animate-pulse bg-white h-96 w-full max-w-md rounded-xl" />}>
           <LoginFormContent />
         </Suspense>
       </main>

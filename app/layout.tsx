@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import Script from "next/script"; // Import the Next.js Script component
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -25,6 +26,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        {/* Google Identity Services Script */}
+        <Script 
+          src="https://accounts.google.com/gsi/client" 
+          strategy="afterInteractive" 
+        />
+      </head>
       <body className={`${montserrat.className} antialiased min-h-full flex flex-col`} suppressHydrationWarning>
         
         {/* TanStack Query caching and retry engine context layer wraps the entire application ecosystem */}
