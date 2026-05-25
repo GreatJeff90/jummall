@@ -1291,3 +1291,77 @@ export const uploadFileBinaryToGCS = async (uploadUrl: string, file: File, heade
     }
   });
 };
+
+export interface BankItemAPI {
+  name: string;
+  code: string;
+}
+
+export interface ResolveAccountPayload {
+  account_number: string;
+  bank_code: string;
+}
+
+export interface ResolveAccountResponse {
+  account_number: string;
+  account_name: string;
+}
+
+export interface SavedBankAccountDetails {
+  bank_name: string;
+  bank_code: string;
+  account_number: string;
+  account_name: string;
+}
+
+/**
+ * FETCH SUPPORTED PAYOUT BANKS LIST
+ * @route GET /payouts/banks
+ */
+export const fetchPayoutBanksAPI = async (): Promise<BankItemAPI[]> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.get("/payouts/banks", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * RUN PAYSTACK ACCOUNT RESOLUTION VALIDATION
+ * @route POST /payouts/resolve
+ */
+export const resolveBankAccountAPI = async (payload: ResolveAccountPayload): Promise<ResolveAccountResponse> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/payouts/resolve", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+/**
+ * FETCH MERCHANTS CURRENTLY SAVED SETTLEMENT BANK INFO
+ * @route GET /payouts/bank-account
+ */
+export const fetchSavedBankAPI = async (): Promise<SavedBankAccountDetails | null> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  try {
+    const response = await api.get("/payouts/bank-account", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch {
+    return null; // Return cleanly if account config hasn't been set yet
+  }
+};
+
+/**
+ * SAVE/UPDATE FINAL VALIDATED SETTLEMENT BANK FOR PAYOUTS
+ * @route POST /payouts/bank-account
+ */
+export const saveBankAccountAPI = async (payload: SavedBankAccountDetails): Promise<{ success: boolean }> => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const response = await api.post("/payouts/bank-account", payload, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};

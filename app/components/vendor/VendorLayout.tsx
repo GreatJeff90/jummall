@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from "react";
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -10,32 +12,19 @@ import {
   Camera
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import VendorDashboardView from "./views/VendorDashboardView";
-import VendorOrdersView from "./VendorOrdersView";
-import VendorProductsView from "./VendorProductsView";
-import VendorChatsView from "./VendorChatsView";
-import VendorStoreView from "./VendorStoreView";
-import VendorAutoRepliesView from "./VendorAutoRepliesView";
-import VendorEditInfoView from "./VendorEditInfoView";
-import VendorBrandingView from "./VendorBrandingView";
-import VendorBankView from "./VendorBankView";
-import VendorReportsView from "./VendorReportsView";
-import VendorAboutView from "./VendorAboutView";
-import VendorSupportView from "./VendorSupportView";
-import VendorSecurityView from "./VendorSecurityView";
-import VendorPersonalInfoView from "./VendorPersonalInfoView";
 
+// Structured link pathways matching your nested Next.js routing requirements
 const sidebarItems = [
-  { id: 0, label: "Dashboard", icon: LayoutDashboard, badge: 0 },
-  { id: 1, label: "Orders", icon: ShoppingBag, badge: 3 }, 
-  { id: 2, label: "Products", icon: Package, badge: 0 },
-  { id: 3, label: "Chats", icon: MessageSquare, badge: 5 }, 
-  { id: 4, label: "Store", icon: Store, badge: 0 },
+  { label: "Dashboard", href: "/seller/dashboard", icon: LayoutDashboard, badge: 0 },
+  { label: "Orders", href: "/seller/orders", icon: ShoppingBag, badge: 3 }, 
+  { label: "Products", href: "/seller/products", icon: Package, badge: 0 },
+  { label: "Chats", href: "/seller/chats", icon: MessageSquare, badge: 5 }, 
+  { label: "Store", href: "/seller/store", icon: Store, badge: 0 },
 ];
 
-export default function VendorLayout() {
-  const [activeTab, setActiveTab] = useState(0);
-  const { user } = useAuth(); // Hydrate current active merchant data records instantly
+export default function VendorLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { user } = useAuth();
 
   // Generate dynamic profile letter fallback based on user name
   const getInitials = () => {
@@ -46,15 +35,11 @@ export default function VendorLayout() {
   return (
     <div className="min-h-screen bg-[#F6F7F9] font-sans antialiased text-[#010F1C] pb-24 lg:pb-0">
       
-      {/* CRITICAL BREAKPOINT REMINDER: External global site navbars/footers are omitted entirely here.
-         The UI uses a structural layout split: a sticky bottom tab bar for mobile viewports,
-         and a dedicated 270px left navigation card column for desktop monitors.
-      */}
       <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
         <div className="flex flex-col lg:flex-row items-start gap-8">
           
           {/* ================= FIXED LEFT SIDEBAR (DESKTOP ONLY) ================= */}
-          <aside className="hidden lg:flex w-full lg:w-[270px] bg-white border border-[#EAEBED] rounded-sm p-4 shrink-0 shadow-sm flex-col justify-between">
+          <aside className="hidden lg:flex w-full lg:w-[270px] bg-white border border-[#EAEBED] rounded-sm p-4 shrink-0 shadow-sm flex-col justify-between select-none">
             <div className="space-y-4">
               
               {/* User Profile / Merchant Identity Header Block Section */}
@@ -86,15 +71,15 @@ export default function VendorLayout() {
 
               {/* Sidebar Actionable Link Navigation List Items */}
               <nav className="space-y-1">
-                {sidebarItems.map((item) => {
-                  const isActive = activeTab === item.id;
+                {sidebarItems.map((item, index) => {
+                  // Direct string sub-path pattern comparison matching
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                   const IconComponent = item.icon;
                   
                   return (
-                    <button
-                      type="button"
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                    <Link
+                      key={index}
+                      href={item.href}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-md transition-all duration-200 text-left group ${
                         isActive 
                           ? "bg-[#E5F4FA] text-[#149FCD] font-bold" 
@@ -115,13 +100,12 @@ export default function VendorLayout() {
                         </span>
                       </div>
 
-                      {/* Dynamic boundary rendering: counts > 0 inject numbers, 0 yields complete omission */}
                       {item.badge > 0 && (
                         <span className="bg-[#EF4444] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white shrink-0 shadow-sm animate-pulse">
                           {item.badge}
                         </span>
                       )}
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
@@ -135,41 +119,24 @@ export default function VendorLayout() {
             </div>
           </aside>
 
-          <section className="flex-1 w-full space-y-6">
-            {activeTab === 0 && <VendorDashboardView />}
-            {activeTab === 1 && <VendorOrdersView />}
-            {activeTab === 2 && <VendorProductsView />}
-            {activeTab === 3 && <VendorChatsView />}
-            
-            {/* General setup page components links */}
-            {activeTab === 4 && <VendorStoreView onNavigate={(id) => setActiveTab(id)} />}
-            {activeTab === 5 && <VendorAutoRepliesView onBack={() => setActiveTab(4)} />}
-            {activeTab === 6 && <VendorEditInfoView onBack={() => setActiveTab(4)} />}
-            {activeTab === 7 && <VendorBrandingView onBack={() => setActiveTab(4)} />}
-            {activeTab === 8 && <VendorBankView onBack={() => setActiveTab(4)} />}
-            {activeTab === 9 && <VendorReportsView onBack={() => setActiveTab(4)} />}
-
-            {/* The 4 brand new active Account & Help segments */}
-            {activeTab === 10 && <VendorPersonalInfoView onBack={() => setActiveTab(4)} />}
-            {activeTab === 11 && <VendorSecurityView onBack={() => setActiveTab(4)} />}
-            {activeTab === 12 && <VendorSupportView onBack={() => setActiveTab(4)} />}
-            {activeTab === 13 && <VendorAboutView onBack={() => setActiveTab(4)} />}
+          {/* ================= DYNAMIC WORKSPACE VIEWPORT LAYER ================= */}
+          <section className="flex-1 w-full text-left">
+            {children}
           </section>
 
         </div>
       </div>
 
       {/* ================= STRUCTURAL MOBILE BOTTOM BAR NAVIGATION ================= */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#EAEBED] px-2 py-2 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] flex items-center justify-around">
-        {sidebarItems.map((item) => {
-          const isActive = activeTab === item.id;
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#EAEBED] px-2 py-2 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] flex items-center justify-around select-none">
+        {sidebarItems.map((item, index) => {
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const IconComponent = item.icon;
           
           return (
-            <button
-              type="button"
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
+            <Link
+              key={index}
+              href={item.href}
               className="flex flex-col items-center justify-center relative min-w-[64px] py-1 transition-all duration-150 rounded-md"
             >
               {/* Highlight active indicator backdrop tile envelope */}
@@ -189,13 +156,12 @@ export default function VendorLayout() {
                 {item.label}
               </span>
 
-              {/* Dynamic boundary rendering for mobile layout viewport metrics */}
               {item.badge > 0 && (
                 <span className="absolute top-1 right-3 bg-[#EF4444] text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white shadow-sm animate-pulse">
                   {item.badge}
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
       </div>

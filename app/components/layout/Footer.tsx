@@ -4,14 +4,12 @@ import {
   Phone, 
   Mail, 
   MapPin, 
-  ChevronUp
+  ChevronUp,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube
 } from "lucide-react";
-import { 
-  SiFacebook, 
-  SiX, 
-  SiInstagram, 
-  SiYoutube
-} from "react-icons/si";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,6 +17,13 @@ export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const socialLinks = [
+    { icon: Facebook, href: "#", color: "hover:text-blue-600 hover:border-blue-600" },
+    { icon: Twitter, href: "#", color: "hover:text-sky-500 hover:border-sky-500" },
+    { icon: Instagram, href: "#", color: "hover:text-pink-600 hover:border-pink-600" },
+    { icon: Youtube, href: "#", color: "hover:text-red-600 hover:border-red-600" }
+  ];
 
   return (
     <footer className="w-full font-sans text-left">
@@ -91,9 +96,9 @@ export default function Footer() {
                 Jummall is a trusted multi-vendor e-commerce marketplace designed for emerging markets. Shop from multiple vendors in one transaction.
               </p>
               <div className="flex gap-3 justify-center sm:justify-start">
-                {[SiFacebook, SiX, SiInstagram, SiYoutube].map((Icon, i) => (
-                  <Link key={i} href="#" className="w-9 h-9 rounded-lg border border-[#E0E2E3] flex items-center justify-center text-[#55585B] hover:text-[#149fcd] hover:border-[#149fcd] transition-all bg-white shadow-xs">
-                    <Icon size={15} />
+                {socialLinks.map((social, i) => (
+                  <Link key={i} href={social.href} className={`w-9 h-9 rounded-lg border border-[#E0E2E3] flex items-center justify-center text-[#55585B] transition-all bg-white shadow-xs group ${social.color}`}>
+                    <social.icon size={15} className="group-hover:scale-105 transition-transform" />
                   </Link>
                 ))}
               </div>
@@ -169,6 +174,7 @@ export default function Footer() {
 
             {/* Back to top button positioned responsively on tiny viewport thresholds */}
             <button 
+              type="button"
               onClick={scrollToTop}
               className="absolute -top-6 right-2 sm:right-0 bg-[#010F1C] text-white p-3 md:p-4 rounded-full shadow-xl hover:bg-[#149fcd] transition-all hover:-translate-y-1 z-20 border border-white/10"
               title="Scroll to Top"
