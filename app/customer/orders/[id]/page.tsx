@@ -2,124 +2,101 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { 
-  ArrowLeft,
-  Loader2,
-  Flag, 
-  CheckCircle 
-} from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck, XCircle, ChevronRight } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchOrderDetails, OrderDetailResponse } from "../../../lib/api/auth";
 import { api } from "@/app/lib/api/client";
-import { uploadProductImagesWorkflow } from "@/app/lib/utils/imageUploader";
 
-export default function OrderDetailsPage() {
+export default function SellerOrderDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  
   const orderId = params?.id as string;
 
-  const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [disputeReason, setDisputeReason] = useState("");
-  const [disputeFile, setDisputeFile] = useState<File | null>(null);
+  const [releaseCode, setReleaseCode] = useState("");
 
-  // 1. Synchronize granular order details
-  const { data: order, isLoading, isError } = useQuery<OrderDetailResponse | null>({
-    queryKey: ["customerOrderDetail", orderId],
-    queryFn: () => fetchOrderDetails(orderId),
-    enabled: !!orderId,
-    staleTime: 1000 * 60 * 5,
+ const { data: order, isLoading } = useQuery<OrderDetailResponse | null>({
+    queryKey: ["sellerOrderDetail", orderId],
+    queryFn: () => fetchOrderDetails(orderId), // Using the correct fetcher
   });
 
-  // 2. Mutation for Delivery Confirmation
-  const confirmDeliveryMutation = useMutation({
-    mutationFn: () => api.post(`/orders/${orderId}/confirm-delivery`),
+  // 1. Advance Order State (paid → processing → shipped → awaiting_handoff)
+  const advanceMutation = useMutation({
+    mutationFn: () => api.post(`/orders/${orderId}/advance`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customerOrderDetail", orderId] });
-      alert("Delivery confirmed. Thank you!");
+      queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
+      alert("Order status advanced.");
     }
   });
 
-  // 3. Mutation for Dispute Initiation
-  const initiateDisputeMutation = useMutation({
-    mutationFn: async () => {
-      if (!disputeFile) throw new Error("Evidence file required");
-      const uploadedAssetsMap = await uploadProductImagesWorkflow([disputeFile]);
-      return api.post(`/orders/${orderId}/dispute`, { 
-        reason: disputeReason, 
-        evidence_image: uploadedAssetsMap[0] 
-      });
-    },
+  // 2. Verify Release Code (Release Funds)
+  const verifyCodeMutation = useMutation({
+    mutationFn: (code: string) => api.post(`/orders/${orderId}/verify-code`, { code }),
     onSuccess: () => {
-      setShowDisputeModal(false);
-      queryClient.invalidateQueries({ queryKey: ["customerOrderDetail", orderId] });
-      alert("Dispute filed successfully.");
+      queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
+      alert("Funds released to your wallet.");
     }
   });
 
-  // --- HELPERS ---
-const statusColors: Record<string, string> = {
-  pending: "bg-amber-500",
-  processing: "bg-[#149fcd]",
-  completed: "bg-[#10B981]",
-  cancelled: "bg-red-500",
-  disputed: "bg-orange-600",
-  awaiting_handoff: "bg-purple-500" // Adding it here helps TS recognize the key exists
-};
+  // 3. Cancel Order
+  const cancelMutation = useMutation({
+    mutationFn: () => api.post(`/orders/${orderId}/cancel`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
+      alert("Order cancelled.");
+    }
+  });
 
-  if (isLoading) return <div className="p-16 text-center"><Loader2 className="animate-spin mx-auto text-[#149fcd]" size={32} /></div>;
-  if (isError || !order) return <div className="p-12 text-center text-red-500 font-bold">Error loading order.</div>;
+  if (isLoading) return <div className="p-16 text-center"><Loader2 className="animate-spin mx-auto" size={32} /></div>;
+  if (!order) return <div className="p-12 text-center text-red-500">Order not found.</div>;
 
   return (
-    <div className="space-y-6 text-left animate-in fade-in duration-200">
-      <button onClick={() => router.push("/customer/orders")} className="flex items-center gap-2 text-xs font-black text-[#149fcd] hover:underline uppercase tracking-wider">
-        <ArrowLeft size={14} /> Back to my orders
+    <div className="space-y-6 p-6">
+      <button onClick={() => router.push("/seller/orders")} className="flex items-center gap-2 text-xs font-bold text-[#149fcd] uppercase">
+        <ArrowLeft size={14} /> Back to dashboard
       </button>
 
-      <div className="bg-white border border-slate-100 rounded-sm p-8 shadow-sm space-y-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-b border-slate-50 pb-10">
+      <div className="bg-white border p-8 space-y-8">
+        <h1 className="text-xl font-black uppercase tracking-wide">Order #{order.order_number}</h1>
+        
+        {/* Vendor Operation Panel */}
+        <div className="grid md:grid-cols-2 gap-8 border-t pt-8">
           <div className="space-y-4">
-            <h3 className="text-sm font-black uppercase text-slate-800 border-b pb-2">Order details</h3>
-            <div className="grid grid-cols-2 text-[13px] gap-y-3">
-              <span className="text-slate-400">Order number:</span> <span className="font-black">#{order.order_number}</span>
-              <span className="text-slate-400">Status:</span> 
-              <span className={`${statusColors[order.status] || 'bg-slate-400'} text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase`}>
-                {order.status}
-              </span>
+            <h3 className="text-sm font-black uppercase">Order Lifecycle</h3>
+            <button 
+              onClick={() => advanceMutation.mutate()}
+              className="w-full bg-[#149fcd] text-white py-3 font-bold uppercase text-xs flex items-center justify-center gap-2 hover:bg-[#118eb8]"
+            >
+              Advance Order Status <ChevronRight size={16} />
+            </button>
+            
+            <button 
+              onClick={() => cancelMutation.mutate()}
+              className="w-full bg-red-50 text-red-600 border border-red-200 py-3 font-bold uppercase text-xs hover:bg-red-100"
+            >
+              <XCircle size={14} className="inline mr-2" /> Cancel Order
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase">Funds Release</h3>
+            <div className="flex gap-2">
+              <input 
+                className="flex-1 border p-2 text-sm" 
+                placeholder="Enter 6-digit release code"
+                value={releaseCode}
+                onChange={(e) => setReleaseCode(e.target.value)}
+              />
+              <button 
+                onClick={() => verifyCodeMutation.mutate(releaseCode)}
+                className="bg-emerald-600 text-white px-4 py-2 font-bold text-xs uppercase flex items-center gap-2"
+              >
+                <ShieldCheck size={16} /> Verify
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* Action Section */}
-        <div className="flex flex-wrap gap-4 pt-10 border-t border-slate-100">
-          {(order.status as string) === "awaiting_handoff" && (
-            <button onClick={() => confirmDeliveryMutation.mutate()} className="bg-[#10B981] text-white text-[11px] font-black py-3 px-6 rounded-sm flex items-center gap-2 uppercase">
-              <CheckCircle size={16} /> Confirm Delivery
-            </button>
-          )}
-          {["completed", "processing"].includes(order.status) && (
-            <button onClick={() => setShowDisputeModal(true)} className="bg-orange-600 text-white text-[11px] font-black py-3 px-6 rounded-sm flex items-center gap-2 uppercase">
-              <Flag size={16} /> File Dispute
-            </button>
-          )}
         </div>
       </div>
-
-      {/* Dispute Modal */}
-      {showDisputeModal && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-sm max-w-md w-full space-y-4">
-            <h3 className="font-black text-slate-800 uppercase">File a Dispute</h3>
-            <textarea className="w-full border p-3 text-sm" placeholder="Reason..." onChange={(e) => setDisputeReason(e.target.value)} />
-            <input type="file" accept="image/*" onChange={(e) => e.target.files && setDisputeFile(e.target.files[0])} />
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowDisputeModal(false)} className="text-xs font-bold uppercase">Cancel</button>
-              <button onClick={() => initiateDisputeMutation.mutate()} className="bg-orange-600 text-white px-4 py-2 text-xs font-bold uppercase">Submit</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
