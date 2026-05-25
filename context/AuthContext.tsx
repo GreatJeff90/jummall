@@ -39,9 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = await fetchCurrentUser();
       setUser(userData);
     } catch (err) {
+      console.error("Profile synchronization rejected, clearing access tokens:", err);
       if (typeof window !== "undefined") {
+        // Clear local key values
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
+        
+        // Clear Edge Middleware cookie mapping
+        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
       }
       setUser(null);
     } finally {
@@ -49,14 +54,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (typeof window !== "undefined") {
+      // 1. Wipe local memory spaces
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      
+      // 2. Expire the cookie boundary instantly so middleware intercepts route attempts
+      document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
     }
+    
     setUser(null);
+    
+    // 3. Force-route back to public directories with an absolute hard reload
     window.location.href = "/login";
-  };
+  }, []);
 
   useEffect(() => {
     // Wrap the async state caller inside a clean isolation block to satisfy strict ESLint rules
