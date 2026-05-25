@@ -66,7 +66,6 @@ export default function CategoryShowcase() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(4);
 
-  // Dynamic calculation matching layout breakpoints cleanly
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1280) {
@@ -99,6 +98,7 @@ export default function CategoryShowcase() {
         
         {/* Slider Arrow Controls */}
         <button 
+          type="button"
           onClick={prevSlide}
           className="absolute -left-2 top-1/2 -translate-y-1/2 z-30 bg-white border border-slate-200 p-2.5 rounded-full text-slate-500 hover:bg-[#149fcd] hover:text-white hover:border-[#149fcd] transition-all shadow-md opacity-0 group-hover:opacity-100 hidden md:flex items-center justify-center"
           aria-label="Previous slide"
@@ -106,6 +106,7 @@ export default function CategoryShowcase() {
           <ChevronLeft size={20} className="stroke-[2.5]" />
         </button>
         <button 
+          type="button"
           onClick={nextSlide}
           className="absolute -right-2 top-1/2 -translate-y-1/2 z-30 bg-white border border-slate-200 p-2.5 rounded-full text-slate-500 hover:bg-[#149fcd] hover:text-white hover:border-[#149fcd] transition-all shadow-md opacity-0 group-hover:opacity-100 hidden md:flex items-center justify-center"
           aria-label="Next slide"
@@ -126,7 +127,6 @@ export default function CategoryShowcase() {
                 key={i}
                 className="shrink-0 flex justify-center"
                 style={{ 
-                  // Handles spacing variables proportionally based on visible components inside container limits
                   width: `calc(${100 / visibleCards}% - ${(16 * (visibleCards - 1)) / visibleCards}px)` 
                 }}
               >
@@ -134,7 +134,6 @@ export default function CategoryShowcase() {
                   href={cat.href}
                   className="flex flex-col items-center group text-center"
                 >
-                  {/* Circular Image Container Maintained Exactly */}
                   <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full bg-[#E1F1FF] flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-sky-200/50">
                     <div className="relative w-3/4 h-3/4 transition-transform duration-500 group-hover:scale-110">
                       <Image
@@ -146,7 +145,6 @@ export default function CategoryShowcase() {
                     </div>
                   </div>
 
-                  {/* Text Content Maintained Exactly */}
                   <div className="mt-6 text-center">
                     <h3 className="text-lg md:text-xl text-slate-800 group-hover:text-sky-600 transition-colors">
                       {cat.name}

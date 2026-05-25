@@ -1365,3 +1365,44 @@ export const saveBankAccountAPI = async (payload: SavedBankAccountDetails): Prom
   });
   return response.data;
 };
+
+export interface CategoryItem {
+  name: string;
+  slug: string;
+  product_count: number;
+  active_product_count: number;
+}
+
+export interface CategoriesFetchResponse {
+  items: CategoryItem[];
+}
+
+export interface ProductAsset {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  images: Array<{ url: string; is_main: boolean }>;
+}
+
+/**
+ * FETCH ALL DYNAMIC CATEGORIES FROM BACKEND
+ * @route GET /categories
+ */
+export const fetchCategoriesAPI = async (): Promise<CategoriesFetchResponse> => {
+  const response = await api.get("/categories", {
+    params: { only_active: true } // Keeps list clean and active
+  });
+  return response.data;
+};
+
+/**
+ * FETCH CATALOG PRODUCTS FILTERED BY ACTIVE SLUG PARAMETER
+ * @route GET /products?category=<slug>
+ */
+export const fetchProductsByCategoryAPI = async (categorySlug: string): Promise<ProductAsset[]> => {
+  const response = await api.get("/products", {
+    params: { category: categorySlug }
+  });
+  return response.data?.items || response.data || [];
+};

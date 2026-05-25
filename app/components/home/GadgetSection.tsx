@@ -7,12 +7,29 @@ import Link from "next/link";
 import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
 
 const computerLinks = [
-  "Desktop", "Laptop", "Computer Accessories", "Keyboards", "Mice", 
-  "Mouse Pads", "Monitors", "Projectors", "Speakers", "Webcams", 
-  "HDMI Cables", "Ethernet (LAN) Cables", "Adapters & Converters", 
-  "USB Flash Drives", "Card Readers", "Memory Cards", "Laptop Chargers", 
-  "UPS", "Surge Protectors", "Extension Cords", "Networking Devices",
-  "Laptop Stands", "Laptop Bags & Sleeves"
+  { label: "Desktop", slug: "desktop" },
+  { label: "Laptop", slug: "laptop" },
+  { label: "Computer Accessories", slug: "computer-accessories" },
+  { label: "Keyboards", slug: "keyboards" },
+  { label: "Mice", slug: "mice" },
+  { label: "Mouse Pads", slug: "mouse-pads" },
+  { label: "Monitors", slug: "monitors" },
+  { label: "Projectors", slug: "projectors" },
+  { label: "Speakers", slug: "speakers" },
+  { label: "Webcams", slug: "webcams" },
+  { label: "HDMI Cables", slug: "hdmi-cables" },
+  { label: "Ethernet (LAN) Cables", slug: "ethernet-lan-cables" },
+  { label: "Adapters & Converters", slug: "adapters-converters" },
+  { label: "USB Flash Drives", slug: "usb-flash-rives" },
+  { label: "Card Readers", slug: "card-readers" },
+  { label: "Memory Cards", slug: "memory-cards" },
+  { label: "Laptop Chargers", slug: "laptop-chargers" },
+  { label: "UPS", slug: "ups" },
+  { label: "Surge Protectors", slug: "surge-protectors" },
+  { label: "Extension Cords", slug: "extension-cords" },
+  { label: "Networking Devices", slug: "networking-devices" },
+  { label: "Laptop Stands", slug: "laptop-stands" },
+  { label: "Laptop Bags & Sleeves", slug: "laptop-bags-sleeves" }
 ];
 
 const sidebarSlides = [
@@ -37,7 +54,6 @@ export default function GadgetSection() {
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
-  // Load section rows matching category identifiers dynamically from backend
   const loadGadgetSectionData = async () => {
     try {
       setLoading(true);
@@ -50,15 +66,14 @@ export default function GadgetSection() {
     }
   };
 
-  // Safe wrapper implementation protecting hooks pipeline against ESLint cascading render checks
+  // Safe async initialization closure avoiding top-level synchronous state dispatches
   useEffect(() => {
-    const initializeGadgetLifecycle = async () => {
+    const initializeGadgetFeedLifecycle = async () => {
       await loadGadgetSectionData();
     };
-    initializeGadgetLifecycle();
+    initializeGadgetFeedLifecycle();
   }, []);
 
-  // Sidebar Carousel Loop
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % sidebarSlides.length);
@@ -95,29 +110,27 @@ export default function GadgetSection() {
       <div className="w-full md:w-1/4 flex flex-col gap-6">
         <div className="border-2 border-orange-500 rounded-lg p-6 flex flex-col bg-white min-h-[650px] relative overflow-hidden shadow-xs">
           
-          {/* Top Section: Title and Link Stack */}
           <div className="relative z-10 flex-grow">
             <h2 className="text-xl font-black text-slate-800 mb-2 font-montserrat uppercase tracking-tight">Computers</h2>
             <div className="w-20 h-0.5 bg-sky-500 mb-6" />
             <ul className="space-y-2">
-              {computerLinks.map((link) => (
-                <li key={link}>
-                  <Link href={`/shop?category=${link.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="text-[11px] font-bold text-slate-500 hover:text-orange-500 flex items-center gap-2 transition-colors uppercase tracking-wide">
-                    <span className="w-1 h-1 bg-slate-300 rounded-full" /> {link}
+              {computerLinks.map((item) => (
+                <li key={item.slug}>
+                  {/* Routed cleanly to centralized slug category engine */}
+                  <Link href={`/categories/${item.slug}`} className="text-[11px] font-bold text-slate-500 hover:text-orange-500 flex items-center gap-2 transition-colors uppercase tracking-wide">
+                    <span className="w-1 h-1 bg-slate-300 rounded-full" /> {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
           
-          {/* Bottom Section Link */}
           <div className="relative z-20 mt-8 pb-10">
-            <Link href="/shop" className="text-sm font-black text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors uppercase tracking-wider">
+            <Link href="/categories/computers" className="text-sm font-black text-slate-800 flex items-center gap-2 hover:text-orange-500 group transition-colors uppercase tracking-wider">
               More Products <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
-          {/* Decorative Girl Mascot Image */}
           <div className="absolute -right-4 -bottom-2 w-48 h-48 pointer-events-none z-0 select-none opacity-40">
              <Image 
                 src="/gadget-girl-1.png" 
@@ -129,8 +142,7 @@ export default function GadgetSection() {
           </div>
         </div>
 
-        {/* Sidebar Mini Automated Advertisement Slider */}
-        <div className="h-44 rounded-xl overflow-hidden relative group shadow-sm select-none">
+        <div className="sidebar-slider h-44 rounded-xl overflow-hidden relative group shadow-sm select-none">
           <Image 
             src={sidebarSlides[currentSlide].img} 
             alt={sidebarSlides[currentSlide].title} 
@@ -177,7 +189,6 @@ export default function GadgetSection() {
             {gadgets.map((item) => (
               <div key={item.id} className="group bg-white p-5 relative border border-slate-100 rounded-lg hover:shadow-xl hover:border-white transition-all duration-300 flex flex-col">
                  
-                 {/* Hover Action Left Action Trigger Bar */}
                  <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
                     <button 
                       type="button"
@@ -209,7 +220,6 @@ export default function GadgetSection() {
                     </button>
                  </div>
 
-                 {/* Badges Overlay Tags Row */}
                  <div className="absolute top-4 right-4 flex gap-1 z-10">
                   {item.badges?.map(b => (
                     <span key={b} className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm text-white shadow-xs tracking-wide ${b.toLowerCase() === 'hot' ? 'bg-orange-500' : 'bg-teal-500'}`}>
@@ -218,20 +228,18 @@ export default function GadgetSection() {
                   ))}
                  </div>
 
-                 {/* Product Image Node Box */}
                  <div className="aspect-square relative mb-4 overflow-hidden rounded-md bg-slate-50 border border-slate-50/50">
                   <Link href={`/shop/${item.id}`} className="absolute inset-0 block z-0">
                     <Image 
                       src={item.image_url || "/placeholder-product.png"} 
                       alt={item.name} 
                       fill 
-                      sizes="(max-width: 768px) 100vw, 240px" // Explicit width metrics matching bounding footprint constraint
+                      sizes="(max-width: 768px) 100vw, 240px"
                       className="object-contain p-4 transition-transform duration-500 group-hover:scale-105" 
                     />
                   </Link>
                  </div>
 
-                 {/* Information Metadata Content Area Container */}
                  <div className="space-y-2 flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5">
