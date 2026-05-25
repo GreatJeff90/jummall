@@ -447,10 +447,20 @@ export interface ProductItemBackend {
  * LIST PUBLIC MARKETPLACE PRODUCTS
  * @route GET /products
  */
-export const fetchPublicProducts = async (params?: { category?: string; tag?: string }): Promise<ProductItemBackend[]> => {
+export const fetchPublicProducts = async (params?: { 
+  category?: string; 
+  tag?: string; 
+  state?: string 
+}): Promise<ProductItemBackend[]> => {
   const response = await api.get("/products", { params });
   return response.data;
 };
+
+interface ProductFilters {
+  category?: string;
+  tag?: string;
+  state?: string; // Add this line
+}
 
 /**
  * ADD PRODUCT ITEM TO CHECKOUT BASKET REGISTER
@@ -1407,8 +1417,10 @@ export const fetchProductsByCategoryAPI = async (categorySlug: string): Promise<
   return response.data?.items || response.data || [];
 };
 
-// Add this to app/lib/api/auth.ts if not already present
 export interface BankItemAPI {
   code: string;
   name: string;
 }
+
+
+
