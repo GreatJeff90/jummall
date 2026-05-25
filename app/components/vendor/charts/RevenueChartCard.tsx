@@ -1,33 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { BarChart, Bar, Cell, ResponsiveContainer } from "recharts";
 import { ShoppingBag, Eye, BarChart3, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchSellerAnalyticsOverview, SellerAnalyticsOverviewResponse, DailyChartPoint } from "../../../lib/api/auth";
 
 export default function RevenueChartCard() {
-  const [metrics, setMetrics] = useState<SellerAnalyticsOverviewResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadDashboardAnalytics = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchSellerAnalyticsOverview();
-      setMetrics(data);
-    } catch (err) {
-      console.error("Error retrieving dashboard business analytics:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Safe wrapper execution thread to completely satisfy the react-hooks linter rules
-  useEffect(() => {
-    const initializeAnalyticsTimeline = async () => {
-      await loadDashboardAnalytics();
-    };
-    initializeAnalyticsTimeline();
-  }, []);
+  // 1. Fetch data stream natively via TanStack Query
+  const { data: metrics, isLoading } = useQuery<SellerAnalyticsOverviewResponse>({
+    queryKey: ["sellerAnalyticsOverview"],
+    queryFn: fetchSellerAnalyticsOverview,
+    staleTime: 1000 * 60 * 5, // Cache stays fresh for 5 minutes
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -37,16 +22,16 @@ export default function RevenueChartCard() {
     }).format(value).replace("NGN", "₦");
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="w-full h-[280px] rounded-[24px] bg-[#1B4D5E] flex flex-col items-center justify-center text-white/60 gap-2 border border-[#143D4A]">
+      <div className="w-full h-[280px] rounded-[24px] bg-[#1B4D5E] flex flex-col items-center justify-center text-white/60 gap-2 border border-[#143D4A] select-none">
         <Loader2 size={24} className="animate-spin text-[#FFD43A]" />
         <span className="text-xs font-bold uppercase tracking-wider">Syncing analytics database...</span>
       </div>
     );
   }
 
-  // Fallback defaults if metrics data returns incomplete paths
+  // Derived properties from server state data maps
   const chartData: DailyChartPoint[] = metrics?.chart_trend_data || [];
   const isPositive = (metrics?.revenue_change_percentage || 0) >= 0;
 
@@ -63,7 +48,7 @@ export default function RevenueChartCard() {
         {/* Left Ticker Information Parameter Stack */}
         <div className="lg:col-span-7 space-y-4">
           <div>
-            <span className="text-[11px] font-bold text-[#FFD43A] tracking-[2.5px] uppercase block">
+            <span className="text-[11px] font-bold text-[#FFD43A] tracking-[2.5px] uppercase block select-none">
               Today&apos;s Revenue
             </span>
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mt-1.5 leading-none font-montserrat">
@@ -71,7 +56,7 @@ export default function RevenueChartCard() {
             </h2>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap select-none">
             <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs bg-white/10 ${
               isPositive ? 'text-emerald-400' : 'text-rose-400'
             }`}>
@@ -90,7 +75,7 @@ export default function RevenueChartCard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Bar dataKey="revenue" radius={[4, 4, 0, 0]} maxBarSize={10}>
-                    {chartData.map((entry, index) => {
+                    {chartData.map((_, index) => {
                       const isToday = index === chartData.length - 1;
                       return (
                         <Cell 
@@ -103,12 +88,12 @@ export default function RevenueChartCard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-[10px] text-white/40">
+              <div className="h-full flex items-center justify-center text-[10px] text-white/40 select-none">
                 No trend metrics logged
               </div>
             )}
           </div>
-          <span className="text-[10px] font-semibold text-white/60 tracking-wider lg:mr-2 mt-2 uppercase block">
+          <span className="text-[10px] font-semibold text-white/60 tracking-wider lg:mr-2 mt-2 uppercase block select-none">
             Last 7 days trend
           </span>
         </div>
@@ -116,7 +101,7 @@ export default function RevenueChartCard() {
       </div>
 
       {/* Inline Bottom Metrics Tray Segment Row Panel */}
-      <div className="relative z-10 bg-black/10 border-t border-white/10 px-6 py-4 grid grid-cols-3 text-center divide-x divide-white/10">
+      <div className="relative z-10 bg-black/10 border-t border-white/10 px-6 py-4 grid grid-cols-3 text-center divide-x divide-white/10 select-none">
         
         <div className="flex flex-col items-center justify-center py-1">
           <div className="flex items-center gap-1.5 text-[#FFD43A]">

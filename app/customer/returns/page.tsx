@@ -1,35 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { RotateCcw, Eye, ClipboardList } from "lucide-react";
+import { RotateCcw, Eye, ClipboardList, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchMyOrders, OrderDetailResponse } from "../../lib/api/auth";
 
 export default function OrderReturnRequests() {
-  const [returnOrders, setReturnOrders] = useState<OrderDetailResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 1. Fetch data stream natively via TanStack Query
+  const { data: rawOrders = [], isLoading } = useQuery<OrderDetailResponse[]>({
+    queryKey: ["customerOrdersHistory"], // Reuses your customer cache keys to avoid redundant network hits!
+    queryFn: fetchMyOrders,
+    staleTime: 1000 * 60 * 10,
+  });
 
-  useEffect(() => {
-    const loadReturnRequests = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchMyOrders();
-        
-        // Filter orders that are actively in a "disputed" state representing return/hold queues
-        const filtered = Array.isArray(data) 
-          ? data.filter(order => order.status === "disputed" || order.status === "cancelled") 
-          : [];
-          
-        setReturnOrders(filtered);
-      } catch (err) {
-        console.error("Error pulling return requests payload stream:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadReturnRequests();
-  }, []);
+  // Extract return parameters dynamically on execution with proper data memoization bounds
+  const returnOrders = React.useMemo(() => {
+    if (!Array.isArray(rawOrders)) return [];
+    return rawOrders.filter(order => order.status === "disputed" || order.status === "cancelled");
+  }, [rawOrders]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -52,22 +41,24 @@ export default function OrderReturnRequests() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="bg-white border border-slate-100 rounded-sm p-16 text-center flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
-        <p className="text-xs text-slate-400 font-medium">Scanning return queue stubs...</p>
+      <div className="bg-white border border-slate-100 rounded-sm p-16 text-center flex flex-col items-center justify-center gap-3 min-h-[350px] shadow-sm select-none">
+        <Loader2 size={32} className="animate-spin text-[#149fcd]" />
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider animate-pulse">Scanning return queue stubs...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 text-left">
-      <h1 className="text-2xl font-black text-slate-800 font-montserrat">Order Return Requests</h1>
+    <div className="space-y-8 text-left animate-in fade-in duration-200">
+      <h1 className="text-2xl font-black text-slate-800 font-montserrat uppercase tracking-tight select-none">
+        Order Return Requests
+      </h1>
 
       {/* --- CONDITIONAL EMPTY STATE AREA (Triggers when returnOrders length is 0) --- */}
       {returnOrders.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-sm p-24 shadow-sm flex flex-col items-center justify-center text-center">
+        <div className="bg-white border border-slate-100 rounded-sm p-24 shadow-sm flex flex-col items-center justify-center text-center select-none">
           {/* Custom SVG Illustration */}
           <div className="mb-8 opacity-60">
             <svg 
@@ -96,11 +87,11 @@ export default function OrderReturnRequests() {
             </svg>
           </div>
 
-          <h2 className="text-xl font-bold text-slate-800 mb-2 font-montserrat">
+          <h2 className="text-sm font-black text-slate-800 mb-2 uppercase tracking-tight">
             No order return requests yet!
           </h2>
           
-          <p className="text-[13px] text-slate-400 max-w-sm leading-relaxed">
+          <p className="text-xs font-medium text-slate-400 max-w-sm leading-relaxed">
             You have not placed any order return requests yet.
           </p>
         </div>
@@ -108,41 +99,43 @@ export default function OrderReturnRequests() {
         /* --- DYNAMIC RENDERING FOR RETURNS/DISPUTES SETS --- */
         <div className="bg-white border border-slate-100 rounded-sm shadow-sm overflow-hidden divide-y divide-slate-100">
           {returnOrders.map((item) => (
-            <div key={item.id} className="p-6 hover:bg-slate-50/40 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div key={item.id} className="p-6 hover:bg-slate-50/40 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-in fade-in duration-150">
               
-              <div className="flex items-start gap-4 flex-1">
-                <div className="w-10 h-10 bg-orange-50 text-orange-500 rounded-sm border border-orange-100 flex items-center justify-center shrink-0">
+              <div className="flex items-start gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 bg-orange-50 text-orange-500 rounded-sm border border-orange-100 flex items-center justify-center shrink-0 select-none">
                   <RotateCcw size={18} />
                 </div>
-                <div className="space-y-1 text-left">
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="space-y-1 text-left min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 select-none">
                     <span className="font-black text-slate-800 text-sm">Return Request for #{item.order_number}</span>
-                    <span className="bg-orange-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wide">
+                    <span className="bg-orange-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wide shadow-3xs">
                       {item.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 select-none">
                     Initiated on: <span className="text-slate-600 font-medium">{formatDate(item.created_at)}</span>
                   </p>
-                  <p className="text-xs text-slate-400">
-                    Payment Origin: <span className="text-slate-700 font-medium">{item.payment_method}</span>
+                  <p className="text-xs text-slate-400 select-none">
+                    Payment Origin: <span className="text-slate-700 font-semibold">{item.payment_method}</span>
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0">
-                <div className="text-left md:text-right">
+                <div className="text-left md:text-right select-none">
                   <p className="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Withheld Total</p>
-                  <p className="text-sm font-black text-[#149fcd]">{formatCurrency(item.total_amount)}</p>
+                  <p className="text-sm font-black text-[#149fcd] font-montserrat">{formatCurrency(item.total_amount)}</p>
                 </div>
 
-                <Link 
-                  href={`/customer/orders/${item.id}`} // Links straight down into details view panel context for verification status tracking
-                  className="border border-slate-200 text-slate-600 hover:border-[#149fcd] hover:text-[#149fcd] p-2.5 rounded-sm transition-colors bg-white shadow-sm"
-                  title="View Dispute Progress"
-                >
-                  <Eye size={15} />
-                </Link>
+                <div className="flex items-center gap-2 select-none">
+                  <Link 
+                    href={`/customer/orders/${item.id}`}
+                    className="border border-slate-200 text-slate-600 hover:border-[#149fcd] hover:text-[#149fcd] p-2.5 rounded-sm transition-colors bg-white shadow-sm focus:outline-none"
+                    title="View Dispute Progress"
+                  >
+                    <Eye size={15} />
+                  </Link>
+                </div>
               </div>
 
             </div>

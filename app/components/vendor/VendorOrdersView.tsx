@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import React, { useState } from "react";
 import { 
   ShoppingBag, 
   ChevronRight, 
   RefreshCw, 
   Loader2 
 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchSellerOrders, SellerOrderItemAPI } from "../../lib/api/auth";
 
 const filterCategories = [
@@ -20,40 +22,28 @@ const filterCategories = [
 ];
 
 export default function VendorOrdersView() {
+  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [orders, setOrders] = useState<SellerOrderItemAPI[]>([]);
-  const [toShipCount, setToShipCount] = useState(0);
-  const [loading, setLoading] = useState(true);
 
-  const syncLiveOrders = async (statusFilter: string) => {
-    try {
-      setLoading(true);
-      // Map 'all' key safely to undefined query parameter thresholds
-      const statusParam = statusFilter === "all" ? undefined : statusFilter;
-      const data = await fetchSellerOrders({ status: statusParam });
-      
-      setOrders(Array.isArray(data.orders) ? data.orders : []);
-      setToShipCount(data.to_ship_count ?? 0);
-    } catch (err) {
-      console.error("Error synchronizing vendor escrow lists from API:", err);
-    } finally {
-      setLoading(false);
-    }
+  // Compute dynamic query tracking parameters on the fly
+  const statusParam = activeFilter === "all" ? undefined : activeFilter;
+
+  // 1. Synchronize real-time order lists natively through TanStack Query
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["sellerOrders", statusParam],
+    queryFn: () => fetchSellerOrders({ status: statusParam }),
+    staleTime: 1000 * 45, // Keep transactions cached for 45 seconds before validating entries
+    placeholderData: (previousData) => previousData, // Maintain seamless background layout changes
+  });
+
+  const orders: SellerOrderItemAPI[] = Array.isArray(data?.orders) ? data.orders : [];
+  const toShipCount = data?.to_ship_count ?? 0;
+
+  const handleManualRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["sellerOrders", statusParam] });
   };
 
-  // Safe wrapping execution container clearing the 'set-state-in-effect' compiler warning rule
-  useEffect(() => {
-    const initializeOrdersLifecycle = async () => {
-      await syncLiveOrders(activeFilter);
-    };
-    initializeOrdersLifecycle();
-  }, [activeFilter]);
-
-  const handleRefresh = async () => {
-    await syncLiveOrders(activeFilter);
-  };
-
-  // Utility to determine badge count weights dynamically per filter context row
+  // Utility to determine badge counts directly from cached data shapes safely inside render execution
   const getBadgeCount = (filterKey: string) => {
     if (filterKey === "all") return 0;
     return orders.filter(o => o.status === filterKey).length;
@@ -100,11 +90,11 @@ export default function VendorOrdersView() {
 
         <button 
           type="button"
-          onClick={handleRefresh}
-          disabled={loading}
-          className="w-10 h-10 bg-white border border-[#EAEBED] rounded-md flex items-center justify-center text-slate-500 hover:text-[#149FCD] hover:border-[#149FCD] transition-all disabled:opacity-50 self-end sm:self-auto shadow-sm"
+          onClick={handleManualRefresh}
+          disabled={isFetching}
+          className="w-10 h-10 bg-white border border-[#EAEBED] rounded-md flex items-center justify-center text-slate-500 hover:text-[#149FCD] hover:border-[#149FCD] transition-all disabled:opacity-50 self-end sm:self-auto shadow-sm focus:outline-none"
         >
-          <RefreshCw size={16} className={`transition-transform duration-500 ${loading ? "animate-spin text-[#149FCD]" : ""}`} />
+          <RefreshCw size={16} className={`transition-transform duration-500 ${isFetching ? "animate-spin text-[#149FCD]" : ""}`} />
         </button>
       </div>
 
@@ -119,7 +109,7 @@ export default function VendorOrdersView() {
               type="button"
               key={tab.label}
               onClick={() => setActiveFilter(tab.filterKey)}
-              className={`px-4 py-2 rounded-full text-[12.5px] font-bold tracking-tight shrink-0 transition-all flex items-center gap-2 border shadow-sm ${
+              className={`px-4 py-2 rounded-full text-[12.5px] font-bold tracking-tight shrink-0 transition-all flex items-center gap-2 border shadow-sm focus:outline-none ${
                 isActive 
                   ? "bg-[#143D4A] border-[#143D4A] text-white" 
                   : "bg-white border-[#EAEBED] text-[#010F1C] hover:bg-slate-50"
@@ -142,7 +132,7 @@ export default function VendorOrdersView() {
       </div>
 
       {/* --- 2.3 EMPTY & DATA RENDERING BOUNDARY DISPATCHER LAYER --- */}
-      {loading ? (
+      {isLoading && orders.length === 0 ? (
         <div className="w-full bg-white border border-slate-100 rounded-sm p-24 flex flex-col items-center justify-center text-center space-y-3 shadow-sm min-h-[400px]">
           <Loader2 size={32} className="animate-spin text-[#149FCD]" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide animate-pulse">Syncing Jummall Escrow Metrics...</p>
@@ -168,11 +158,13 @@ export default function VendorOrdersView() {
               <div className="flex items-center gap-4 min-w-0 flex-1">
                 {/* Product Frame Thumbnail Box */}
                 <div className="relative w-14 h-16 bg-[#F6F7F9] border border-slate-100 rounded-sm p-1 shrink-0 flex items-center justify-center overflow-hidden shadow-2xs">
-                  <img 
-                    src={order.img || "/placeholder-product.png"} 
-                    alt={order.productName} 
-                    className="object-contain w-full h-full p-0.5 group-hover:scale-105 transition-transform duration-300" 
-                  />
+                  <Image 
+  src={order.img || "/placeholder-product.png"} 
+  alt={order.productName} 
+  fill
+  sizes="56px"
+  className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-300" 
+/>
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-1">

@@ -4,7 +4,8 @@ import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, ChevronLeft, Che
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
+import { useProducts, useAddToCart } from "@/app/hooks/useEcosystem";
+import { ProductItemBackend } from "../../lib/api/auth";
 
 const arrivalLinks = [
   { label: "Laptop", slug: "laptop" },
@@ -36,31 +37,19 @@ const promoSlides = [
 
 export default function NewArrivals() {
   const [currentPromo, setCurrentPromo] = useState(0);
-  const [products, setProducts] = useState<ProductItemBackend[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [addingId, setAddingId] = useState<string | null>(null);
   const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
-  const loadNewArrivalsData = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchPublicProducts({ tag: "new" });
-      setProducts(Array.isArray(data) ? data.slice(0, 3) : []);
-    } catch (err) {
-      console.error("Failed synchronizing new arrival feeds:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 1. Consume the global TanStack Query hook layer cleanly for new arrivals catalog items
+  const { data: rawProducts, isLoading: loading } = useProducts({ tag: "new" });
+  const products = Array.isArray(rawProducts) 
+    ? (rawProducts as unknown as ProductItemBackend[]).slice(0, 3) 
+    : [];
 
-  // Safe async initialization closure avoiding top-level synchronous state dispatches
-  useEffect(() => {
-    const initializeArrivalsFeedLifecycle = async () => {
-      await loadNewArrivalsData();
-    };
-    initializeArrivalsFeedLifecycle();
-  }, []);
+  // 2. Leverage the pre-configured global cart mutation channel
+  const { mutate: addToCart, isPending: addingToCart, variables } = useAddToCart();
+  const addingId = addingToCart ? variables?.productId : null;
 
+  // Promo Banner Auto Sliders Effect Loop
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentPromo((prev) => (prev + 1) % promoSlides.length);
@@ -68,18 +57,19 @@ export default function NewArrivals() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleInclusionAction = async (productId: string) => {
-    try {
-      setAddingId(productId);
-      await addProductToCartAPI(productId, 1);
-      
-      setAddedSuccessId(productId);
-      setTimeout(() => setAddedSuccessId(null), 2000);
-    } catch (err) {
-      alert("Authentication token absent. Log back into your profile to use cart features.");
-    } finally {
-      setAddingId(null);
-    }
+  const handleInclusionAction = (productId: string) => {
+    addToCart(
+      { productId, quantity: 1 },
+      {
+        onSuccess: () => {
+          setAddedSuccessId(productId);
+          setTimeout(() => setAddedSuccessId(null), 2000);
+        },
+        onError: () => {
+          alert("Authentication token absent. Log back into your profile to use cart features.");
+        }
+      }
+    );
   };
 
   const formatCurrency = (value: number) => {
@@ -92,6 +82,7 @@ export default function NewArrivals() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12 text-left font-sans">
+      {/* Header with Navigation */}
       <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
         <h2 className="text-3xl text-slate-900 font-montserrat font-black uppercase tracking-tight">
           <span className="text-sky-500 border-b-4 border-sky-500 pb-4">New</span> Arrivals
@@ -107,7 +98,9 @@ export default function NewArrivals() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
+        {/* Left Sidebar Column */}
         <div className="w-full md:w-1/4 flex flex-col gap-6">
+          {/* List Card - Red Border */}
           <div className="border-2 border-rose-500 rounded-lg p-6 flex flex-col bg-white min-h-[650px] relative overflow-hidden shadow-xs">
             <div className="relative z-10 flex-grow">
               <h2 className="text-xl font-black text-slate-800 mb-2 font-montserrat uppercase tracking-tight">New Arrivals</h2>
@@ -115,7 +108,6 @@ export default function NewArrivals() {
               <ul className="space-y-2">
                 {arrivalLinks.map((item) => (
                   <li key={item.slug}>
-                    {/* Synchronized slug route mapping */}
                     <Link href={`/categories/${item.slug}`} className="text-[11px] font-bold text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-wide">
                       <span className="w-1 h-1 bg-slate-300 rounded-full" /> {item.label}
                     </Link>
@@ -135,6 +127,7 @@ export default function NewArrivals() {
             </div>
           </div>
 
+          {/* Bottom Sidebar Slider Banner */}
           <div className="h-44 rounded-xl overflow-hidden relative group shadow-sm select-none">
             <Image src="/gadget-banner-2-1.jpg" alt="Promo Marketing Banner asset background" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-transparent flex flex-col justify-center px-8 text-white z-10 text-left">
@@ -156,6 +149,7 @@ export default function NewArrivals() {
           </div>
         </div>
 
+        {/* Right Main Column: Loader or Feed Grid */}
         <div className="flex-1">
           {loading ? (
             <div className="h-full min-h-[500px] border border-slate-100 rounded-lg flex flex-col items-center justify-center bg-white gap-2 shadow-xs">
@@ -169,9 +163,10 @@ export default function NewArrivals() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-200">
-              {products.map((product) => (
+              {products.map((product: ProductItemBackend) => (
                 <div key={product.id} className="group bg-white p-5 relative border border-slate-100 rounded-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                   
+                  {/* Hover Action Sidebar Overlay Panel */}
                   <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 z-20">
                     <button 
                       type="button"
@@ -203,29 +198,33 @@ export default function NewArrivals() {
                     </button>
                   </div>
 
+                  {/* Badge tags row mapping block */}
                   <div className="absolute top-4 right-4 flex gap-1 z-10">
-                    {product.badges?.map(b => (
+                    {product.badges?.map((b: string) => (
                       <span key={b} className={`text-[9px] font-black uppercase px-2 py-0.5 rounded text-white tracking-wide shadow-xs ${b.toLowerCase() === 'hot' ? 'bg-orange-600' : 'bg-teal-600'}`}>
                         {b}
                       </span>
                     ))}
                   </div>
 
+                  {/* Product Frame Canvas Asset Image */}
                   <div className="aspect-square relative mb-4 bg-slate-50 rounded-md overflow-hidden border border-slate-50">
                     <Link href={`/shop/${product.id}`} className="absolute inset-0 block z-0">
                       <Image 
                         src={product.image_url || "/placeholder-product.png"} 
                         alt={product.name} 
                         fill 
+                        sizes="(max-width: 768px) 100vw, 240px"
                         className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
                       />
                     </Link>
                   </div>
 
+                  {/* Content Descriptions Metadata Area Info Stack */}
                   <div className="space-y-2 flex-1 flex flex-col justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Jummall official</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Jummall official</span>
                         {product.is_verified_store !== false && (
                           <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center shadow-2xs">
                             <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />

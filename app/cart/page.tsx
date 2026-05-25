@@ -1,35 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, Minus, Plus, ShoppingBag, Loader2, ArrowLeft, X } from "lucide-react";
-import { fetchMyCart, updateCartItemQuantity, removeCartItem, CartItemBackend, CartResponse } from "../lib/api/auth";
+import { Trash2, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
+import { useCart } from "@/app/hooks/useEcosystem";
+import { useQueryClient } from "@tanstack/react-query";
+import { updateCartItemQuantity, removeCartItem, CartItemBackend } from "../lib/api/auth";
 
 export default function ShoppingCartPage() {
-  const [cart, setCart] = useState<CartResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [couponCode, setCouponCode] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const loadCartData = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchMyCart();
-      setCart(data);
-    } catch (err) {
-      console.error("Error retrieving user shopping cart state metrics:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const initializeCartLifecycle = async () => {
-      await loadCartData();
-    };
-    initializeCartLifecycle();
-  }, []);
+  // 1. Consume the global dynamic caching layer directly
+  const { data: cart, isLoading } = useCart();
 
   const handleQuantityAdjust = async (productId: string, currentQty: number, increment: boolean) => {
     const newQty = increment ? currentQty + 1 : currentQty - 1;
@@ -38,7 +23,8 @@ export default function ShoppingCartPage() {
     try {
       setUpdatingId(productId);
       const updatedCart = await updateCartItemQuantity(productId, newQty);
-      setCart(updatedCart);
+      // Synchronously patch cache memory lines instantly notifying navbar state elements
+      queryClient.setQueryData(["cart"], updatedCart);
     } catch (err) {
       alert("Failed to adjust item threshold count. Verify inventory limits.");
     } finally {
@@ -51,7 +37,7 @@ export default function ShoppingCartPage() {
     try {
       setUpdatingId(productId);
       const updatedCart = await removeCartItem(productId);
-      setCart(updatedCart);
+      queryClient.setQueryData(["cart"], updatedCart);
     } catch (err) {
       alert("Removal sequence failed.");
     } finally {
@@ -67,7 +53,8 @@ export default function ShoppingCartPage() {
     }).format(value).replace("NGN", "₦");
   };
 
-  if (loading) {
+  // Render high-fidelity loading state wrapper natively using query flags
+  if (isLoading && !cart) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center gap-3 bg-white border border-slate-100 rounded-sm my-12 max-w-7xl mx-auto px-4">
         <div className="w-10 h-10 border-4 border-sky-100 border-t-sky-600 rounded-full animate-spin" />
@@ -76,36 +63,34 @@ export default function ShoppingCartPage() {
     );
   }
 
-  const items = cart?.items || [];
+  const items: CartItemBackend[] = cart?.items || [];
 
   return (
     <div className="w-full bg-[#f8fbfc] min-h-screen pb-24 text-left font-sans">
       
       {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
-            <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">
-              <Image 
-                src="/breadcrumb-1.jpg" 
-                alt="Login Header Background" 
-                fill 
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-white/20" />
-              
-              <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
-                <h1 className="text-5xl tracking-tight text-[#0F172A]">Shopping Cart</h1>
-                <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
-                  Home <span className="text-slate-300">/</span> <span className="text-sky-600">Shopping Cart</span>
-                </p>
-              </div>
-            </div>
-
-
+      <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">
+        <Image 
+          src="/breadcrumb-1.jpg" 
+          alt="Login Header Background" 
+          fill 
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-white/20" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
+          <h1 className="text-5xl tracking-tight text-[#0F172A]">Shopping Cart</h1>
+          <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
+            Home <span className="text-slate-300">/</span> <span className="text-sky-600">Shopping Cart</span>
+          </p>
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-16">
         {/* --- CONDITIONAL SCREEN STATE BOUNDARY --- */}
         {items.length === 0 ? (
-          <div className="bg-white border border-slate-100 rounded-sm p-16 flex flex-col items-center justify-center text-center space-y-5 shadow-sm">
+          <div className="bg-white border border-slate-100 rounded-sm p-16 flex flex-col items-center justify-center text-center space-y-5 shadow-sm select-none">
             <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center border border-slate-100">
               <ShoppingBag size={30} className="stroke-1" />
             </div>
@@ -127,7 +112,7 @@ export default function ShoppingCartPage() {
               <div className="bg-white border border-slate-100 rounded-sm overflow-hidden shadow-xs">
                 <table className="w-full border-collapse min-w-[650px]">
                   <thead>
-                    <tr className="border-b border-slate-100 text-[12px] font-bold text-[#010F1C] bg-[#F8FAFC] tracking-tight text-left">
+                    <tr className="border-b border-slate-100 text-[12px] font-bold text-[#010F1C] bg-[#F8FAFC] tracking-tight text-left select-none">
                       <th className="py-4 px-6 w-[45%]">Product</th>
                       <th className="py-4 px-4">Price</th>
                       <th className="py-4 px-4 text-center">Quantity</th>
@@ -153,7 +138,7 @@ export default function ShoppingCartPage() {
                             <h4 className="font-bold text-slate-800 text-[14px] leading-tight hover:text-[#149fcd] transition-colors cursor-pointer truncate max-w-[260px]" title={item.product_name}>
                               {item.product_name}
                             </h4>
-                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wide">
+                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wide select-none">
                               In stock
                             </p>
                             {item.vendor_name && (
@@ -179,16 +164,22 @@ export default function ShoppingCartPage() {
                               type="button"
                               onClick={() => handleQuantityAdjust(item.product_id, item.quantity, false)}
                               className="px-2.5 text-slate-400 hover:text-[#010F1C] h-full transition-colors flex items-center"
+                              disabled={updatingId === item.product_id}
                             >
                               <Minus size={10} className="stroke-[2.5]" />
                             </button>
                             <span className="px-2 text-xs font-black text-[#010F1C] min-w-[24px] text-center select-none">
-                              {item.quantity}
+                              {updatingId === item.product_id ? (
+                                <Loader2 size={10} className="animate-spin text-[#149fcd] mx-auto" />
+                              ) : (
+                                item.quantity
+                              )}
                             </span>
                             <button 
                               type="button"
                               onClick={() => handleQuantityAdjust(item.product_id, item.quantity, true)}
                               className="px-2.5 text-slate-400 hover:text-[#010F1C] h-full transition-colors flex items-center"
+                              disabled={updatingId === item.product_id}
                             >
                               <Plus size={10} className="stroke-[2.5]" />
                             </button>
@@ -207,6 +198,7 @@ export default function ShoppingCartPage() {
                             onClick={() => handleRemoveProduct(item.product_id)}
                             className="text-slate-300 hover:text-red-500 p-2 transition-colors rounded-sm hover:bg-red-50/60"
                             title="Remove product item"
+                            disabled={updatingId === item.product_id}
                           >
                             <Trash2 size={16} className="stroke-[1.8]" />
                           </button>
@@ -248,13 +240,13 @@ export default function ShoppingCartPage() {
                   <span className="text-[#010F1C] text-[16px] font-black uppercase tracking-tight pt-0.5">Total</span>
                   <div className="text-right space-y-1">
                     <p className="font-black text-xl text-[#010F1C] tracking-tight">{formatCurrency(cart?.total || 0)}</p>
-                    <p className="text-[11px] text-slate-400 italic font-medium leading-none">(Shipping fees not included)</p>
+                    <p className="text-[11px] text-slate-400 italic font-medium leading-none select-none">(Shipping fees not included)</p>
                   </div>
                 </div>
               </div>
 
               {/* Action Button Queues */}
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-2 select-none">
                 <Link 
                   href="/checkout" 
                   className="w-full bg-[#010F1C] hover:bg-[#149fcd] text-white font-bold py-4 rounded-sm text-xs uppercase tracking-wider flex items-center justify-center transition-all shadow-sm"

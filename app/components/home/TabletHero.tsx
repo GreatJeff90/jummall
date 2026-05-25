@@ -8,19 +8,19 @@ const slides = [
   {
     id: 1,
     title: "Samsung Galaxy Tab S6, Wifi Tablet",
-    subtitle: "TABLET COLLECTION 2025",
+    subtitle: "TABLET COLLECTION 2026",
     image: "/slider-1-1.png",
   },
   {
     id: 2,
     title: "Samsung Galaxy Tab S6, Wifi Tablet",
-    subtitle: "TABLET COLLECTION 2025",
+    subtitle: "TABLET COLLECTION 2026",
     image: "/slider-2-1.png",
   },
   {
     id: 3,
     title: "Samsung Galaxy Tab S6, Wifi Tablet",
-    subtitle: "TABLET COLLECTION 2025",
+    subtitle: "TABLET COLLECTION 2026",
     image: "/slider-3-1.png",
   }
 ];
@@ -42,19 +42,19 @@ export default function TabletHero() {
         <div className="container mx-auto px-8 md:px-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 relative z-10">
           {/* Text Content */}
           <div className="text-white space-y-4 md:space-y-6">
-            <p className="  tracking-[0.25em] text-[10px] md:text-xs uppercase opacity-90">
+            <p className="tracking-[0.25em] text-[10px] md:text-xs uppercase opacity-90 font-semibold select-none">
               {slides[current].subtitle}
             </p>
-            <h1 className="text-3xl md:text-6xl lg:text-7xl   leading-[1.1] transition-all duration-700">
+            <h1 className="text-3xl md:text-6xl lg:text-7xl font-black font-montserrat leading-[1.1] transition-all duration-700 uppercase tracking-tight">
               {slides[current].title}
             </h1>
             <div className="pt-4 md:pt-6">
               <Link 
-  href="/shop" 
-  className="inline-block bg-[#010F1C] text-white px-10 py-3.5 rounded-lg text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300 text-center"
->
-  Shop Now
-</Link>
+                href="/shop" 
+                className="inline-block bg-[#010F1C] text-white px-10 py-3.5 rounded-lg text-xs uppercase tracking-widest hover:bg-white hover:text-[#149fcd] transition-all duration-300 font-black text-center shadow-md hover:scale-105"
+              >
+                Shop Now
+              </Link>
             </div>
           </div>
 
@@ -63,9 +63,10 @@ export default function TabletHero() {
             <div className="relative w-full h-full transition-all duration-1000 ease-in-out">
               <Image
                 src={slides[current].image}
-                alt="Samsung Tablet"
+                alt="Samsung Tablet Banner Showcase"
                 fill
-                className="object-contain drop-shadow-2xl"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain drop-shadow-2xl animate-in zoom-in-95 duration-700"
                 priority
               />
             </div>
@@ -77,10 +78,12 @@ export default function TabletHero() {
           {slides.map((_, i) => (
             <button
               key={i}
+              type="button"
               onClick={() => setCurrent(i)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                current === i ? "bg-white h-6" : "bg-white/40 hover:bg-white/60"
+              className={`w-2 h-2 rounded-full transition-all duration-300 focus:outline-none ${
+                current === i ? "bg-white h-6 shadow-sm" : "bg-white/40 hover:bg-white/60"
               }`}
+              aria-label={`Jump directly to slide number ${i + 1}`}
             />
           ))}
         </div>

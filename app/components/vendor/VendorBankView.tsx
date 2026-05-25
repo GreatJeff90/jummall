@@ -1,106 +1,82 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Loader2, Landmark, CheckCircle2, AlertTriangle, Save } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchPayoutBanksAPI, resolveBankAccountAPI, fetchSavedBankAPI, saveBankAccountAPI, BankItemAPI } from "@/app/lib/api/auth";
 
 export default function VendorBankView() {
-  const [banksList, setBanksList] = useState<BankItemAPI[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Core configuration model fields
+  // --- LOCAL FORM STATES ---
   const [selectedBankCode, setSelectedBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [resolvedAccountName, setResolvedAccountName] = useState("");
-  const [isVerified, setIsVerified] = useState(false);
 
-  // Initialize data structures concurrently on page mount
-  useEffect(() => {
-    const hydrateBankWorkspace = async () => {
-      try {
-        setLoading(true);
-        // Load bank list and current configuration settings in parallel
-        const [banksData, currentSavedProfile] = await Promise.all([
-          fetchPayoutBanksAPI(),
-          fetchSavedBankAPI()
-        ]);
+  // 1. Fetch live available financial institutions framework query
+  const { data: banksList = [], isLoading: loadingBanks } = useQuery<BankItemAPI[]>({
+    queryKey: ["payoutBanksList"],
+    queryFn: fetchPayoutBanksAPI,
+    staleTime: 1000 * 60 * 60, // Bank lists remain fresh for 1 hour
+  });
 
-        setBanksList(banksData || []);
-
-        if (currentSavedProfile) {
-          setSelectedBankCode(currentSavedProfile.bank_code);
-          setAccountNumber(currentSavedProfile.account_number);
-          setResolvedAccountName(currentSavedProfile.account_name);
-          setIsVerified(true);
-        }
-      } catch (err) {
-        console.error("Failed loading bank setup parameters:", err);
-      } finally {
-        setLoading(false);
+  // 2. Fetch the active user's current profile bank configurations
+  const { isLoading: loadingProfile } = useQuery({
+    queryKey: ["savedBankProfile"],
+    queryFn: async () => {
+      const data = await fetchSavedBankAPI();
+      if (data) {
+        setSelectedBankCode(data.bank_code);
+        setAccountNumber(data.account_number);
       }
-    };
+      return data;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
 
-    hydrateBankWorkspace();
-  }, []);
+  // 3. Real-time background query replacing the old input-watching validation loop
+  const isLookupReady = accountNumber.trim().length === 10 && !!selectedBankCode;
+  
+  const { data: verificationData, isFetching: verifying, isError: lookupFailed } = useQuery({
+    queryKey: ["resolveBankAccount", selectedBankCode, accountNumber],
+    queryFn: () => resolveBankAccountAPI({
+      account_number: accountNumber.trim(),
+      bank_code: selectedBankCode
+    }),
+    enabled: isLookupReady,
+    staleTime: 1000 * 60 * 5,
+    retry: false, // Don't spam retries on wrong bank/account number inputs
+  });
 
-  // Watch inputs to auto-trigger Paystack resolution once account number is exactly 10 digits
-  useEffect(() => {
-    const handleAccountValidationFlow = async () => {
-      // If validation conditions aren't reached yet, perform clean-up operations safely inside the async flow
-      if (accountNumber.length !== 10 || !selectedBankCode) {
-        setResolvedAccountName("");
-        setIsVerified(false);
-        return;
-      }
+  const resolvedAccountName = verificationData?.account_name || "";
+  const isVerified = isLookupReady && !verifying && !lookupFailed && !!resolvedAccountName;
 
-      try {
-        setVerifying(true);
-        setResolvedAccountName("");
-        setIsVerified(false);
-
-        const verification = await resolveBankAccountAPI({
-          account_number: accountNumber.trim(),
-          bank_code: selectedBankCode
-        });
-
-        if (verification && verification.account_name) {
-          setResolvedAccountName(verification.account_name);
-          setIsVerified(true);
-        }
-      } catch (err) {
-        setResolvedAccountName("Could not resolve account details. Please double-check inputs.");
-        setIsVerified(false);
-      } finally {
-        setVerifying(false);
-      }
-    };
-
-    handleAccountValidationFlow();
-  }, [accountNumber, selectedBankCode]);
-  const handleSaveBankSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isVerified || saving) return;
-
-    try {
-      setSaving(true);
+  // 4. Save settlement form variables securely inside a TanStack mutation block
+  const saveBankMutation = useMutation({
+    mutationFn: async () => {
       const chosenBank = banksList.find(b => b.code === selectedBankCode);
-      
-      await saveBankAccountAPI({
+      return await saveBankAccountAPI({
         bank_name: chosenBank ? chosenBank.name : "Unknown Bank",
         bank_code: selectedBankCode,
         account_number: accountNumber.trim(),
         account_name: resolvedAccountName
       });
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["savedBankProfile"] });
       alert("Settlement payout bank configurations deployed successfully!");
-    } catch (err) {
+    },
+    onError: () => {
       alert("Failed saving settlement profile updates to the cluster.");
-    } finally {
-      setSaving(false);
     }
+  });
+
+  const handleSaveBankSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isVerified || saveBankMutation.isPending) return;
+    saveBankMutation.mutate();
   };
+
+  const loading = loadingBanks || loadingProfile;
 
   if (loading) {
     return (
@@ -161,7 +137,7 @@ export default function VendorBankView() {
           </div>
 
           {/* Async Live Paystack Feedback Banner Layer */}
-          {(verifying || resolvedAccountName) && (
+          {(verifying || resolvedAccountName || lookupFailed) && (
             <div className={`p-4 rounded-sm flex items-center gap-3 border select-none transition-all ${
               isVerified 
                 ? "bg-emerald-50/40 border-emerald-100 text-emerald-800" 
@@ -182,7 +158,12 @@ export default function VendorBankView() {
               ) : (
                 <>
                   <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-                  <span className="text-xs font-bold">{resolvedAccountName}</span>
+                  <span className="text-xs font-bold">
+                    {lookupFailed 
+                      ? "Could not resolve account details. Please check account information." 
+                      : resolvedAccountName
+                    }
+                  </span>
                 </>
               )}
             </div>
@@ -191,10 +172,10 @@ export default function VendorBankView() {
           {/* Submission CTA Activation Control Bar */}
           <button
             type="submit"
-            disabled={!isVerified || saving}
-            className="w-full h-12 bg-[#149fcd] hover:bg-[#118eb8] text-white font-black text-xs uppercase tracking-widest rounded-sm transition-all shadow-md mt-6 flex items-center justify-center gap-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none select-none"
+            disabled={!isVerified || saveBankMutation.isPending}
+            className="w-full h-12 bg-[#149fcd] hover:bg-[#118eb8] text-white font-black text-xs uppercase tracking-widest rounded-sm transition-all shadow-md mt-6 flex items-center justify-center gap-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none select-none focus:outline-none"
           >
-            {saving ? (
+            {saveBankMutation.isPending ? (
               <>
                 <Loader2 size={14} className="animate-spin text-[#149fcd]" /> Committing configurations...
               </>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Search, 
   Plus, 
@@ -20,67 +21,72 @@ import {
   Layers,
   Loader2
 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AddProductWizard from "./modals/AddProductWizard";
 import { fetchMySellerProducts, updateSellerProductStatus, deleteSellerProduct, SellerProductItem } from "../../lib/api/auth";
 
 export default function VendorProductsView() {
-  const [products, setProducts] = useState<SellerProductItem[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedProduct, setSelectedProduct] = useState<SellerProductItem | null>(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
 
-  const syncMerchantCatalog = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchMySellerProducts();
-      setProducts(data.products || []);
-      setTotalRevenue(data.total_catalog_revenue || 0);
-    } catch (err) {
-      console.error("Error retrieving custom vendor catalog list payload:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 1. Core catalog synchronization stream using TanStack Query
+  const { data, isLoading } = useQuery({
+    queryKey: ["merchantCatalog"],
+    queryFn: fetchMySellerProducts,
+    staleTime: 1000 * 60 * 10, // Cache catalog records fresh for 10 minutes
+  });
 
-  useEffect(() => {
-    const initializeCatalogTimeline = async () => {
-      await syncMerchantCatalog();
-    };
-    initializeCatalogTimeline();
-  }, []);
+  const products: SellerProductItem[] = Array.isArray(data?.products) ? data.products : [];
+  const totalRevenue = data?.total_catalog_revenue || 0;
 
-  const handleToggleActive = async (id: string, currentStatus: boolean) => {
-    try {
-      setActionLoading(true);
-      const updatedItem = await updateSellerProductStatus(id, !currentStatus);
-      setProducts(prev => prev.map(p => p.id === id ? updatedItem : p));
+  // 2. Mutation pipeline to change product listing visibility states
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, nextStatus }: { id: string; nextStatus: boolean }) => {
+      return await updateSellerProductStatus(id, nextStatus);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["merchantCatalog"] });
       setSelectedProduct(null);
-    } catch (err) {
-  console.error("Hydration sync caught exception:", err); // Adds reference to clear the warning log
-} finally {
-      setActionLoading(false);
+    },
+    onError: (err: unknown) => {
+      console.error("Listing lifecycle mutation tracking crash:", err);
+      alert("Failed modifying store item visibility parameters.");
     }
+  });
+
+  // 3. Destructive mutation channel to delete catalog records permanently
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteSellerProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["merchantCatalog"] });
+      setSelectedProduct(null);
+      alert("Product successfully expunged from database registries.");
+    },
+    onError: (err: unknown) => {
+      console.error("Catalog removal transaction dropped:", err);
+      alert("Failed deleting requested item from server clusters.");
+    }
+  });
+
+  const handleToggleActive = (id: string, currentStatus: boolean) => {
+    if (toggleStatusMutation.isPending) return;
+    toggleStatusMutation.mutate({ id, nextStatus: !currentStatus });
   };
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteProduct = (id: string) => {
+    if (deleteProductMutation.isPending) return;
     if (!window.confirm("Are you absolutely sure you want to delete this listing permanently from Jummall?")) return;
-    try {
-      setActionLoading(true);
-      await deleteSellerProduct(id);
-      setProducts(prev => prev.filter(p => p.id !== id));
-      setSelectedProduct(null);
-    } catch (err) {
-  console.error("Hydration sync caught exception:", err); // Adds reference to clear the warning log
-}finally {
-      setActionLoading(false);
-    }
+    deleteProductMutation.mutate(id);
   };
 
-  // Dynamic Proportion multi-segment calculation blocks derived directly from real database collections
+  const handleManualRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["merchantCatalog"] });
+  };
+
+  // Dynamic metrics computations derived straight from server state caches inside execution context
   const totalCount = products.length || 1; 
   const activeCount = products.filter(p => p.is_active && p.stock > 0).length;
   const restockCount = products.filter(p => p.stock <= 5).length;
@@ -110,6 +116,8 @@ export default function VendorProductsView() {
     }).format(value).replace("NGN", "₦");
   };
 
+  const actionLoading = toggleStatusMutation.isPending || deleteProductMutation.isPending;
+
   return (
     <div className="w-full space-y-6 text-left font-sans relative">
       
@@ -127,8 +135,9 @@ export default function VendorProductsView() {
         </div>
 
         <button 
+          type="button"
           onClick={() => setIsWizardOpen(true)}
-          className="bg-[#149FCD] hover:bg-[#1284AC] text-white px-5 py-3 rounded-md text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors self-start sm:self-auto shadow-sm"
+          className="bg-[#149FCD] hover:bg-[#1284AC] text-white px-5 py-3 rounded-md text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors self-start sm:self-auto shadow-sm focus:outline-none"
         >
           <Plus size={14} className="stroke-[3]" /> Add Product
         </button>
@@ -177,14 +186,14 @@ export default function VendorProductsView() {
       </div>
 
       {/* --- 5.4 HORIZONTAL CHIP FILTER STRIP SYSTEM --- */}
-      <div className="w-full flex items-center justify-between border-b border-slate-100 pb-2 overflow-x-auto no-scrollbar gap-4 select-none">
+      <div className="w-full flex items-center gap-4 border-b border-slate-100 pb-2 overflow-x-auto no-scrollbar justify-between select-none">
         <div className="flex items-center gap-2 shrink-0">
           {["All", "Active", "Low stock", "Out of stock", "Paused"].map((label) => (
             <button
               key={label}
               type="button"
               onClick={() => setActiveFilter(label)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-tight shrink-0 transition-all ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-tight shrink-0 transition-all focus:outline-none ${
                 activeFilter === label 
                   ? "bg-[#143D4A] text-white shadow-sm" 
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
@@ -195,14 +204,14 @@ export default function VendorProductsView() {
           ))}
         </div>
 
-        <button type="button" className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-slate-50 shrink-0 shadow-sm">
+        <button type="button" className="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-slate-50 shrink-0 shadow-sm focus:outline-none">
           <SlidersHorizontal size={12} className="text-[#149FCD]" />
           <span>Sort: Best Selling</span>
         </button>
       </div>
 
       {/* --- 5.5 DYNAMIC PRODUCT CARD LOOP ARCHITECTURE --- */}
-      {loading ? (
+      {isLoading ? (
         <div className="w-full bg-white border border-slate-100 rounded-sm p-24 flex flex-col items-center justify-center text-center shadow-sm min-h-[350px]">
           <Loader2 size={32} className="animate-spin text-[#149FCD]" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-2">Pulling your active catalog metrics...</p>
@@ -227,19 +236,25 @@ export default function VendorProductsView() {
               <div className="flex items-start gap-4">
                 {/* Image Canvas Container */}
                 <div className="relative w-20 h-20 bg-[#F6F7F9] border border-slate-100 rounded-sm overflow-hidden shrink-0 flex items-center justify-center p-1.5 shadow-2xs">
-                  <img src={product.image_url || "/placeholder-product.png"} alt={product.name} className="object-contain w-full h-full transform transition-transform duration-300 group-hover:scale-102" />
+                  <Image 
+                    src={product.image_url || "/placeholder-product.png"} 
+                    alt={product.name} 
+                    fill
+                    sizes="80px"
+                    className="object-contain p-1.5 transform transition-transform duration-300 group-hover:scale-102" 
+                  />
                   {!product.is_active && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[0.5px]" />
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[0.5px] z-10" />
                   )}
                 </div>
 
                 {/* Details Content Stack */}
                 <div className="space-y-1 min-w-0 flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black tracking-wider uppercase text-[#149FCD] bg-[#E5F4FA] px-2 py-0.5 rounded-sm">
+                    <span className="text-[10px] font-black tracking-wider uppercase text-[#149FCD] bg-[#E5F4FA] px-2 py-0.5 rounded-sm select-none">
                       {product.category || "General"}
                     </span>
-                    <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1 select-none">
                       <Layers size={11} /> {product.sold_count ?? 0} sold
                     </span>
                   </div>
@@ -253,7 +268,7 @@ export default function VendorProductsView() {
                 <button 
                   type="button"
                   onClick={() => setSelectedProduct(product)}
-                  className="text-slate-400 hover:text-slate-700 p-1 rounded-sm hover:bg-slate-50 transition-colors absolute top-3 right-3"
+                  className="text-slate-400 hover:text-slate-700 p-1 rounded-sm hover:bg-slate-50 transition-colors absolute top-3 right-3 focus:outline-none"
                 >
                   <MoreVertical size={16} />
                 </button>
@@ -301,23 +316,32 @@ export default function VendorProductsView() {
             
             <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/50">
               <div className="flex items-center gap-3 min-w-0">
-                <img src={selectedProduct.image_url || "/placeholder-product.png"} alt="" className="w-10 h-10 object-contain bg-white p-0.5 border rounded-sm shrink-0" />
+                <div className="relative w-10 h-10 bg-white border rounded-sm p-0.5 shrink-0 flex items-center justify-center">
+                  <Image 
+                    src={selectedProduct.image_url || "/placeholder-product.png"} 
+                    alt="" 
+                    fill
+                    sizes="40px"
+                    className="object-contain p-0.5" 
+                  />
+                </div>
                 <div className="min-w-0 text-left">
                   <h4 className="text-xs font-black text-slate-800 truncate max-w-[280px]">{selectedProduct.name}</h4>
                   <p className="text-[11px] font-bold text-[#149FCD] mt-0.5">{formatCurrency(selectedProduct.price)}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setSelectedProduct(null)} className="text-slate-400 hover:text-slate-700 p-1 shrink-0"><X size={16} /></button>
+              <button type="button" onClick={() => setSelectedProduct(null)} className="text-slate-400 hover:text-slate-700 p-1 shrink-0 focus:outline-none"><X size={16} /></button>
             </div>
 
             <div className="p-2 divide-y divide-slate-50">
               <Link href={`/shop/${selectedProduct.id}`} className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"><Eye size={15} /> View Details</Link>
-              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"><Edit2 size={15} /> Edit Product</button>
+              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors focus:outline-none"><Edit2 size={15} /> Edit Product</button>
               
               <button 
                 type="button"
                 onClick={() => handleToggleActive(selectedProduct.id, selectedProduct.is_active)}
-                className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                disabled={actionLoading}
+                className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors focus:outline-none"
               >
                 {selectedProduct.is_active ? (
                   <><Pause size={15} className="text-[#D9714E]" /> Pause Listing</>
@@ -326,15 +350,21 @@ export default function VendorProductsView() {
                 )}
               </button>
               
-              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"><Copy size={15} /> Duplicate Item</button>
-              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"><Share2 size={15} /> Share Link</button>
+              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors focus:outline-none"><Copy size={15} /> Duplicate Item</button>
+              <button type="button" className="w-full px-4 py-3 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors focus:outline-none"><Share2 size={15} /> Share Link</button>
               
               <button 
                 type="button"
                 onClick={() => handleDeleteProduct(selectedProduct.id)}
-                className="w-full px-4 py-3 text-left text-xs font-black text-[#EF4444] hover:bg-red-50 flex items-center gap-3 transition-colors"
+                disabled={actionLoading}
+                className="w-full px-4 py-3 text-left text-xs font-black text-[#EF4444] hover:bg-red-50 flex items-center gap-3 transition-colors focus:outline-none"
               >
-                <Trash2 size={15} /> Delete Product
+                {deleteProductMutation.isPending ? (
+                  <Loader2 size={15} className="animate-spin text-[#EF4444]" />
+                ) : (
+                  <Trash2 size={15} />
+                )} 
+                Delete Product
               </button>
             </div>
 
@@ -343,7 +373,7 @@ export default function VendorProductsView() {
       )}
 
       {/* --- 7.0 MOUNTED MULTI-STEP CREATION WIZARD MODAL PANEL --- */}
-      <AddProductWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} onAdded={syncMerchantCatalog} />
+      <AddProductWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} onAdded={handleManualRefresh} />
 
     </div>
   );

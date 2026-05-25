@@ -8,7 +8,7 @@ import Link from 'next/link';
 const slides = [
   {
     id: 1,
-    title: "The best phone collection 2025",
+    title: "The best phone collection 2026",
     subtitle: "Starting at ₦2,559,000",
     offer: "Exclusive offer -10% off this week",
     buttonText: "Shop Now",
@@ -19,7 +19,7 @@ const slides = [
   },
   {
     id: 2,
-    title: "The best notebook collection 2025",
+    title: "The best notebook collection 2026",
     subtitle: "Starting at ₦855,000.00",
     offer: "Exclusive offer -10% off this week",
     buttonText: "Shop Now",
@@ -30,7 +30,7 @@ const slides = [
   },
   {
     id: 3,
-    title: "The best smartwatch collection 2025",
+    title: "The best smartwatch collection 2026",
     subtitle: "Starting at ₦275,000.00",
     offer: "Exclusive offer -35% off this week",
     buttonText: "Shop Now",
@@ -109,14 +109,18 @@ export default function HeroSlider() {
 
       {/* Navigation Arrows */}
       <button 
+        type="button"
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300 focus:outline-none"
+        aria-label="Previous slide"
       >
         <ChevronLeft size={20} className="stroke-[2.5]" />
       </button>
       <button 
+        type="button"
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/10 hover:bg-[#149fcd] p-3 rounded-full text-white backdrop-blur-sm transition-all duration-300 focus:outline-none"
+        aria-label="Next slide"
       >
         <ChevronRight size={20} className="stroke-[2.5]" />
       </button>
@@ -126,10 +130,12 @@ export default function HeroSlider() {
         {slides.map((_, i) => (
           <button
             key={i}
+            type="button"
             onClick={() => setCurrent(i)}
-            className={`h-2 transition-all rounded-full duration-300 ${
+            className={`h-2 transition-all rounded-full duration-300 focus:outline-none ${
               current === i ? "w-8 bg-white shadow-sm" : "w-2 bg-white/40"
             }`}
+            aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>

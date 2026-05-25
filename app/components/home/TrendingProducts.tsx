@@ -1,54 +1,44 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Eye, Heart, ShoppingBag, Star, RefreshCw, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
+import { useProducts, useAddToCart } from "@/app/hooks/useEcosystem";
+import { ProductItemBackend } from "../../lib/api/auth";
 
 export default function TrendingProducts() {
-  const [products, setProducts] = useState<ProductItemBackend[]>([]);
   const [activeTab, setActiveTab] = useState('All');
-  const [loading, setLoading] = useState(true);
-  const [addingId, setAddingId] = useState<string | null>(null);
   const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
   const tabs = ['All', 'Featured', 'On sale', 'Trending', 'Top rated'];
 
-  const loadCatalog = async (tabName: string) => {
-    try {
-      setLoading(true);
-      // Map visual tabs titles directly to backend filtering keywords
-      const queryTag = tabName === 'All' ? undefined : tabName.toLowerCase().replace(" ", "-");
-      const data = await fetchPublicProducts({ tag: queryTag });
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed loading public product loops:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 1. Compute dynamic tag variables safely from live selection states
+  const queryTag = activeTab === 'All' ? undefined : activeTab.toLowerCase().replace(" ", "-");
 
-  // Safe wrapping macro-task closure pattern to clear 'set-state-in-effect' linter rule
-  useEffect(() => {
-    const initializeFeedSync = async () => {
-      await loadCatalog(activeTab);
-    };
-    initializeFeedSync();
-  }, [activeTab]);
+  // 2. Consume the cached server queries reactively
+  const { data: rawProducts, isLoading: loading } = useProducts({ tag: queryTag });
+  const products = Array.isArray(rawProducts)
+    ? (rawProducts as unknown as ProductItemBackend[])
+    : [];
 
-  const handleAddToCart = async (productId: string) => {
-    try {
-      setAddingId(productId);
-      await addProductToCartAPI(productId, 1);
-      
-      setAddedSuccessId(productId);
-      setTimeout(() => setAddedSuccessId(null), 2000); // Reset toast marker
-    } catch (err) {
-      alert("Authentication required. Please sign into your account profile first.");
-    } finally {
-      setAddingId(null);
-    }
+  // 3. Mount global basket integration pipeline mutations
+  const { mutate: addToCart, isPending: addingToCart, variables } = useAddToCart();
+  const addingId = addingToCart ? variables?.productId : null;
+
+  const handleAddToCart = (productId: string) => {
+    addToCart(
+      { productId, quantity: 1 },
+      {
+        onSuccess: () => {
+          setAddedSuccessId(productId);
+          setTimeout(() => setAddedSuccessId(null), 2000);
+        },
+        onError: () => {
+          alert("Authentication required. Please sign into your account profile first.");
+        }
+      }
+    );
   };
 
   const formatCurrency = (value: number) => {
@@ -63,15 +53,16 @@ export default function TrendingProducts() {
     <section className="max-w-7xl mx-auto px-4 py-16 text-left font-sans">
       {/* Header with Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 border-b border-gray-100 pb-4">
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight font-montserrat">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight font-montserrat uppercase select-none">
           Trending <span className="text-[#22A7D0]">Products</span>
         </h2>
-        <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 md:mt-0">
+        <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 md:mt-0 select-none">
           {tabs.map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
-              className={`text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`text-sm font-bold uppercase tracking-wider transition-colors focus:outline-none ${
                 activeTab === tab ? 'text-[#22A7D0]' : 'text-slate-400 hover:text-slate-900'
               }`}
             >
@@ -82,13 +73,13 @@ export default function TrendingProducts() {
       </div>
 
       {/* Grid Loader State */}
-      {loading ? (
-        <div className="min-h-[300px] flex flex-col items-center justify-center gap-2">
+      {loading && products.length === 0 ? (
+        <div className="min-h-[300px] flex flex-col items-center justify-center gap-2 select-none">
           <Loader2 size={32} className="animate-spin text-[#22A7D0]" />
-          <p className="text-xs font-semibold text-slate-400">Filtering storefront catalog columns...</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Filtering storefront catalog columns...</p>
         </div>
       ) : products.length === 0 ? (
-        <div className="min-h-[300px] bg-slate-50 rounded-xl border border-dashed border-slate-200/60 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+        <div className="min-h-[300px] bg-slate-50 rounded-xl border border-dashed border-slate-200/60 flex flex-col items-center justify-center p-8 text-center text-slate-400 select-none animate-in fade-in duration-150">
           <ShoppingBag size={36} className="stroke-1 mb-2" />
           <p className="text-sm font-bold">No active items discovered under this tier.</p>
         </div>
@@ -96,11 +87,11 @@ export default function TrendingProducts() {
         /* --- RENDER FEED GRID MATRIX --- */
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 animate-in fade-in duration-200">
           {products.map((product) => (
-            <div key={product.id} className="group flex flex-col bg-white overflow-hidden relative">
+            <div key={product.id} className="group flex flex-col bg-white overflow-hidden relative h-full">
               
               {/* Badges Overlay Collection */}
-              <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                {product.badges?.map((b) => (
+              <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 select-none">
+                {product.badges?.map((b: string) => (
                   <span 
                     key={b} 
                     className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm text-white shadow-xs tracking-wide ${
@@ -119,17 +110,18 @@ export default function TrendingProducts() {
                     src={product.image_url || "/placeholder-product.png"} 
                     alt={product.name} 
                     fill 
+                    sizes="(max-width: 768px) 50vw, 20vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </Link>
                 
                 {/* Vertical Hover Actions Bar */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
-                  {/* Basket Inject Control Button */}
                   <button 
+                    type="button"
                     onClick={() => handleAddToCart(product.id)}
                     disabled={addingId === product.id}
-                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all disabled:bg-slate-50"
+                    className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all disabled:bg-slate-50 focus:outline-none"
                   >
                     {addedSuccessId === product.id ? (
                       <CheckCircle2 size={16} className="text-emerald-500 animate-bounce" />
@@ -147,22 +139,22 @@ export default function TrendingProducts() {
                     <Eye size={16} />
                   </Link>
 
-                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                  <button type="button" className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all focus:outline-none">
                     <Heart size={16} />
                   </button>
 
-                  <button className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all">
+                  <button type="button" className="w-9 h-9 bg-white rounded-full shadow-md flex items-center justify-center text-slate-600 hover:bg-[#22A7D0] hover:text-white transition-all focus:outline-none">
                     <RefreshCw size={16} />
                   </button>
                 </div>
               </div>
 
               {/* Product Metadata Info Card Section */}
-              <div className="space-y-1 mt-auto">
-                <div className="flex items-center gap-1.5">
+              <div className="space-y-1 mt-auto flex flex-col justify-end">
+                <div className="flex items-center gap-1.5 select-none">
                   <span className="text-[10px] font-bold text-slate-400 tracking-wider">JUMMALL OFFICIAL STORE</span>
                   {product.is_verified_store !== false && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center shadow-xs">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center shadow-xs shrink-0">
                       <div className="w-1 h-1.5 border-r border-b border-white rotate-45 mb-0.5" />
                     </div>
                   )}
@@ -181,7 +173,7 @@ export default function TrendingProducts() {
                       className={i < Math.round(product.rating_average || 5) ? "text-orange-400" : "text-slate-200"} 
                     />
                   ))}
-                  <span className="text-[10px] text-slate-400 font-medium ml-1">({product.reviews_count || 50})</span>
+                  <span className="text-[10px] text-slate-400 font-medium ml-1 select-none">({product.reviews_count || 50})</span>
                 </div>
 
                 <p className="text-base font-black text-slate-900 tracking-tight pt-0.5">

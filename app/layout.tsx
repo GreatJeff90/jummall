@@ -5,6 +5,7 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import ModalLayerController from "./components/modals/ModalLayerController";
 import { AuthProvider } from "@/context/AuthContext";
+import QueryProvider from "./providers/QueryProvider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -25,20 +26,25 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${montserrat.className} antialiased min-h-full flex flex-col`} suppressHydrationWarning>
-        {/* CRITICAL: AuthProvider MUST be the outermost wrapper so Navbar can consume its hooks! */}
-        <AuthProvider>
-          
-          {/* Now Navbar sits perfectly inside the context channel */}
-          <Navbar />
-          
-          <main className="flex-grow">
-            {children}
-          </main>
-          
-          <Footer />
+        
+        {/* TanStack Query caching and retry engine context layer wraps the entire application ecosystem */}
+        <QueryProvider>
+          {/* CRITICAL: AuthProvider MUST be the outermost context wrapper so Navbar can consume its hooks! */}
+          <AuthProvider>
+            
+            {/* Now Navbar sits perfectly inside the context channel */}
+            <Navbar />
+            
+            <main className="flex-grow">
+              {children}
+            </main>
+            
+            <Footer />
 
-          <ModalLayerController />
-        </AuthProvider>
+            <ModalLayerController />
+          </AuthProvider>
+        </QueryProvider>
+
       </body>
     </html>
   );

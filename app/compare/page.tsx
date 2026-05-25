@@ -1,59 +1,91 @@
 'use client';
 
+import React from "react";
 import Image from "next/image";
-import { useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, Trash2, ArrowLeftRight, Star } from "lucide-react";
+import { ShoppingBag, Trash2, ArrowLeftRight, Star, Loader2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/app/lib/api/client";
+import { useAddToCart } from "@/app/hooks/useEcosystem";
 
 interface CompareItem {
-  id: number;
+  id: string | number;
   name: string;
   price: number;
-  image: string;
+  image_url: string;
   description: string;
   sku: string;
-  inStock: boolean;
+  in_stock: boolean;
+  rating_average?: number;
 }
 
 export default function ComparePage() {
-  // Populated mock data matching the screenshot
-  const [compareItems, setCompareItems] = useState<CompareItem[]>([
-    {
-      id: 1,
-      name: "Baggy denim shorts, Jeans",
-      price: 14999,
-      image: "/img-20260509-wa0021-600x600.jpg",
-      description: "Denim Jeans Short. Crafted from durable, high-quality denim, they offer a comfortable relaxed fit perfect for everyday wear. The classic faded wash provides a timeless, lived-in look that pairs effortlessly with your favorite t-shirts, sneakers, or sandals.",
-      sku: "#JM-2443-RDZZ",
-      inStock: true
-    }
-  ]);
+  const queryClient = useQueryClient();
+  const { mutate: addToCart, isPending: addingToCart } = useAddToCart();
 
-  const removeItem = (id: number) => {
-    setCompareItems(prev => prev.filter(item => item.id !== id));
+  // 1. TanStack Query data streaming layer replacing local state hooks
+  const { data: compareItems = [], isLoading } = useQuery<CompareItem[]>({
+    queryKey: ["compareList"],
+    queryFn: async () => {
+      const response = await api.get("/compare");
+      return response.data || [];
+    },
+  });
+
+  // 2. Optimized Mutation handler for single item cache removals
+  const removeCompareMutation = useMutation({
+    mutationFn: async (itemId: string | number) => {
+      const response = await api.delete(`/compare/${itemId}`);
+      return response.data;
+    },
+    onSuccess: (updatedList) => {
+      // Direct optimistic cache patch keeping page transitions completely instant
+      queryClient.setQueryData(["compareList"], updatedList);
+    },
+    onError: () => {
+      alert("Failed removing item from comparison registry dashboard logs.");
+    }
+  });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 2,
+    }).format(value).replace("NGN", "₦");
   };
+
+  // High-fidelity infrastructure initialization layout loader screen 
+  if (isLoading) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center gap-3 bg-white border border-slate-100 rounded-sm my-12 max-w-7xl mx-auto px-4">
+        <Loader2 size={32} className="animate-spin text-[#149FCD]" />
+        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Syncing comparative product matrices...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="bg-white min-h-screen font-sans">
       
       {/* --- BREADCRUMB HEADER (Full Background Image) --- */}
-            <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden">
-              <Image 
-                src="/breadcrumb-1.jpg" 
-                alt="Login Header Background" 
-                fill 
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-white/20" />
-              
-              <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16">
-                <h1 className="text-5xl tracking-tight text-[#0F172A]">Compare</h1>
-                <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
-                  Home <span className="text-slate-300">/</span> <span className="text-sky-600">Compare</span>
-                </p>
-              </div>
-            </div>
+      <div className="relative h-64 md:h-32 md:mb-32 w-full flex items-center overflow-hidden select-none">
+        <Image 
+          src="/breadcrumb-1.jpg" 
+          alt="Login Header Background" 
+          fill 
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-white/20" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16 flex flex-col items-start text-left">
+          <h1 className="text-5xl tracking-tight text-[#0F172A]">Compare</h1>
+          <p className="text-sm text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
+            Home <span className="text-slate-300">/</span> <span className="text-sky-600">Compare</span>
+          </p>
+        </div>
+      </div>
 
       {/* --- Main Section Container --- */}
       <section className="max-w-7xl mx-auto px-4 py-16">
@@ -66,22 +98,27 @@ export default function ComparePage() {
                 
                 {/* 1. Product Title & Image Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white w-[180px] text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] w-[180px] text-xs uppercase tracking-wide select-none">
                     Product
                   </td>
                   {compareItems.map((item) => (
                     <td key={item.id} className="p-6 text-center border-r border-slate-100 last:border-r-0 min-w-[280px]">
                       <div className="flex flex-col items-center space-y-4">
-                        <div className="relative w-36 h-40 bg-slate-50 border border-slate-100 rounded-sm overflow-hidden flex items-center justify-center text-slate-300 text-xs">
-                          {/* Fallback frame background */}
-                          <span>Image Frame</span>
+                        <div className="relative w-36 h-40 bg-slate-50 border border-slate-100 rounded-sm overflow-hidden flex items-center justify-center">
+                          <Image 
+                            src={item.image_url || "/placeholder-product.png"} 
+                            alt={item.name} 
+                            fill 
+                            sizes="144px"
+                            className="object-contain p-2"
+                          />
                         </div>
                         <div className="space-y-1">
                           <h3 className="text-sm font-bold text-slate-700 leading-tight">
                             {item.name}
                           </h3>
-                          {item.inStock && (
-                            <p className="text-[#149fcd] font-medium text-[11px] lowercase">(In stock)</p>
+                          {item.in_stock && (
+                            <p className="text-[#149fcd] font-bold text-[11px] lowercase select-none">(In stock)</p>
                           )}
                         </div>
                       </div>
@@ -91,35 +128,37 @@ export default function ComparePage() {
 
                 {/* 2. Description Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     Description
                   </td>
                   {compareItems.map((item) => (
-                    <td key={item.id} className="p-6 text-center border-r border-slate-100 last:border-r-0 text-xs text-slate-400 leading-relaxed max-w-xl">
-                      <div className="max-w-2xl mx-auto">{item.description}</div>
+                    <td key={item.id} className="p-6 text-left border-r border-slate-100 last:border-r-0 text-xs text-slate-500 leading-relaxed max-w-xl">
+                      <div className="max-w-2xl mx-auto line-clamp-6" title={item.description}>
+                        {item.description}
+                      </div>
                     </td>
                   ))}
                 </tr>
 
                 {/* 3. Price Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     Price
                   </td>
                   {compareItems.map((item) => (
                     <td key={item.id} className="p-6 text-center font-black text-slate-900 border-r border-slate-100 last:border-r-0 text-sm">
-                      ₦{item.price.toLocaleString()}.00
+                      {formatCurrency(item.price)}
                     </td>
                   ))}
                 </tr>
 
                 {/* 4. SKU Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     SKU
                   </td>
                   {compareItems.map((item) => (
-                    <td key={item.id} className="p-6 text-center text-xs font-bold text-slate-400 border-r border-slate-100 last:border-r-0 tracking-wider">
+                    <td key={item.id} className="p-6 text-center text-xs font-bold text-slate-400 border-r border-slate-100 last:border-r-0 tracking-wider select-none">
                       {item.sku}
                     </td>
                   ))}
@@ -127,12 +166,17 @@ export default function ComparePage() {
 
                 {/* 5. Add To Cart Button Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     Add to cart
                   </td>
                   {compareItems.map((item) => (
                     <td key={item.id} className="p-6 text-center border-r border-slate-100 last:border-r-0">
-                      <button className="border border-slate-300 hover:border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white text-xs font-bold py-2.5 px-6 rounded-sm uppercase tracking-wide transition-all bg-white">
+                      <button 
+                        type="button"
+                        disabled={addingToCart}
+                        onClick={() => addToCart({ productId: String(item.id), quantity: 1 })}
+                        className="border border-slate-300 hover:border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white text-xs font-bold py-2.5 px-6 rounded-sm uppercase tracking-wide transition-all bg-white shadow-2xs select-none"
+                      >
                         Add to Cart
                       </button>
                     </td>
@@ -141,15 +185,23 @@ export default function ComparePage() {
 
                 {/* 6. Rating Star Row */}
                 <tr className="border-b border-slate-100">
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     Rating
                   </td>
                   {compareItems.map((item) => (
                     <td key={item.id} className="p-6 text-center border-r border-slate-100 last:border-r-0">
-                      <div className="flex justify-center gap-0.5 text-slate-200">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={14} fill="currentColor" className="text-slate-200" />
-                        ))}
+                      <div className="flex justify-center gap-0.5">
+                        {[...Array(5)].map((_, i) => {
+                          const ratingThreshold = Math.round(item.rating_average || 5);
+                          return (
+                            <Star 
+                              key={i} 
+                              size={12} 
+                              fill={i < ratingThreshold ? "currentColor" : "none"} 
+                              className={i < ratingThreshold ? "text-orange-400" : "text-slate-200"} 
+                            />
+                          );
+                        })}
                       </div>
                     </td>
                   ))}
@@ -157,14 +209,16 @@ export default function ComparePage() {
 
                 {/* 7. Remove Interactive Bin Row */}
                 <tr>
-                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-white text-xs uppercase tracking-wide">
+                  <td className="p-5 font-bold text-slate-800 border-r border-slate-100 bg-[#F8FAFC] text-xs uppercase tracking-wide select-none">
                     Remove
                   </td>
                   {compareItems.map((item) => (
                     <td key={item.id} className="p-6 text-center border-r border-slate-100 last:border-r-0">
                       <button 
-                        onClick={() => removeItem(item.id)}
-                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                        type="button"
+                        disabled={removeCompareMutation.isPending}
+                        onClick={() => removeCompareMutation.mutate(item.id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors p-1 disabled:opacity-40"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -182,15 +236,15 @@ export default function ComparePage() {
             <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100/60 mb-6 text-slate-300">
               <ArrowLeftRight size={40} className="stroke-[1.25]" />
             </div>
-            <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">
+            <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider mb-2 select-none">
               Your compare list is empty
             </h2>
-            <p className="text-xs text-slate-400 max-w-sm mb-8 leading-relaxed">
+            <p className="text-xs text-slate-400 max-w-sm mb-8 leading-relaxed select-none">
               Add products to compare their features and make the best choice.
             </p>
             <Link 
               href="/shop" 
-              className="bg-[#0B1526] hover:bg-slate-800 text-white text-xs font-bold py-3.5 px-8 rounded-sm flex items-center gap-2 transition-all shadow-sm uppercase tracking-wider"
+              className="bg-[#0B1526] hover:bg-slate-800 text-white text-xs font-bold py-3.5 px-8 rounded-sm flex items-center gap-2 transition-all shadow-sm uppercase tracking-wider select-none"
             >
               <ShoppingBag size={14} /> Start Shopping
             </Link>

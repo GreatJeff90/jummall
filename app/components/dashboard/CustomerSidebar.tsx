@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 import { 
   LayoutGrid, ShoppingBag, FileText, Star, 
   RotateCcw, MapPin, Settings, UserPlus, LogOut, Menu, X
@@ -24,13 +25,6 @@ export default function CustomerSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  // Automatically collapse the navigation list drawer whenever a link is clicked
-  useEffect(() => {
-    const handleRouteChangeCollapse = () => {
-      setIsOpen(false);
-    };
-    handleRouteChangeCollapse();
-  }, [pathname]);
 
   // Find the active page name to display next to the avatar bubble on small viewports
   const activePage = menuItems.find(item => item.href === pathname);
@@ -39,13 +33,19 @@ export default function CustomerSidebar() {
   return (
     <div className="w-full md:w-80 shrink-0 z-30">
       
-      {/* --- 📱 MOBILE VIEWPANEL HEADER (Matches Screenshot Layout Exactly) --- */}
+      {/* --- 📱 MOBILE VIEWPANEL HEADER --- */}
       <div className="flex md:hidden items-center justify-between bg-white border border-slate-100 rounded-sm p-4 shadow-sm mb-4">
         <div className="flex items-center gap-3 text-left">
           {/* Circular Blue Avatar Container */}
           <div className="relative w-11 h-11 rounded-full bg-[#149fcd] flex items-center justify-center text-white font-bold text-lg overflow-hidden shrink-0 border border-slate-50 shadow-inner">
             {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              <Image 
+                src={user.avatar_url} 
+                alt="Profile" 
+                fill 
+                sizes="44px"
+                className="object-cover" 
+              />
             ) : (
               <span className="z-10">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'G'}
@@ -64,6 +64,7 @@ export default function CustomerSidebar() {
 
         {/* Minimal Bordered Hamburger Menu Toggle Button */}
         <button 
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="border border-slate-300 rounded-sm p-2 text-slate-500 hover:text-[#149fcd] hover:border-[#149fcd] transition-colors bg-white focus:outline-none"
         >
@@ -77,11 +78,17 @@ export default function CustomerSidebar() {
         ${isOpen ? 'block mb-6 shadow-md' : 'hidden md:block shadow-sm'}
       `}>
         
-        {/* User Info Header Block (Hidden on Desktop Row Pass to save screen space) */}
+        {/* User Info Header Block */}
         <div className="hidden md:flex p-6 border-b border-slate-50 items-center gap-4 text-left bg-slate-50/20">
-          <div className="relative w-12 h-12 rounded-full bg-[#149fcd] flex items-center justify-center text-white font-bold text-xl overflow-hidden shrink-0 border shadow-sm">
+          <div className="relative w-12 h-12 rounded-full bg-[#149fcd] flex items-center justify-center text-white font-bold text-xl overflow-hidden shrink-0 border border-slate-100 shadow-sm">
             {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              <Image 
+                src={user.avatar_url} 
+                alt="Profile" 
+                fill 
+                sizes="48px"
+                className="object-cover" 
+              />
             ) : (
               <span className="z-10">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'G'}
@@ -106,6 +113,7 @@ export default function CustomerSidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => setIsOpen(false)} // Explicit layout event collapse handles routing state shifts elegantly
                 className={`flex items-center gap-4 px-6 py-3.5 text-[13px] font-medium transition-all text-left ${
                   isActive 
                   ? 'bg-[#149fcd] text-white font-semibold shadow-xs' 
@@ -120,6 +128,7 @@ export default function CustomerSidebar() {
           
           {/* Functional Endpoint Logout Handler Button */}
           <button 
+            type="button"
             onClick={logout} 
             className="w-full flex items-center gap-4 px-6 py-3.5 text-[13px] font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all mt-2 border-t border-slate-50 text-left"
           >

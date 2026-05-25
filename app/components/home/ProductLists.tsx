@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Loader2, ShoppingBag } from "lucide-react";
-import { fetchPublicProducts, ProductItemBackend } from "../../lib/api/auth";
+import { useProducts } from "@/app/hooks/useEcosystem";
+import { ProductItemBackend } from "../../lib/api/auth";
 
 const ProductItem = ({ product }: { product: ProductItemBackend }) => (
   <div className="flex gap-4 group border-b border-slate-100 pb-6 last:border-0 text-left">
@@ -15,12 +16,12 @@ const ProductItem = ({ product }: { product: ProductItemBackend }) => (
       className="relative w-32 h-32 flex-shrink-0 bg-slate-50 border border-slate-100/40 rounded-lg overflow-hidden block z-0"
     >
       <Image 
-  src={product.image_url || "/placeholder-product.png"} 
-  alt={product.name} 
-  fill 
-  sizes="(max-width: 768px) 128px, 128px" // Tells Next.js to only request an image optimized for a 128px grid footprint!
-  className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-/>
+        src={product.image_url || "/placeholder-product.png"} 
+        alt={product.name} 
+        fill 
+        sizes="(max-width: 768px) 128px, 128px"
+        className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+      />
     </Link>
 
     <div className="flex flex-col justify-center space-y-1.5 min-w-0 flex-1">
@@ -66,42 +67,25 @@ const ProductItem = ({ product }: { product: ProductItemBackend }) => (
 );
 
 export default function ProductLists() {
-  const [saleProducts, setSaleProducts] = useState<ProductItemBackend[]>([]);
-  const [trendingProducts, setTrendingProducts] = useState<ProductItemBackend[]>([]);
-  const [loading, setLoading] = useState(true);
+  // 1. Leverage separate parallel query cache lines instead of manual Promise.all side effects
+  const { data: rawSaleData, isLoading: loadingSale } = useProducts({ tag: "on-sale" });
+  const { data: rawTrendingData, isLoading: loadingTrending } = useProducts({ tag: "trending" });
 
-  const fetchListsData = async () => {
-    try {
-      setLoading(true);
-      
-      // Concurrently stream on-sale and trending catalog queries
-      const [saleData, trendingData] = await Promise.all([
-        fetchPublicProducts({ tag: "on-sale" }),
-        fetchPublicProducts({ tag: "trending" })
-      ]);
+  const saleProducts = Array.isArray(rawSaleData)
+    ? (rawSaleData as unknown as ProductItemBackend[]).slice(0, 3)
+    : [];
 
-      setSaleProducts(Array.isArray(saleData) ? saleData.slice(0, 3) : []);
-      setTrendingProducts(Array.isArray(trendingData) ? trendingData.slice(0, 3) : []);
-    } catch (err) {
-      console.error("Error updating side columns feed indexes:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const trendingProducts = Array.isArray(rawTrendingData)
+    ? (rawTrendingData as unknown as ProductItemBackend[]).slice(0, 3)
+    : [];
 
-  // Safe wrapper function container resolving the set-state-in-effect log error
-  useEffect(() => {
-    const initializeSplitLists = async () => {
-      await fetchListsData();
-    };
-    initializeSplitLists();
-  }, []);
+  const loading = loadingSale || loadingTrending;
 
-  if (loading) {
+  if (loading && saleProducts.length === 0 && trendingProducts.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-2 min-h-[350px]">
         <Loader2 size={32} className="animate-spin text-[#149fcd]" />
-        <p className="text-xs font-semibold text-slate-400">Loading catalog matrix blocks...</p>
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Loading catalog matrix blocks...</p>
       </div>
     );
   }
@@ -111,12 +95,12 @@ export default function ProductLists() {
       
       {/* ON SALE LEFT ROW COLUMN */}
       <div className="space-y-8">
-        <h2 className="text-2xl font-black text-slate-900 font-montserrat tracking-tight uppercase text-left border-b border-slate-100 pb-3">
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase text-left border-b border-slate-100 pb-3">
           On Sale
         </h2>
         <div className="space-y-6">
           {saleProducts.length === 0 ? (
-            <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1">
+            <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1 select-none">
               <ShoppingBag size={20} className="stroke-1" />
               <p className="text-xs font-medium">No active discounted items found.</p>
             </div>
@@ -128,12 +112,12 @@ export default function ProductLists() {
 
       {/* TRENDING PRODUCTS RIGHT ROW COLUMN */}
       <div className="space-y-8">
-        <h2 className="text-2xl font-black text-slate-900 font-montserrat tracking-tight uppercase text-left border-b border-slate-100 pb-3">
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase text-left border-b border-slate-100 pb-3">
           Trending Products
         </h2>
         <div className="space-y-6">
           {trendingProducts.length === 0 ? (
-            <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1">
+            <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1 select-none">
               <ShoppingBag size={20} className="stroke-1" />
               <p className="text-xs font-medium">No trending items discovered.</p>
             </div>

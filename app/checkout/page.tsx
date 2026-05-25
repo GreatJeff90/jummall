@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CreditCard, ShoppingBag, Loader2, } from "lucide-react";
-import { fetchMyCurrentCartAPI, createMarketplaceOrderAPI, initializeOrderPaymentAPI, CartItemAPI } from "../lib/api/auth";
+import { CreditCard, ShoppingBag, Loader2 } from "lucide-react";
+import { useCart } from "@/app/hooks/useEcosystem";
+import { useMutation } from "@tanstack/react-query";
+import { createMarketplaceOrderAPI, initializeOrderPaymentAPI, CartItemAPI } from "../lib/api/auth";
 
 export default function CheckoutPage() {
-  const [cartItems, setCartItems] = useState<CartItemAPI[]>([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-
   // Local Shipping Form state
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,38 +20,20 @@ export default function CheckoutPage() {
     state: "Rivers State",
   });
 
+  // 1. Consume the global dynamic caching layer directly
+  const { data: cartData, isLoading: loadingCart } = useCart();
+  const cartItems: CartItemAPI[] = cartData?.items || [];
+  const subtotal: number = cartData?.subtotal || 0;
+
   const deliveryFee = 2500; // Flat local logistics shipping line item
   const totalAmount = subtotal + (cartItems.length > 0 ? deliveryFee : 0);
 
-  // Hydrate checkout view directly using actual customer cart contents
-  const syncCheckoutCartData = async () => {
-    try {
-      setLoading(true);
-      const cartData = await fetchMyCurrentCartAPI();
-      setCartItems(cartData.items || []);
-      setSubtotal(cartData.subtotal || 0);
-    } catch (err) {
-      console.error("Failed hydrating checkout validation tokens:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 2. Encapsulate the order submission pipeline inside an optimized TanStack Mutation
+  const orderSubmissionMutation = useMutation({
+    mutationFn: async () => {
+      if (cartItems.length === 0) throw new Error("Your cart is empty.");
 
-  useEffect(() => {
-    const initializeCheckoutFlow = async () => {
-      await syncCheckoutCartData();
-    };
-    initializeCheckoutFlow();
-  }, []);
-
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (cartItems.length === 0 || processing) return;
-
-    try {
-      setProcessing(true);
-
-      // 1. Construct payload using data elements mapped straight out of active cart arrays
+      // STEP A: Construct payload using data elements mapped straight out of active cart arrays
       const freshOrder = await createMarketplaceOrderAPI({
         items: cartItems.map(item => ({
           product_id: item.product_id,
@@ -73,23 +52,30 @@ export default function CheckoutPage() {
 
       const orderTargetId = freshOrder.id || freshOrder.order_id;
 
-      // 2. Initialize Paystack gateway secure transaction token maps
-      const paymentConfig = await initializeOrderPaymentAPI(orderTargetId);
-
-      // 3. Forward merchant viewport safely to Paystack's payment gate URL
-      if (paymentConfig.authorization_url) {
+      // STEP B: Initialize Paystack gateway secure transaction token maps
+      return await initializeOrderPaymentAPI(orderTargetId);
+    },
+    onSuccess: (paymentConfig) => {
+      // Forward user viewport safely to Paystack's payment gate URL
+      if (paymentConfig?.authorization_url) {
         window.location.href = paymentConfig.authorization_url;
       } else {
-        throw new Error("Payment gateway communication link dropped unexpectedly.");
+        alert("Payment gateway communication link dropped unexpectedly.");
       }
-    } catch (err) {
-      console.error("Checkout submission failed:", err);
-      const errorInstance = err as { response?: { data?: { message?: string } } };
-      const backendMessage = errorInstance.response?.data?.message || "Authentication token invalid. Please log back into your profile.";
-      alert(`Order placement stopped: ${backendMessage}`);
-    } finally {
-      setProcessing(false);
-    }
+    },
+    onError: (err: unknown) => {
+  console.error("Checkout submission failed:", err);
+  
+  // Cast securely using an inline structural layout wrapper interface
+  const errorInstance = err as { response?: { data?: { message?: string } } };
+  const backendMessage = errorInstance.response?.data?.message || "Authentication token invalid. Please log back into your profile.";
+  alert(`Order placement stopped: ${backendMessage}`);
+}
+  });
+
+  const handlePlaceOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    orderSubmissionMutation.mutate();
   };
 
   const formatCurrency = (value: number) => {
@@ -124,7 +110,7 @@ export default function CheckoutPage() {
           Checkout
         </h1>
 
-        {loading ? (
+        {loadingCart && !cartData ? (
           <div className="w-full bg-white border border-slate-100 rounded-sm p-24 flex flex-col items-center justify-center text-center space-y-3 min-h-[400px]">
             <Loader2 size={32} className="animate-spin text-[#149FCD]" />
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Assembling active order parameters...</p>
@@ -147,7 +133,7 @@ export default function CheckoutPage() {
           /* --- LIVE RENDER FEED WITH VALID CART SELECTIONS --- */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-200">
             
-            {/* Billing Information Form Field Blocks (8 Columns) */}
+            {/* Billing Information Form Field Blocks (7 Columns) */}
             <form onSubmit={handlePlaceOrder} className="lg:col-span-7 bg-white border border-slate-100 p-6 rounded-sm space-y-5 shadow-sm">
               <h2 className="text-lg font-black text-slate-800 uppercase tracking-wide border-b border-slate-50 pb-3 text-left">
                 Billing details
@@ -156,38 +142,38 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">First name *</label>
-                  <input required type="text" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="text" value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">Last name *</label>
-                  <input required type="text" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="text" value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
               </div>
 
               <div className="text-left">
                 <label className="text-xs font-bold text-slate-600 block mb-1.5">Delivery Address *</label>
-                <input required type="text" placeholder="Street address, apartment, suite" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                <input required type="text" placeholder="Street address, apartment, suite" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">Town / City *</label>
-                  <input required type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">State *</label>
-                  <input required type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">Phone *</label>
-                  <input required type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1.5">Email address *</label>
-                  <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700" />
+                  <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-slate-200 rounded-sm px-4 py-3 text-sm outline-none focus:border-[#149fcd] font-semibold text-slate-700 bg-white" />
                 </div>
               </div>
 
@@ -204,10 +190,10 @@ export default function CheckoutPage() {
 
               <button 
                 type="submit" 
-                disabled={processing}
+                disabled={orderSubmissionMutation.isPending}
                 className="w-full h-12 bg-[#149fcd] hover:bg-[#118eb8] text-white font-black text-xs uppercase tracking-widest rounded-sm transition-all shadow-md mt-4 flex items-center justify-center gap-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none select-none"
               >
-                {processing ? (
+                {orderSubmissionMutation.isPending ? (
                   <>
                     <Loader2 size={16} className="animate-spin text-[#149fcd]" /> Connecting to Paystack gateway...
                   </>
@@ -224,7 +210,6 @@ export default function CheckoutPage() {
                   Your Order
                 </h2>
 
-                {/* Iterate through actual loaded cart array indices */}
                 <div className="divide-y divide-slate-200/60 max-h-[380px] overflow-y-auto custom-sidebar-scroll pr-1">
                   {cartItems.map((item, i) => (
                     <div key={i} className="flex gap-4 items-center py-3 first:pt-0 last:pb-0">
@@ -249,7 +234,6 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
-                {/* Checkout Financial Calculations Tickers */}
                 <div className="border-t border-slate-200 pt-4 space-y-2.5 text-xs font-medium text-slate-600 select-none">
                   <div className="flex justify-between">
                     <span>Subtotal</span>

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ArrowLeft, MessageSquare, Save, Loader2, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAutoRepliesAPI, createAutoReplyAPI, updateAutoReplyAPI, AutoReplyRuleAPI } from "../../lib/api/auth";
 
 interface VendorAutoRepliesViewProps {
@@ -9,69 +10,44 @@ interface VendorAutoRepliesViewProps {
 }
 
 export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewProps) {
-  // --- STATE STORES BOUNDED TO DATA SCHEMAS ---
-  const [welcomeRule, setWelcomeRule] = useState<AutoReplyRuleAPI | null>(null);
-  const [awayRule, setAwayRule] = useState<AutoReplyRuleAPI | null>(null);
+  const queryClient = useQueryClient();
 
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [welcomeMessage, setWelcomeMessage] = useState("");
-  const [offHoursMessage, setOffHoursMessage] = useState("");
-  
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  // --- LOCAL MUTATION BUFFER TRACKING ---
+  // We keep local state for edits, initializing them as null to detect if the user has typed anything yet
+  const [localIsEnabled, setLocalIsEnabled] = useState<boolean | null>(null);
+  const [localWelcomeMessage, setLocalWelcomeMessage] = useState<string | null>(null);
+  const [localOffHoursMessage, setLocalOffHoursMessage] = useState<string | null>(null);
 
-  const syncAutoRepliesFeed = async () => {
-    try {
-      setLoading(true);
-      const rulesList = await fetchAutoRepliesAPI();
-      
-      // Extract specific trigger rules matching the API design schemas
-      const welcome = rulesList.find(r => r.trigger_type === 'welcome');
-      const away = rulesList.find(r => r.trigger_type === 'away');
+  // 1. Fetch server rules list using TanStack Query
+  const { data: rulesList = [], isLoading, isFetching } = useQuery<AutoReplyRuleAPI[]>({
+    queryKey: ["vendorAutoReplies"],
+    queryFn: fetchAutoRepliesAPI,
+    staleTime: 1000 * 60 * 5,
+  });
 
-      if (welcome) {
-        setWelcomeRule(welcome);
-        setWelcomeMessage(welcome.message_content);
-      }
-      if (away) {
-        setAwayRule(away);
-        setOffHoursMessage(away.message_content);
-      }
+  // Extract rule matches on the fly during render execution (no useEffect needed!)
+  const welcomeRule = rulesList.find(r => r.trigger_type === 'welcome') || null;
+  const awayRule = rulesList.find(r => r.trigger_type === 'away') || null;
 
-      // Master switch is active if either rule component layer reports as enabled
-      setIsEnabled(!!welcome?.is_enabled || !!away?.is_enabled);
-    } catch (err) {
-      console.error("Failed downloading automated messaging rule lists:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Deriving active states directly from server data or local updates
+  const isEnabled = localIsEnabled ?? (!!welcomeRule?.is_enabled || !!awayRule?.is_enabled);
+  const welcomeMessage = localWelcomeMessage ?? (welcomeRule?.message_content || "");
+  const offHoursMessage = localOffHoursMessage ?? (awayRule?.message_content || "");
 
-  useEffect(() => {
-    const initializeAutoReplies = async () => {
-      await syncAutoRepliesFeed();
-    };
-    initializeAutoReplies();
-  }, []);
-
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setSaving(true);
-
+  // 2. Atomic mutation handling rule updates
+  const saveSettingsMutation = useMutation({
+    mutationFn: async () => {
       const processRuleSaving = async (
         currentRule: AutoReplyRuleAPI | null,
         type: 'welcome' | 'away',
         textValue: string
       ) => {
         if (currentRule) {
-          // If the profile rule instance exists, run a structural property PATCH update route
           return await updateAutoReplyAPI(currentRule.id, {
             message_content: textValue.trim(),
             is_enabled: isEnabled
           });
         } else {
-          // If it's a completely empty database slot, instantiate the schema via POST
           return await createAutoReplyAPI({
             trigger_type: type,
             message_content: textValue.trim(),
@@ -80,24 +56,41 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
         }
       };
 
-      const [updatedWelcome, updatedAway] = await Promise.all([
+      return await Promise.all([
         processRuleSaving(welcomeRule, 'welcome', welcomeMessage),
         processRuleSaving(awayRule, 'away', offHoursMessage)
       ]);
-
-      setWelcomeRule(updatedWelcome);
-      setAwayRule(updatedAway);
-
+    },
+    onSuccess: () => {
+      // Clear local buffer overrides on success so the view falls back to fresh server states
+      setLocalIsEnabled(null);
+      setLocalWelcomeMessage(null);
+      setLocalOffHoursMessage(null);
+      queryClient.invalidateQueries({ queryKey: ["vendorAutoReplies"] });
       alert("Auto-reply metrics successfully synchronized on servers!");
-    } catch (err) {
-      console.error("KYC transaction sync crash loop error:", err);
-      alert("Failed storing updated message templates down to database nodes.");
-    } finally {
-      setSaving(false);
+    },
+    onError: (err: unknown) => {
+      console.error("Auto replies sync crash loop error:", err);
+      const errorInstance = err as { response?: { data?: { message?: string } } };
+      const backendMessage = errorInstance.response?.data?.message || "Verify your connection profile thresholds.";
+      alert(`Failed storing updated templates: ${backendMessage}`);
     }
+  });
+
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveSettingsMutation.mutate();
   };
 
-  if (loading) {
+  const handleManualRefresh = () => {
+    // Wipe local user buffers on manual reload requests to fetch pristine values
+    setLocalIsEnabled(null);
+    setLocalWelcomeMessage(null);
+    setLocalOffHoursMessage(null);
+    queryClient.invalidateQueries({ queryKey: ["vendorAutoReplies"] });
+  };
+
+  if (isLoading) {
     return (
       <div className="w-full bg-white border border-slate-100 rounded-sm p-24 flex flex-col items-center justify-center text-center space-y-3 min-h-[400px]">
         <Loader2 size={32} className="animate-spin text-[#149FCD]" />
@@ -115,7 +108,7 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
           <button 
             type="button"
             onClick={onBack}
-            className="w-10 h-10 border border-slate-200 rounded-md flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors"
+            className="w-10 h-10 border border-slate-200 rounded-md flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors focus:outline-none"
           >
             <ArrowLeft size={16} className="stroke-[2.5]" />
           </button>
@@ -127,10 +120,11 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
 
         <button 
           type="button"
-          onClick={syncAutoRepliesFeed}
-          className="w-10 h-10 bg-white border border-[#EAEBED] rounded-md flex items-center justify-center text-slate-500 hover:text-[#149FCD] hover:border-[#149FCD] transition-all shadow-sm"
+          onClick={handleManualRefresh}
+          disabled={isFetching}
+          className="w-10 h-10 bg-white border border-[#EAEBED] rounded-md flex items-center justify-center text-slate-500 hover:text-[#149FCD] hover:border-[#149FCD] transition-all shadow-sm disabled:opacity-40 focus:outline-none"
         >
-          <RefreshCw size={16} />
+          <RefreshCw size={16} className={isFetching ? "animate-spin text-[#149FCD]" : ""} />
         </button>
       </div>
 
@@ -164,7 +158,7 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
           
           <button 
             type="button"
-            onClick={() => setIsEnabled(!isEnabled)}
+            onClick={() => setLocalIsEnabled(!isEnabled)}
             className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none flex items-center shrink-0 ${
               isEnabled ? "bg-[#149FCD]" : "bg-slate-200"
             }`}
@@ -188,7 +182,7 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
                   rows={3}
                   maxLength={250}
                   value={welcomeMessage}
-                  onChange={(e) => setWelcomeMessage(e.target.value)}
+                  onChange={(e) => setLocalWelcomeMessage(e.target.value)}
                   placeholder="Hello! Thanks for reaching out to our store. We've captured your query and our team will check it right away! 🚀"
                   className="w-full px-4 py-3 outline-none text-sm font-semibold text-slate-700 bg-white resize-none custom-sidebar-scroll"
                 />
@@ -207,7 +201,7 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
                   rows={3}
                   maxLength={250}
                   value={offHoursMessage}
-                  onChange={(e) => setOffHoursMessage(e.target.value)}
+                  onChange={(e) => setLocalOffHoursMessage(e.target.value)}
                   placeholder="Hi there! We are currently closed or out on dispatch logs. We will look through your queries as soon as business hours hit tomorrow morning! 🌤️"
                   className="w-full px-4 py-3 outline-none text-sm font-semibold text-slate-700 bg-white resize-none custom-sidebar-scroll"
                 />
@@ -225,10 +219,10 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
         <div className="pt-2">
           <button
             type="submit"
-            disabled={saving}
-            className="bg-[#143D4A] hover:bg-slate-800 disabled:bg-slate-100 text-white px-6 h-12 rounded-sm text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-md disabled:text-slate-400 disabled:shadow-none"
+            disabled={saveSettingsMutation.isPending}
+            className="bg-[#143D4A] hover:bg-slate-800 disabled:bg-slate-100 text-white px-6 h-12 rounded-sm text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-md disabled:text-slate-400 disabled:shadow-none focus:outline-none select-none"
           >
-            {saving ? (
+            {saveSettingsMutation.isPending ? (
               <>
                 <Loader2 size={14} className="animate-spin text-[#149FCD]" /> Synchronizing...
               </>
@@ -241,7 +235,6 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
         </div>
 
       </form>
-
     </div>
   );
 }

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchPublicProducts, addProductToCartAPI, ProductItemBackend } from "../../lib/api/auth";
+import { useProducts, useAddToCart } from "@/app/hooks/useEcosystem";
+import { ProductItemBackend } from "../../lib/api/auth";
 
 const computerLinks = [
   { label: "Desktop", slug: "desktop" },
@@ -43,36 +44,22 @@ const sidebarSlides = [
     id: 2,
     title: "Selected Novelty Products",
     price: "₦9,999.00",
-    img: "/gadget-banner-2-1.jpg",
+    img: "/gadget-banner-2-2.jpg",
   }
 ];
 
 export default function GadgetSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [gadgets, setGadgets] = useState<ProductItemBackend[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [addingId, setAddingId] = useState<string | null>(null);
   const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
-  const loadGadgetSectionData = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchPublicProducts({ category: "computers" });
-      setGadgets(Array.isArray(data) ? data.slice(0, 3) : []);
-    } catch (err) {
-      console.error("Failed pulling gadget collection rows:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Assert incoming typed structures safely into the ProductItemBackend model architecture
+  const { data: rawGadgets, isLoading: loading } = useProducts({ category: "computers" });
+  const gadgets = Array.isArray(rawGadgets) 
+    ? (rawGadgets as unknown as ProductItemBackend[]).slice(0, 3) 
+    : [];
 
-  // Safe async initialization closure avoiding top-level synchronous state dispatches
-  useEffect(() => {
-    const initializeGadgetFeedLifecycle = async () => {
-      await loadGadgetSectionData();
-    };
-    initializeGadgetFeedLifecycle();
-  }, []);
+  const { mutate: addToCart, isPending: addingToCart, variables } = useAddToCart();
+  const addingId = addingToCart ? variables?.productId : null;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -81,18 +68,19 @@ export default function GadgetSection() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleInclusionAction = async (productId: string) => {
-    try {
-      setAddingId(productId);
-      await addProductToCartAPI(productId, 1);
-      
-      setAddedSuccessId(productId);
-      setTimeout(() => setAddedSuccessId(null), 2000);
-    } catch (err) {
-      alert("Please log into your profile to append items to your basket.");
-    } finally {
-      setAddingId(null);
-    }
+  const handleInclusionAction = (productId: string) => {
+    addToCart(
+      { productId, quantity: 1 },
+      {
+        onSuccess: () => {
+          setAddedSuccessId(productId);
+          setTimeout(() => setAddedSuccessId(null), 2000);
+        },
+        onError: () => {
+          alert("Please log into your profile to append items to your basket.");
+        }
+      }
+    );
   };
 
   const formatCurrency = (value: number) => {
@@ -116,7 +104,6 @@ export default function GadgetSection() {
             <ul className="space-y-2">
               {computerLinks.map((item) => (
                 <li key={item.slug}>
-                  {/* Routed cleanly to centralized slug category engine */}
                   <Link href={`/categories/${item.slug}`} className="text-[11px] font-bold text-slate-500 hover:text-orange-500 flex items-center gap-2 transition-colors uppercase tracking-wide">
                     <span className="w-1 h-1 bg-slate-300 rounded-full" /> {item.label}
                   </Link>
@@ -186,7 +173,7 @@ export default function GadgetSection() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-200">
-            {gadgets.map((item) => (
+            {gadgets.map((item: ProductItemBackend) => (
               <div key={item.id} className="group bg-white p-5 relative border border-slate-100 rounded-lg hover:shadow-xl hover:border-white transition-all duration-300 flex flex-col">
                  
                  <div className="absolute left-4 top-1/4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-20">
@@ -221,7 +208,7 @@ export default function GadgetSection() {
                  </div>
 
                  <div className="absolute top-4 right-4 flex gap-1 z-10">
-                  {item.badges?.map(b => (
+                  {item.badges?.map((b: string) => (
                     <span key={b} className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm text-white shadow-xs tracking-wide ${b.toLowerCase() === 'hot' ? 'bg-orange-500' : 'bg-teal-500'}`}>
                       {b}
                     </span>

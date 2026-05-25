@@ -4,7 +4,7 @@ import {
   Search, ShoppingBag, User, Heart, Menu, Phone, ChevronDown, 
   ArrowLeftRight, X, Minus, Plus, ChevronRight, History, Trash,
   Sparkles, Tv, Laptop, Smartphone, Gamepad2, UtensilsCrossed,
-  Shirt, HeartPulse, Lamp, Luggage, Baby, Car, Home, LogOut
+  Shirt, HeartPulse, Lamp, Luggage, Baby, Car, Home, LogOut, Loader2
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,8 +12,10 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
+import { useCart } from "@/app/hooks/useEcosystem";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
-  fetchMyCart, updateCartItemQuantity, removeCartItem, CartItemBackend,
+  updateCartItemQuantity, removeCartItem, CartItemBackend,
   fetchRecentSearches, logRecentSearch, removeSingleSearchQuery, clearAllRecentSearches, RecentSearchItem
 } from "../../lib/api/auth";
 
@@ -22,293 +24,293 @@ const dropdownCategories = [
   { value: "", label: "All Categories" },
   { value: "1", label: "New Arrivals" },
   { value: "2", label: "Electronics" },
-  { value: "27", label: "  Cameras & Photos" },
-  { value: "343", label: "    Photography Accessories" },
-  { value: "40", label: "  Generators & Portable Power" },
-  { value: "39", label: "  Home Audio" },
-  { value: "26", label: "  Television & Video" },
-  { value: "47", label: "    Smart TVs" },
-  { value: "49", label: "    LED TVs" },
-  { value: "171", label: "  Electronic Accessories" },
-  { value: "390", label: "    Surge Protectors" },
-  { value: "389", label: "    Extension Boxes" },
-  { value: "388", label: "    Power Banks" },
-  { value: "387", label: "    USB Cables" },
+  { value: "27", label: "  Cameras & Photos" },
+  { value: "343", label: "    Photography Accessories" },
+  { value: "40", label: "  Generators & Portable Power" },
+  { value: "39", label: "  Home Audio" },
+  { value: "26", label: "  Television & Video" },
+  { value: "47", label: "    Smart TVs" },
+  { value: "49", label: "    LED TVs" },
+  { value: "171", label: "  Electronic Accessories" },
+  { value: "390", label: "    Surge Protectors" },
+  { value: "389", label: "    Extension Boxes" },
+  { value: "388", label: "    Power Banks" },
+  { value: "387", label: "    USB Cables" },
   { value: "20", label: "Computers" },
-  { value: "21", label: "  Desktop" },
-  { value: "22", label: "  Laptop" },
-  { value: "24", label: "  Computer Accessories" },
-  { value: "384", label: "    Laptop Bags & Sleeves" },
-  { value: "380", label: "    Laptop Stands" },
-  { value: "374", label: "    Networking Devices" },
-  { value: "373", label: "    Extension Cords" },
-  { value: "372", label: "    Surge Protectors" },
-  { value: "371", label: "    UPS" },
-  { value: "370", label: "    Laptop Chargers" },
-  { value: "369", label: "    Memory Cards" },
-  { value: "368", label: "    Card Readers" },
-  { value: "367", label: "    USB Flash Drives" },
-  { value: "366", label: "    Adapters & Converters" },
-  { value: "365", label: "    Ethernet (LAN) Cables" },
-  { value: "364", label: "    HDMI Cables" },
-  { value: "363", label: "    Webcams" },
-  { value: "362", label: "    Speakers" },
-  { value: "361", label: "    Projectors" },
-  { value: "360", label: "    Monitors" },
-  { value: "359", label: "    Mouse Pads" },
-  { value: "358", label: "    Mice" },
-  { value: "357", label: "    Keyboards" },
+  { value: "21", label: "  Desktop" },
+  { value: "22", label: "  Laptop" },
+  { value: "24", label: "  Computer Accessories" },
+  { value: "384", label: "    Laptop Bags & Sleeves" },
+  { value: "380", label: "    Laptop Stands" },
+  { value: "374", label: "    Networking Devices" },
+  { value: "373", label: "    Extension Cords" },
+  { value: "372", label: "    Surge Protectors" },
+  { value: "371", label: "    UPS" },
+  { value: "370", label: "    Laptop Chargers" },
+  { value: "369", label: "    Memory Cards" },
+  { value: "368", label: "    Card Readers" },
+  { value: "367", label: "    USB Flash Drives" },
+  { value: "366", label: "    Adapters & Converters" },
+  { value: "365", label: "    Ethernet (LAN) Cables" },
+  { value: "364", label: "    HDMI Cables" },
+  { value: "363", label: "    Webcams" },
+  { value: "362", label: "    Speakers" },
+  { value: "361", label: "    Projectors" },
+  { value: "360", label: "    Monitors" },
+  { value: "359", label: "    Mouse Pads" },
+  { value: "358", label: "    Mice" },
+  { value: "357", label: "    Keyboards" },
   { value: "25", label: "Phones & Tablets" },
-  { value: "12", label: "  Phone Accessories" },
-  { value: "13", label: "    Headphones" },
-  { value: "14", label: "    Wireless Headphones" },
-  { value: "15", label: "    TWS Earphones" },
-  { value: "16", label: "    Smart Watch" },
-  { value: "139", label: "    Cables" },
-  { value: "138", label: "    Chargers" },
-  { value: "137", label: "    Screen Protection" },
-  { value: "136", label: "    Phone Cases & Covers" },
-  { value: "41", label: "  Mobile Phones" },
-  { value: "51", label: "    Budget Phones" },
-  { value: "50", label: "    Smart Phones" },
-  { value: "42", label: "  Tablets" },
-  { value: "53", label: "    Android Tablets" },
-  { value: "52", label: "    iPads" },
+  { value: "12", label: "  Phone Accessories" },
+  { value: "13", label: "    Headphones" },
+  { value: "14", label: "    Wireless Headphones" },
+  { value: "15", label: "    TWS Earphones" },
+  { value: "16", label: "    Smart Watch" },
+  { value: "139", label: "    Cables" },
+  { value: "138", label: "    Chargers" },
+  { value: "137", label: "    Screen Protection" },
+  { value: "136", label: "    Phone Cases & Covers" },
+  { value: "41", label: "  Mobile Phones" },
+  { value: "51", label: "    Budget Phones" },
+  { value: "50", label: "    Smart Phones" },
+  { value: "42", label: "  Tablets" },
+  { value: "53", label: "    Android Tablets" },
+  { value: "52", label: "    iPads" },
   { value: "17", label: "Gaming" },
-  { value: "45", label: "  Gaming Console" },
-  { value: "18", label: "    Playstation" },
-  { value: "46", label: "  Gaming Accessories" },
+  { value: "45", label: "  Gaming Console" },
+  { value: "18", label: "    Playstation" },
+  { value: "46", label: "  Gaming Accessories" },
   { value: "48", label: "Kitchen Items" },
-  { value: "170", label: "  Cleaning & Kitchen Care" },
-  { value: "169", label: "  Food Storage" },
-  { value: "168", label: "  Kitchen Utensils" },
-  { value: "167", label: "  Cookware" },
+  { value: "170", label: "  Cleaning & Kitchen Care" },
+  { value: "169", label: "  Food Storage" },
+  { value: "168", label: "  Kitchen Utensils" },
+  { value: "167", label: "  Cookware" },
   { value: "54", label: "Fashion" },
-  { value: "55", label: "  Female fashion" },
-  { value: "114", label: "    Women's activewear" },
-  { value: "458", label: "      Fitness Belts" },
-  { value: "457", label: "      Sports Socks" },
-  { value: "456", label: "      Headbands & Sweatbands" },
-  { value: "455", label: "      Gym Gloves" },
-  { value: "454", label: "      Bikinis (Sport Type)" },
-  { value: "453", label: "      One-Piece Swimsuits" },
-  { value: "452", label: "      Tracksuits" },
-  { value: "451", label: "      Skorts (Skirt + Shorts)" },
-  { value: "450", label: "      Workout Shorts" },
-  { value: "449", label: "      Crop Tops" },
-  { value: "448", label: "      Compression Shirts" },
-  { value: "447", label: "      Tank Tops" },
-  { value: "446", label: "      Sports Bras" },
-  { value: "443", label: "      Running Pants" },
-  { value: "442", label: "      Athletic Leggings" },
-  { value: "441", label: "      Sweatpants" },
-  { value: "84", label: "    Women's bags" },
-  { value: "103", label: "      Women purse" },
-  { value: "102", label: "      Shoulder bags" },
-  { value: "101", label: "      Handbags" },
-  { value: "466", label: "      Beaded / Handmade Bags" },
-  { value: "465", label: "      Transparent Bags" },
-  { value: "464", label: "      Wallets" },
-  { value: "463", label: "      Laptop Bags" },
-  { value: "462", label: "      Backpacks" },
-  { value: "461", label: "      Clutch Bags" },
-  { value: "460", label: "      Crossbody Bags" },
-  { value: "459", label: "      Tote Bags" },
-  { value: "83", label: "    Women's shoe" },
-  { value: "410", label: "      Female Sneakers" },
-  { value: "422", label: "        Suede Sneakers" },
-  { value: "421", label: "        Mesh Sneakers (Breathable)" },
-  { value: "420", label: "        Synthetic Sneakers" },
-  { value: "419", label: "        Leather Sneakers" },
-  { value: "418", label: "        Lace-Up Sneakers" },
-  { value: "417", label: "        High-Top Sneakers" },
-  { value: "416", label: "        Mid-Top Sneakers" },
-  { value: "415", label: "        Low-Top Sneakers" },
-  { value: "414", label: "        Designer Sneakers" },
-  { value: "413", label: "        Vintage Sneakers" },
-  { value: "412", label: "        Running Shoes" },
-  { value: "411", label: "        Fashion Sneakers" },
-  { value: "396", label: "      Heels" },
-  { value: "408", label: "        Patent Heels" },
-  { value: "407", label: "        Suede Heels" },
-  { value: "406", label: "        Leather Heels" },
-  { value: "405", label: "        High Heels" },
-  { value: "404", label: "        Mid Heels" },
-  { value: "403", label: "        Low Heels" },
-  { value: "402", label: "        Round Toe Heels" },
-  { value: "401", label: "        Pointed Toe Heels" },
-  { value: "400", label: "        Peep-Toe Heels" },
-  { value: "399", label: "        Wedge Heels" },
-  { value: "398", label: "        Platform Heels" },
-  { value: "397", label: "        Block Heels" },
-  { value: "391", label: "      Flats" },
-  { value: "409", label: "        Ballet Flats" },
-  { value: "395", label: "        Pams" },
-  { value: "394", label: "        Flat Sandals" },
-  { value: "393", label: "        Slip-Ons" },
-  { value: "392", label: "        women's loafers" },
-  { value: "82", label: "    Lingerie & Sleepwear" },
-  { value: "81", label: "    Jeans & Pants" },
-  { value: "440", label: "      Faux Leather Leggings" },
-  { value: "439", label: "      Jeggings" },
-  { value: "438", label: "      Yoga Pants" },
-  { value: "437", label: "      High-Waist Leggings" },
-  { value: "436", label: "      Basic Leggings" },
-  { value: "435", label: "      Suit Pants" },
-  { value: "434", label: "      High-Waisted Office Pants" },
-  { value: "433", label: "      Palazzo Pants" },
-  { value: "432", label: "      Jogger Pants" },
-  { value: "431", label: "      Cargo Pants" },
-  { value: "430", label: "      Chinos" },
-  { value: "429", label: "      Ripped jeans" },
-  { value: "428", label: "      High-Waisted Jeans" },
-  { value: "427", label: "      Boyfriend Jeans" },
-  { value: "426", label: "      Wide Leg Jeans" },
-  { value: "425", label: "      Flared Jeans" },
-  { value: "424", label: "      Straight Leg Jeans" },
-  { value: "423", label: "      Skinny Jeans" },
-  { value: "445", label: "      Baggy Jeans" },
-  { value: "444", label: "      Ankara Pants" },
-  { value: "80", label: "    Skirts" },
-  { value: "79", label: "    Tops & Blouses" },
-  { value: "78", label: "    Women’s Accessories" },
-  { value: "108", label: "      Scarves" },
-  { value: "107", label: "      Hats & Caps" },
-  { value: "106", label: "      Jewelries" },
-  { value: "105", label: "      Sunglasses" },
-  { value: "104", label: "      Female Wrist watches" },
-  { value: "77", label: "  Kids fashion" },
-  { value: "96", label: "    Kids Shoes" },
-  { value: "95", label: "    Kids Accessories" },
-  { value: "94", label: "    Girls Clothing" },
-  { value: "93", label: "    Boys Clothing" },
-  { value: "76", label: "  Male fashion" },
-  { value: "92", label: "    Men’s Bags" },
-  { value: "91", label: "    Men’s Accessories" },
-  { value: "113", label: "      Belts" },
-  { value: "112", label: "      Hats & Caps" },
-  { value: "111", label: "      Jewelries" },
-  { value: "110", label: "      Sunglasses" },
-  { value: "109", label: "      Male Wrist watches" },
-  { value: "90", label: "    Men’s Shoes" },
-  { value: "100", label: "      Slippers" },
-  { value: "99", label: "      Formal Shoes" },
-  { value: "98", label: "      Sandals" },
-  { value: "97", label: "      Sneakers" },
-  { value: "89", label: "    Men's activewear" },
-  { value: "88", label: "    Jackets & Coats" },
-  { value: "87", label: "    Jeans & Trousers" },
-  { value: "86", label: "    Shirts" },
-  { value: "85", label: "    T-Shirts & Polos" },
-  { value: "317", label: "      Printed shirts" },
-  { value: "316", label: "      Plain T-shirts" },
-  { value: "468", label: "  Umbrella" },
+  { value: "55", label: "  Female fashion" },
+  { value: "114", label: "    Women's activewear" },
+  { value: "458", label: "      Fitness Belts" },
+  { value: "457", label: "      Sports Socks" },
+  { value: "456", label: "      Headbands & Sweatbands" },
+  { value: "455", label: "      Gym Gloves" },
+  { value: "454", label: "      Bikinis (Sport Type)" },
+  { value: "453", label: "      One-Piece Swimsuits" },
+  { value: "452", label: "      Tracksuits" },
+  { value: "451", label: "      Skorts (Skirt + Shorts)" },
+  { value: "450", label: "      Workout Shorts" },
+  { value: "449", label: "      Crop Tops" },
+  { value: "448", label: "      Compression Shirts" },
+  { value: "447", label: "      Tank Tops" },
+  { value: "446", label: "      Sports Bras" },
+  { value: "443", label: "      Running Pants" },
+  { value: "442", label: "      Athletic Leggings" },
+  { value: "441", label: "      Sweatpants" },
+  { value: "84", label: "    Women's bags" },
+  { value: "103", label: "      Women purse" },
+  { value: "102", label: "      Shoulder bags" },
+  { value: "101", label: "      Handbags" },
+  { value: "466", label: "      Beaded / Handmade Bags" },
+  { value: "465", label: "      Transparent Bags" },
+  { value: "464", label: "      Wallets" },
+  { value: "463", label: "      Laptop Bags" },
+  { value: "462", label: "      Backpacks" },
+  { value: "461", label: "      Clutch Bags" },
+  { value: "460", label: "      Crossbody Bags" },
+  { value: "459", label: "      Tote Bags" },
+  { value: "83", label: "    Women's shoe" },
+  { value: "410", label: "      Female Sneakers" },
+  { value: "422", label: "        Suede Sneakers" },
+  { value: "421", label: "        Mesh Sneakers (Breathable)" },
+  { value: "420", label: "        Synthetic Sneakers" },
+  { value: "419", label: "        Leather Sneakers" },
+  { value: "418", label: "        Lace-Up Sneakers" },
+  { value: "417", label: "        High-Top Sneakers" },
+  { value: "416", label: "        Mid-Top Sneakers" },
+  { value: "415", label: "        Low-Top Sneakers" },
+  { value: "414", label: "        Designer Sneakers" },
+  { value: "413", label: "        Vintage Sneakers" },
+  { value: "412", label: "        Running Shoes" },
+  { value: "411", label: "        Fashion Sneakers" },
+  { value: "396", label: "      Heels" },
+  { value: "408", label: "         Patent Heels" },
+  { value: "407", label: "         Suede Heels" },
+  { value: "406", label: "         Leather Heels" },
+  { value: "405", label: "         High Heels" },
+  { value: "404", label: "         Mid Heels" },
+  { value: "403", label: "         Low Heels" },
+  { value: "402", label: "         Round Toe Heels" },
+  { value: "401", label: "         Pointed Toe Heels" },
+  { value: "400", label: "         Peep-Toe Heels" },
+  { value: "399", label: "         Wedge Heels" },
+  { value: "398", label: "         Platform Heels" },
+  { value: "397", label: "         Block Heels" },
+  { value: "391", label: "      Flats" },
+  { value: "409", label: "         Ballet Flats" },
+  { value: "395", label: "         Pams" },
+  { value: "394", label: "         Flat Sandals" },
+  { value: "393", label: "         Slip-Ons" },
+  { value: "392", label: "         women's loafers" },
+  { value: "82", label: "    Lingerie & Sleepwear" },
+  { value: "81", label: "    Jeans & Pants" },
+  { value: "440", label: "      Faux Leather Leggings" },
+  { value: "439", label: "      Jeggings" },
+  { value: "438", label: "      Yoga Pants" },
+  { value: "437", label: "      High-Waist Leggings" },
+  { value: "436", label: "      Basic Leggings" },
+  { value: "435", label: "      Suit Pants" },
+  { value: "434", label: "      High-Waisted Office Pants" },
+  { value: "433", label: "      Palazzo Pants" },
+  { value: "432", label: "      Jogger Pants" },
+  { value: "431", label: "      Cargo Pants" },
+  { value: "430", label: "      Chinos" },
+  { value: "429", label: "      Ripped jeans" },
+  { value: "428", label: "      High-Waisted Jeans" },
+  { value: "427", label: "      Boyfriend Jeans" },
+  { value: "426", label: "      Wide Leg Jeans" },
+  { value: "425", label: "      Flared Jeans" },
+  { value: "424", label: "      Straight Leg Jeans" },
+  { value: "423", label: "      Skinny Jeans" },
+  { value: "435", label: "      Baggy Jeans" },
+  { value: "444", label: "      Ankara Pants" },
+  { value: "80", label: "    Skirts" },
+  { value: "79", label: "    Tops & Blouses" },
+  { value: "78", label: "    Women’s Accessories" },
+  { value: "108", label: "      Scarves" },
+  { value: "107", label: "      Hats & Caps" },
+  { value: "106", label: "      Jewelries" },
+  { value: "105", label: "      Sunglasses" },
+  { value: "104", label: "      Female Wrist watches" },
+  { value: "77", label: "  Kids fashion" },
+  { value: "96", label: "    Kids Shoes" },
+  { value: "95", label: "    Kids Accessories" },
+  { value: "94", label: "    Girls Clothing" },
+  { value: "93", label: "    Boys Clothing" },
+  { value: "76", label: "  Male fashion" },
+  { value: "92", label: "    Men’s Bags" },
+  { value: "91", label: "    Men’s Accessories" },
+  { value: "113", label: "      Belts" },
+  { value: "112", label: "      Hats & Caps" },
+  { value: "111", label: "      Jewelries" },
+  { value: "110", label: "      Sunglasses" },
+  { value: "109", label: "      Male Wrist watches" },
+  { value: "90", label: "    Men’s Shoes" },
+  { value: "100", label: "      Slippers" },
+  { value: "99", label: "      Formal Shoes" },
+  { value: "98", label: "      Sandals" },
+  { value: "97", label: "      Sneakers" },
+  { value: "89", label: "    Men's activewear" },
+  { value: "88", label: "    Jackets & Coats" },
+  { value: "87", label: "    Jeans & Trousers" },
+  { value: "86", label: "    Shirts" },
+  { value: "85", label: "    T-Shirts & Polos" },
+  { value: "317", label: "      Printed shirts" },
+  { value: "316", label: "      Plain T-shirts" },
+  { value: "468", label: "  Umbrella" },
   { value: "56", label: "Health & Beauty" },
-  { value: "120", label: "  Health Care & Medical supplies" },
-  { value: "166", label: "    First Aid Supplies" },
-  { value: "280", label: "      Plasters" },
-  { value: "279", label: "      Bandages" },
-  { value: "278", label: "      Antiseptic wipes" },
-  { value: "277", label: "      Gauze and medical tape" },
-  { value: "165", label: "    Hygiene & Protection" },
-  { value: "311", label: "      Protective Clothing" },
-  { value: "315", label: "        Face shields" },
-  { value: "314", label: "        Hair caps" },
-  { value: "313", label: "        Shoe covers" },
-  { value: "312", label: "        Protective gowns" },
-  { value: "307", label: "      Wipes & Tissues" },
-  { value: "310", label: "        Paper towels" },
-  { value: "309", label: "        Antibacterial wipes" },
-  { value: "308", label: "        Wet wipes" },
-  { value: "298", label: "      Gloves" },
-  { value: "302", label: "        Vinyl gloves" },
-  { value: "301", label: "        Nitrile gloves" },
-  { value: "300", label: "        Latex gloves" },
-  { value: "299", label: "        Disposable gloves" },
-  { value: "291", label: "      Face Masks" },
-  { value: "297", label: "        Reusable face masks" },
-  { value: "296", label: "        Surgical masks" },
-  { value: "295", label: "        Disposable face masks" },
-  { value: "290", label: "      Disinfectant" },
-  { value: "306", label: "        Sterilizing solutions" },
-  { value: "305", label: "        Surface cleaners" },
-  { value: "304", label: "        Antiseptic liquids" },
-  { value: "303", label: "        Disinfectant sprays" },
-  { value: "289", label: "      Hand wash" },
-  { value: "288", label: "      Hand sanitizers" },
-  { value: "164", label: "    Health Monitoring Devices" },
-  { value: "287", label: "      Pregnancy test kits" },
-  { value: "286", label: "      Blood sugar test strips" },
-  { value: "285", label: "      Cholesterol test kits" },
-  { value: "284", label: "      Nebulizers" },
-  { value: "283", label: "      Glucose meters" },
-  { value: "282", label: "      Blood pressure monitors" },
-  { value: "281", label: "      Thermometers" },
-  { value: "119", label: "  Fragrances" },
-  { value: "163", label: "    Men’s Fragrances" },
-  { value: "162", label: "    Women’s Fragrances" },
-  { value: "161", label: "    Kids & Fragrances" },
-  { value: "160", label: "    Fragrance Gift Sets" },
-  { value: "159", label: "    Fragrance Accessories" },
-  { value: "276", label: "    Car Fragrances" },
-  { value: "275", label: "    Perfume Oils" },
-  { value: "274", label: "    Body sprays" },
-  { value: "273", label: "    Body mists" },
-  { value: "118", label: "  Personal Care" },
-  { value: "157", label: "    Shaving & Grooming" },
-  { value: "261", label: "      Beard trimmers" },
-  { value: "260", label: "      Beard wash" },
-  { value: "259", label: "      Beard oils" },
-  { value: "253", label: "      Waxing products" },
-  { value: "252", label: "      Hair removal creams" },
-  { value: "251", label: "      Aftershave" },
-  { value: "250", label: "      Shaving creams" },
-  { value: "249", label: "      Razors" },
-  { value: "267", label: "    Deodorants & Antiperspirants" },
-  { value: "271", label: "      Antiperspirant creams" },
-  { value: "270", label: "      Stick deodorants" },
-  { value: "269", label: "      Spray deodorants" },
-  { value: "268", label: "      Roll-on deodorants" },
-  { value: "116", label: "  Makeup / Cosmetics" },
-  { value: "131", label: "    Makeup Brushes & Tools" },
-  { value: "130", label: "    Powder & Concealer" },
-  { value: "129", label: "    Eye Makeup" },
-  { value: "128", label: "    Lipstick & Lip Gloss" },
-  { value: "127", label: "    Foundation" },
-  { value: "115", label: "  Skincare" },
-  { value: "126", label: "    Sunscreen" },
-  { value: "125", label: "    Cleansers & Face Wash" },
-  { value: "124", label: "    Face Creams & Moisturizers" },
-  { value: "122", label: "    Serums" },
-  { value: "121", label: "  Body Lotions" },
-  { value: "266", label: "    Toners" },
+  { value: "120", label: "  Health Care & Medical supplies" },
+  { value: "166", label: "    First Aid Supplies" },
+  { value: "280", label: "      Plasters" },
+  { value: "279", label: "      Bandages" },
+  { value: "278", label: "      Antiseptic wipes" },
+  { value: "277", label: "      Gauze and medical tape" },
+  { value: "165", label: "    Hygiene & Protection" },
+  { value: "311", label: "      Protective Clothing" },
+  { value: "315", label: "        Face shields" },
+  { value: "314", label: "        Hair caps" },
+  { value: "313", label: "        Shoe covers" },
+  { value: "312", label: "        Protective gowns" },
+  { value: "307", label: "      Wipes & Tissues" },
+  { value: "310", label: "        Paper towels" },
+  { value: "309", label: "        Antibacterial wipes" },
+  { value: "308", label: "        Wet wipes" },
+  { value: "298", label: "      Gloves" },
+  { value: "302", label: "         Vinyl gloves" },
+  { value: "301", label: "         Nitrile gloves" },
+  { value: "300", label: "         Latex gloves" },
+  { value: "299", label: "         Disposable gloves" },
+  { value: "291", label: "      Face Masks" },
+  { value: "297", label: "         Reusable face masks" },
+  { value: "296", label: "         Surgical masks" },
+  { value: "295", label: "         Disposable face masks" },
+  { value: "290", label: "      Disinfectant" },
+  { value: "306", label: "         Sterilizing solutions" },
+  { value: "305", label: "         Surface cleaners" },
+  { value: "304", label: "         Antiseptic liquids" },
+  { value: "303", label: "         Disinfectant sprays" },
+  { value: "289", label: "      Hand wash" },
+  { value: "288", label: "      Hand sanitizers" },
+  { value: "164", label: "    Health Monitoring Devices" },
+  { value: "287", label: "      Pregnancy test kits" },
+  { value: "286", label: "      Blood sugar test strips" },
+  { value: "285", label: "      Cholesterol test kits" },
+  { value: "284", label: "      Nebulizers" },
+  { value: "283", label: "      Glucose meters" },
+  { value: "282", label: "      Blood pressure monitors" },
+  { value: "281", label: "      Thermometers" },
+  { value: "119", label: "  Fragrances" },
+  { value: "163", label: "    Men’s Fragrances" },
+  { value: "162", label: "    Women’s Fragrances" },
+  { value: "161", label: "    Kids & Fragrances" },
+  { value: "160", label: "    Fragrance Gift Sets" },
+  { value: "159", label: "    Fragrance Accessories" },
+  { value: "276", label: "    Car Fragrances" },
+  { value: "275", label: "    Perfume Oils" },
+  { value: "274", label: "    Body sprays" },
+  { value: "273", label: "    Body mists" },
+  { value: "118", label: "  Personal Care" },
+  { value: "157", label: "    Shaving & Grooming" },
+  { value: "261", label: "      Beard trimmers" },
+  { value: "260", label: "      Beard wash" },
+  { value: "259", label: "      Beard oils" },
+  { value: "253", label: "      Waxing products" },
+  { value: "252", label: "      Hair removal creams" },
+  { value: "251", label: "      Aftershave" },
+  { value: "250", label: "      Shaving creams" },
+  { value: "249", label: "      Razors" },
+  { value: "267", label: "    Deodorants & Antiperspirants" },
+  { value: "271", label: "      Antiperspirant creams" },
+  { value: "270", label: "      Stick deodorants" },
+  { value: "269", label: "      Spray deodorants" },
+  { value: "268", label: "      Roll-on deodorants" },
+  { value: "116", label: "  Makeup / Cosmetics" },
+  { value: "131", label: "    Makeup Brushes & Tools" },
+  { value: "130", label: "    Powder & Concealer" },
+  { value: "129", label: "    Eye Makeup" },
+  { value: "128", label: "    Lipstick & Lip Gloss" },
+  { value: "127", label: "    Foundation" },
+  { value: "115", label: "  Skincare" },
+  { value: "126", label: "    Sunscreen" },
+  { value: "125", label: "    Cleansers & Face Wash" },
+  { value: "124", label: "    Face Creams & Moisturizers" },
+  { value: "122", label: "    Serums" },
+  { value: "121", label: "  Body Lotions" },
+  { value: "266", label: "    Toners" },
   { value: "58", label: "Lighting & Home fixture" },
-  { value: "154", label: "  Electrical Fixtures" },
-  { value: "153", label: "  Light Bulbs" },
-  { value: "152", label: "  Outdoor Lighting" },
-  { value: "151", label: "  Lamps" },
-  { value: "150", label: "  Indoor Lighting" },
+  { value: "154", label: "  Electrical Fixtures" },
+  { value: "153", label: "  Light Bulbs" },
+  { value: "152", label: "  Outdoor Lighting" },
+  { value: "151", label: "  Lamps" },
+  { value: "150", label: "  Indoor Lighting" },
   { value: "59", label: "Luggage & Travel gear" },
   { value: "66", label: "Baby & Kids" },
-  { value: "75", label: "  Learning & Educational Toys" },
-  { value: "74", label: "  Kids Furniture" },
-  { value: "73", label: "  Kids Accessories" },
-  { value: "72", label: "  Kids Sports & Outdoor" },
-  { value: "71", label: "  Learning & Educational Toys" },
-  { value: "70", label: "  Kids Books" },
-  { value: "69", label: "  Baby Care" },
-  { value: "68", label: "  Toys & Games" },
+  { value: "75", label: "  Learning & Educational Toys" },
+  { value: "74", label: "  Kids Furniture" },
+  { value: "73", label: "  Kids Accessories" },
+  { value: "72", label: "  Kids Sports & Outdoor" },
+  { value: "71", label: "  Learning & Educational Toys" },
+  { value: "70", label: "  Kids Books" },
+  { value: "69", label: "  Baby Care" },
+  { value: "68", label: "  Toys & Games" },
   { value: "183", label: "Automobile" },
-  { value: "210", label: "  Air & Fuel System" },
-  { value: "209", label: "  Car cooling system" },
-  { value: "208", label: "  Wheels & Tires" },
-  { value: "207", label: "  Transmission & Drivetrain" },
-  { value: "206", label: "  Suspension & Steering" },
-  { value: "205", label: "  Braking System" },
-  { value: "204", label: "  Car Lighting & Accessories" },
-  { value: "203", label: "  Car electrical system & Accessories" },
-  { value: "202", label: "  Fluids & Lubricants" },
-  { value: "201", label: "  Engine Parts" },
+  { value: "210", label: "  Air & Fuel System" },
+  { value: "209", label: "  Car cooling system" },
+  { value: "208", label: "  Wheels & Tires" },
+  { value: "207", label: "  Transmission & Drivetrain" },
+  { value: "206", label: "  Suspension & Steering" },
+  { value: "205", label: "  Braking System" },
+  { value: "204", label: "  Car Lighting & Accessories" },
+  { value: "203", label: "  Car electrical system & Accessories" },
+  { value: "202", label: "  Fluids & Lubricants" },
+  { value: "201", label: "  Engine Parts" },
   { value: "467", label: "Home decor" }
 ];
 
@@ -332,6 +334,7 @@ const categoriesList = [
 function NavbarComponent() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading, logout } = useAuth();
   
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -341,14 +344,15 @@ function NavbarComponent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(""); // Holds active select value string ID
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
   const [showRecentPanel, setShowRecentPanel] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Cart States
-  const [cartItems, setCartItems] = useState<CartItemBackend[]>([]);
-  const [subtotal, setSubtotal] = useState(0);
+  // --- DYNAMIC REPLACEMENT LAYER: CONSUMING THE UNIFIED TANSTACK HOOK ---
+  const { data: cartData } = useCart();
+  const cartItems: CartItemBackend[] = cartData?.items || [];
+  const subtotal: number = cartData?.subtotal || 0;
   const [cartLoading, setCartLoading] = useState(false);
 
   // --- API SEARCH HISTORY HANDLERS ---
@@ -373,7 +377,6 @@ function NavbarComponent() {
       }
       setShowRecentPanel(false);
       
-      // Package query route configurations dynamically
       const destinationUrl = `/shop?search=${encodeURIComponent(activeQuery.trim())}${selectedCategory ? `&category=${selectedCategory}` : ''}`;
       router.push(destinationUrl);
     } catch (err) {
@@ -403,30 +406,13 @@ function NavbarComponent() {
     }
   };
 
-  // --- API CART HANDLERS ---
-  const loadLiveCart = async () => {
-    try {
-      const data = await fetchMyCart();
-      setCartItems(data.items || []);
-      setSubtotal(data.subtotal || 0);
-    } catch (err) {
-      console.error("Error synchronizing drawer components metrics:", err);
-    }
-  };
-
   useEffect(() => {
-    const handleCartSyncLifecycle = async () => {
-      if (user) {
-        await loadLiveCart();
-        await loadSearchHistory();
-      } else {
-        setCartItems([]);
-        setSubtotal(0);
-        setRecentSearches([]);
-      }
-    };
-    handleCartSyncLifecycle();
-  }, [isCartOpen, user, pathname]);
+    if (user) {
+      loadSearchHistory();
+    } else {
+      setRecentSearches([]);
+    }
+  }, [user, pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -444,8 +430,8 @@ function NavbarComponent() {
     try {
       setCartLoading(true);
       const data = await updateCartItemQuantity(productId, newQty);
-      setCartItems(data.items || []);
-      setSubtotal(data.subtotal || 0);
+      // Synchronously enforce memory cache re-validation across all active subscribers
+      queryClient.setQueryData(["cart"], data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -457,8 +443,7 @@ function NavbarComponent() {
     try {
       setCartLoading(true);
       const data = await removeCartItem(productId);
-      setCartItems(data.items || []);
-      setSubtotal(data.subtotal || 0);
+      queryClient.setQueryData(["cart"], data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -506,7 +491,7 @@ function NavbarComponent() {
               </Link>
 
               {/* --- DYNAMIC SEARCH BAR WITH LIVE CATEGORY FILTER SELECT --- */}
-              <div ref={searchRef} className="hidden md:block flex-1 max-w-2xl relative z-50">
+              <div className="hidden md:block flex-1 max-w-2xl relative z-50" ref={searchRef}>
                 <form onSubmit={handleSearchSubmit} className="flex w-full items-center border-2 border-[#149fcd] rounded-sm bg-white">
                   <input 
                     type="text" 
@@ -579,7 +564,7 @@ function NavbarComponent() {
               {/* DESKTOP ACTION AREA */}
               <div className="hidden md:flex items-center gap-6">
                 {authLoading ? (
-                  <div className="text-right pr-6 animate-pulse">
+                  <div className="text-right pr-6 animate-pulse select-none">
                     <span className="text-xs text-slate-300 font-medium">Syncing profile...</span>
                   </div>
                 ) : user ? (
@@ -610,7 +595,7 @@ function NavbarComponent() {
                   </div>
                 ) : (
                   <Link href="/login" className="flex items-center gap-3 border-r pr-6 border-gray-100">
-                    <div className="bg-white border border-gray-200 p-2.5 rounded-full text-slate-600"><User size={22} /></div>
+                    <div className="bg-white border border-gray-200 p-2.5 rounded-full text-slate-660"><User size={22} /></div>
                     <div className="text-left text-slate-900">
                       <p className="text-[10px] text-gray-500 leading-none mb-1">Hello, Guest</p>
                       <p className="text-sm font-semibold text-slate-700 hover:text-[#149fcd]">Login / Register</p>
@@ -618,7 +603,7 @@ function NavbarComponent() {
                   </Link>
                 )}
 
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-5 select-none">
                   <Link href="/compare" className="relative cursor-pointer group block">
                     <ArrowLeftRight size={24} className="text-slate-800 group-hover:text-[#149fcd] transition-colors" />
                     <span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white ">1</span>
@@ -635,7 +620,7 @@ function NavbarComponent() {
               </div>
 
               {/* --- MOBILE VIEW NAVIGATION BAR --- */}
-              <div className="flex md:hidden items-center gap-5">
+              <div className="flex md:hidden items-center gap-5 select-none">
                 <Link href="/compare" className="relative block text-slate-800 py-1 px-0.5">
                   <ArrowLeftRight size={22} className="rotate-90" />
                   <span className="absolute -top-1.5 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-bold">1</span>
@@ -684,7 +669,7 @@ function NavbarComponent() {
                       {categoriesList.map((cat, index) => (
                         <Link
                           key={index}
-                          href={`/shop?category=${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
+                          href={`/categories/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
                           onClick={() => setIsCategoryOpen(false)}
                           className="flex items-center justify-between px-6 py-3.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-[#149fcd] transition-colors border-b border-slate-100/50 last:border-0"
                         >
@@ -702,7 +687,7 @@ function NavbarComponent() {
                 </div>
               )}
 
-              <nav className="flex gap-10 text-sm text-slate-800 py-4">
+              <nav className="flex gap-10 text-sm text-slate-800 py-4 font-semibold">
                 {[
                   { name: 'Home', path: '/' },
                   { name: 'Shop', path: '/shop' },
@@ -717,7 +702,7 @@ function NavbarComponent() {
 
             <div className="flex items-center gap-6">
               {!isSticky && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 select-none">
                   <Phone size={22} className="text-[#149fcd]" />
                   <div className="text-left leading-tight">
                     <p className="text-[10px] text-slate-500 uppercase">Hotline:</p>
@@ -727,7 +712,7 @@ function NavbarComponent() {
               )}
 
               {isSticky && (
-                 <div className="flex items-center gap-5">
+                 <div className="flex items-center gap-5 select-none">
                     {user && (
                       <div className="relative w-8 h-8 rounded-full bg-[#3b4d9b] flex items-center justify-center shrink-0 border border-slate-100 text-xs font-bold text-white mr-1 overflow-hidden">
                         {user.avatar_url ? <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <span>{user.name.charAt(0).toUpperCase()}</span>}
@@ -814,13 +799,15 @@ function NavbarComponent() {
             ))}
           </div>
 
-          {user && (
-            <div className="p-4 space-y-1 text-left">
-              <p className="text-[10px] font-bold text-slate-400 uppercase px-2 mb-2 tracking-wider">User Terminal</p>
-              <Link href={user.role === "seller" ? "/seller/dashboard" : "/customer/overview"} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-sm text-sm font-medium text-slate-600 hover:bg-slate-50">Personal Dashboard</Link>
-              <Link href={user.role === "seller" ? "/seller/settings" : "/customer/settings"} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-sm text-sm font-medium text-slate-600 hover:bg-slate-50">Account Settings</Link>
-            </div>
-          )}
+          <div className="p-4 space-y-1 text-left">
+            <p className="text-[10px] font-bold text-slate-400 uppercase px-2 mb-2 tracking-wider">User Terminal</p>
+            {user && (
+              <>
+                <Link href={user.role === "seller" ? "/seller/dashboard" : "/customer/overview"} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-sm text-sm font-medium text-slate-600 hover:bg-slate-50">Personal Dashboard</Link>
+                <Link href={user.role === "seller" ? "/seller/settings" : "/customer/settings"} onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-sm text-sm font-medium text-slate-600 hover:bg-slate-50">Account Settings</Link>
+              </>
+            )}
+          </div>
         </div>
 
         {user && (
@@ -848,7 +835,7 @@ function NavbarComponent() {
           isCartOpen ? 'translate-x-0' : 'translate-x-full'
         } ${cartLoading ? 'opacity-60 pointer-events-none' : ''}`}
       >
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between select-none">
           <h2 className="text-[15px] font-black text-slate-800 tracking-tight uppercase">Shopping cart</h2>
           <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-slate-800 transition-colors p-1">
             <X size={18} />
@@ -892,7 +879,7 @@ function NavbarComponent() {
               </div>
             ))
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center py-20 text-slate-400 space-y-3">
+            <div className="h-full flex flex-col items-center justify-center text-center py-20 text-slate-400 space-y-3 select-none">
                <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center border border-slate-100">
                  <ShoppingBag size={28} className="stroke-1 text-slate-300"/>
                </div>
@@ -905,7 +892,7 @@ function NavbarComponent() {
         </div>
 
         {cartItems.length > 0 && (
-          <div className="p-6 border-t border-slate-100 bg-white space-y-4 animate-in fade-in duration-150">
+          <div className="p-6 border-t border-slate-100 bg-white space-y-4 animate-in fade-in duration-150 select-none">
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-800 font-bold">Subtotal:</span>
               <span className="text-sm font-black text-slate-900">₦{subtotal.toLocaleString()}.00</span>
