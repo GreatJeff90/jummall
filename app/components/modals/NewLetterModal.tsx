@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -30,13 +31,13 @@ export default function NewsletterModal() {
       if (dismissPermanently) {
         localStorage.setItem("suppress_newsletter_modal", "true");
       }
-      alert("Successfully subscribed to the Jummall newsletter! Check your inbox for your 5% discount code.");
+      toast.error("Successfully subscribed to the Jummall newsletter! Check your inbox for your 5% discount code.");
       setIsOpen(false);
     },
     onError: (err: unknown) => {
   const errorInstance = err as { response?: { data?: { message?: string } } };
   const backendMessage = errorInstance.response?.data?.message || "Something went wrong. Please check your network connection.";
-  alert(`Subscription failed: ${backendMessage}`);
+  toast.error(`Subscription failed: ${backendMessage}`);
 }
   });
 

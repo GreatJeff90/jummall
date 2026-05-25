@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,7 +42,7 @@ export default function ShopProductGrid({ state = "" }: ShopProductGridProps) {
       setAddedSuccessId(productId);
       setTimeout(() => setAddedSuccessId(null), 2000);
     } catch {
-      alert("Authentication token expired.");
+      toast.error("Authentication token expired.");
     } finally {
       setAddingId(null);
     }

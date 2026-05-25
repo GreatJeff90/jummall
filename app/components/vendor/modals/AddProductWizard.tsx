@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { Loader2, UploadCloud } from "lucide-react";
 import { uploadProductImagesWorkflow } from "@/app/lib/utils/imageUploader"; 
@@ -32,7 +32,7 @@ export default function AddProductWizard({ isOpen, onClose, onAdded }: AddProduc
   const handleWizardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0 || submitting) {
-      alert("Please stage at least one product description asset image to continue.");
+      toast.error("Please stage at least one product description asset image to continue.");
       return;
     }
 
@@ -50,7 +50,7 @@ export default function AddProductWizard({ isOpen, onClose, onAdded }: AddProduc
         images: uploadedAssetsMap
       });
 
-      alert("Product successfully created and broadcast on Jummall streams!");
+      toast.error("Product successfully created and broadcast on Jummall streams!");
       
       // Flush form allocations
       setProductName("");
@@ -63,7 +63,7 @@ export default function AddProductWizard({ isOpen, onClose, onAdded }: AddProduc
       onClose();
     } catch (err) {
       console.error("Wizard transaction halted:", err);
-      alert("Failed deploying item catalog configuration models to servers.");
+      toast.error("Failed deploying item catalog configuration models to servers.");
     } finally {
       setSubmitting(false);
     }

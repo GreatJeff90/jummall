@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState, useEffect } from "react";
 import { 
   Store,
@@ -156,7 +156,7 @@ export default function VendorStoreView({ onNavigate }: VendorStoreViewProps) {
       console.error("Verification boot error detail:", err);
       const errorInstance = err as { response?: { data?: { message?: string } }; message?: string };
       const backendMessage = errorInstance.response?.data?.message || errorInstance.message || "Unknown communication failure";
-      alert(`Failed initializing onboarding context: ${backendMessage}`);
+      toast.error(`Failed initializing onboarding context: ${backendMessage}`);
       setVerifying(false);
     }
   };
@@ -170,7 +170,7 @@ export default function VendorStoreView({ onNavigate }: VendorStoreViewProps) {
       setStore(updatedStore);
     } catch (err) {
       console.error("Failed to modify merchant vacation mode properties status:", err);
-      alert("Failed to modify merchant vacation mode properties status.");
+      toast.error("Failed to modify merchant vacation mode properties status.");
     } finally {
       setToggleLoading(false);
     }

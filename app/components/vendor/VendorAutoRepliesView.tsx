@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ArrowLeft, MessageSquare, Save, Loader2, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,13 +68,13 @@ export default function VendorAutoRepliesView({ onBack }: VendorAutoRepliesViewP
       setLocalWelcomeMessage(null);
       setLocalOffHoursMessage(null);
       queryClient.invalidateQueries({ queryKey: ["vendorAutoReplies"] });
-      alert("Auto-reply metrics successfully synchronized on servers!");
+      toast.error("Auto-reply metrics successfully synchronized on servers!");
     },
     onError: (err: unknown) => {
       console.error("Auto replies sync crash loop error:", err);
       const errorInstance = err as { response?: { data?: { message?: string } } };
       const backendMessage = errorInstance.response?.data?.message || "Verify your connection profile thresholds.";
-      alert(`Failed storing updated templates: ${backendMessage}`);
+      toast.error(`Failed storing updated templates: ${backendMessage}`);
     }
   });
 

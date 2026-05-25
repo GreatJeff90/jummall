@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -39,13 +39,13 @@ export default function VendorPersonalInfoView({ onBack }: { onBack: () => void 
         await refreshProfile(); // Refresh global legacy auth context states dynamically
       }
       
-      alert("Personal credentials updated successfully!");
+      toast.error("Personal credentials updated successfully!");
     },
     onError: (err: unknown) => {
       console.error("Failed updating profile records:", err);
       const errorInstance = err as { response?: { data?: { message?: string } }; message?: string };
       const backendMessage = errorInstance.response?.data?.message || errorInstance.message || "Unknown server error";
-      alert(`Update failed: ${backendMessage}`);
+      toast.error(`Update failed: ${backendMessage}`);
     }
   });
 

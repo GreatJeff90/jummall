@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from "sonner";
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,7 +27,7 @@ export default function ShoppingCartPage() {
       // Synchronously patch cache memory lines instantly notifying navbar state elements
       queryClient.setQueryData(["cart"], updatedCart);
     } catch (err) {
-      alert("Failed to adjust item threshold count. Verify inventory limits.");
+      toast.error("Failed to adjust item threshold count. Verify inventory limits.");
     } finally {
       setUpdatingId(null);
     }
@@ -39,7 +40,7 @@ export default function ShoppingCartPage() {
       const updatedCart = await removeCartItem(productId);
       queryClient.setQueryData(["cart"], updatedCart);
     } catch (err) {
-      alert("Removal sequence failed.");
+      toast.error("Removal sequence failed.");
     } finally {
       setUpdatingId(null);
     }

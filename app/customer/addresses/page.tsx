@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React from "react";
 import Link from "next/link";
 import { MapPin, Phone, Pencil, Trash2, Plus, Star, Loader2 } from "lucide-react";
@@ -23,7 +23,7 @@ export default function AddressBooks() {
       queryClient.invalidateQueries({ queryKey: ["shippingAddresses"] });
     },
     onError: () => {
-      alert("Failed to remove target address record. Try again.");
+      toast.error("Failed to remove target address record. Try again.");
     }
   });
 
@@ -34,7 +34,7 @@ export default function AddressBooks() {
       queryClient.invalidateQueries({ queryKey: ["shippingAddresses"] });
     },
     onError: () => {
-      alert("Failed to update default address fallback selection.");
+      toast.error("Failed to update default address fallback selection.");
     }
   });
 

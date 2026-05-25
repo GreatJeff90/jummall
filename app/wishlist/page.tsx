@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,9 +69,9 @@ export default function WishlistPage() {
     try {
       setActionId(item.product._id);
       await addProductToCartAPI(item.product._id, item.quantity);
-      alert("Staged product rule items successfully added to your shopping cart!");
+      toast.error("Staged product rule items successfully added to your shopping cart!");
     } catch (err) {
-      alert("Authentication token expired or absent. Please sign in first.");
+      toast.error("Authentication token expired or absent. Please sign in first.");
     } finally {
       setActionId(null);
     }

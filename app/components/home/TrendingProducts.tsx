@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { Eye, Heart, ShoppingBag, Star, RefreshCw, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
@@ -35,7 +36,7 @@ export default function TrendingProducts() {
           setTimeout(() => setAddedSuccessId(null), 2000);
         },
         onError: () => {
-          alert("Authentication required. Please sign into your account profile first.");
+          toast.error("Authentication required. Please sign into your account profile first.");
         }
       }
     );

@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,7 +44,7 @@ export default function ComparePage() {
       queryClient.setQueryData(["compareList"], updatedList);
     },
     onError: () => {
-      alert("Failed removing item from comparison registry dashboard logs.");
+      toast.error("Failed removing item from comparison registry dashboard logs.");
     }
   });
 

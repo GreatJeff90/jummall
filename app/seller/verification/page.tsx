@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import { useState } from "react";
 import ConfirmLegalNameModal from "./components/ConfirmLegalNameModal";
 import { api } from "@/app/lib/api/client";
@@ -23,7 +23,7 @@ export default function VerificationPage() {
       setShowModal(false);
       // Proceed to initialize Dojah...
     } catch (err) {
-      alert("Failed to start verification.");
+      toast.error("Failed to start verification.");
     } finally {
       setIsStarting(false);
     }

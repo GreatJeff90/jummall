@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ export default function DeliverySettingsPage() {
     mutationFn: (data: DeliverySettings) => api.put("/store/me/delivery", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["deliverySettings"] });
-      alert("Delivery zones updated successfully.");
+      toast.error("Delivery zones updated successfully.");
     }
   });
 

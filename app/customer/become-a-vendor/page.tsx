@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ChevronDown, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -53,7 +53,7 @@ export default function BecomeVendor() {
       console.error("Merchant onboarding verification block crash:", err);
       const errorInstance = err as { response?: { data?: { message?: string } } };
       const backendMessage = errorInstance.response?.data?.message || "Verify your connection parameters and data inputs.";
-      alert(`Onboarding registration failed: ${backendMessage}`);
+      toast.error(`Onboarding registration failed: ${backendMessage}`);
     }
   });
 
@@ -62,11 +62,11 @@ export default function BecomeVendor() {
 
     // Verification checkpoint assertions
     if (!agreedToTerms) {
-      alert("You must check and agree to the Terms and Privacy Policy before registration.");
+      toast.error("You must check and agree to the Terms and Privacy Policy before registration.");
       return;
     }
     if (!idFile || !addressFile) {
-      alert("Kindly upload your required identification and proof of address certificates.");
+      toast.error("Kindly upload your required identification and proof of address certificates.");
       return;
     }
 

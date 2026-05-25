@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState, useEffect } from "react";
 import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
@@ -77,7 +78,7 @@ export default function GadgetSection() {
           setTimeout(() => setAddedSuccessId(null), 2000);
         },
         onError: () => {
-          alert("Please log into your profile to append items to your basket.");
+          toast.error("Please log into your profile to append items to your basket.");
         }
       }
     );

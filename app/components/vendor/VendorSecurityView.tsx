@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ArrowLeft, Lock, Loader2, ShieldAlert } from "lucide-react";
 import { changePasswordAPI } from "../../lib/api/auth";
@@ -27,7 +27,7 @@ export default function VendorSecurityView({ onBack }: VendorSecurityViewProps) 
         new_password: newPassword
       });
 
-      alert("Authentication credentials updated successfully!");
+      toast.error("Authentication credentials updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
     } catch (err) {
@@ -35,7 +35,7 @@ export default function VendorSecurityView({ onBack }: VendorSecurityViewProps) 
       // Type assertion mapping response safely avoiding rules errors
       const errorInstance = err as { response?: { data?: { message?: string } }; message?: string };
       const backendMessage = errorInstance.response?.data?.message || errorInstance.message || "Unknown validation exception";
-      alert(`Security update rejected: ${backendMessage}`);
+      toast.error(`Security update rejected: ${backendMessage}`);
     } finally {
       setUpdating(false);
     }

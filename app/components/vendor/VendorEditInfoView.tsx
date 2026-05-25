@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,10 +39,10 @@ export default function VendorEditInfoView({ onBack }: { onBack: () => void }) {
       setLocalLocationText(null);
       
       queryClient.invalidateQueries({ queryKey: ["myStoreProfile"] });
-      alert("Store profile text data successfully updated!");
+      toast.error("Store profile text data successfully updated!");
     },
     onError: (_err: unknown) => {
-      alert("Failed updating store records. Please check your data shapes.");
+      toast.error("Failed updating store records. Please check your data shapes.");
     }
   });
 

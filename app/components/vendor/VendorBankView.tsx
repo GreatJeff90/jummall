@@ -73,10 +73,10 @@ export default function VendorBankView() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savedBankProfile"] });
-      alert("Settlement payout bank configurations deployed successfully!");
+      toast.error("Settlement payout bank configurations deployed successfully!");
     },
     onError: () => {
-      alert("Failed saving settlement profile updates.");
+      toast.error("Failed saving settlement profile updates.");
     }
   });
 

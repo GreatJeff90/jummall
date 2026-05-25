@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,7 +53,7 @@ export default function VendorProductsView() {
     },
     onError: (err: unknown) => {
       console.error("Listing lifecycle mutation tracking crash:", err);
-      alert("Failed modifying store item visibility parameters.");
+      toast.error("Failed modifying store item visibility parameters.");
     }
   });
 
@@ -63,11 +63,11 @@ export default function VendorProductsView() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["merchantCatalog"] });
       setSelectedProduct(null);
-      alert("Product successfully expunged from database registries.");
+      toast.error("Product successfully expunged from database registries.");
     },
     onError: (err: unknown) => {
       console.error("Catalog removal transaction dropped:", err);
-      alert("Failed deleting requested item from server clusters.");
+      toast.error("Failed deleting requested item from server clusters.");
     }
   });
 

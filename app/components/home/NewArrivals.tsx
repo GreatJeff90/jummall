@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import { ArrowRight, Star, ShoppingCart, Eye, Heart, RefreshCw, ChevronLeft, ChevronRight, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,7 +67,7 @@ export default function NewArrivals() {
           setTimeout(() => setAddedSuccessId(null), 2000);
         },
         onError: () => {
-          alert("Authentication token absent. Log back into your profile to use cart features.");
+          toast.error("Authentication token absent. Log back into your profile to use cart features.");
         }
       }
     );

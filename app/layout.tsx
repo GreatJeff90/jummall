@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import Script from "next/script"; // Import the Next.js Script component
+import Script from "next/script";
+import { Toaster } from "sonner"; // Added sonner import
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -50,6 +51,9 @@ export default function RootLayout({
             <Footer />
 
             <ModalLayerController />
+            
+            {/* Added Toast global provider - richColors enables your brand's color themes */}
+            <Toaster position="top-right" richColors />
           </AuthProvider>
         </QueryProvider>
 

@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
@@ -22,7 +22,7 @@ export default function AddAddress() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.state || !formData.city || !formData.address) {
-      alert("Please execute submission verification inputs on all required structural layout properties.");
+      toast.error("Please execute submission verification inputs on all required structural layout properties.");
       return;
     }
 
@@ -39,7 +39,7 @@ export default function AddAddress() {
       router.push("/customer/addresses");
     } catch (err) {
       console.error(err);
-      alert("Gateway insertion error encountered. Verify properties validation stubs.");
+      toast.error("Gateway insertion error encountered. Verify properties validation stubs.");
     } finally {
       setSubmitting(false);
     }

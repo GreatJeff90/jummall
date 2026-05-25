@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronDown, ArrowLeft, Loader2 } from "lucide-react";
@@ -45,7 +45,7 @@ export default function EditAddress() {
             is_default: matches.is_default
           });
         } else {
-          alert("Target record details absent in data schema.");
+          toast.error("Target record details absent in data schema.");
           router.push("/customer/addresses");
         }
       } catch (err) {
@@ -71,7 +71,7 @@ export default function EditAddress() {
 
       router.push("/customer/addresses");
     } catch (err) {
-      alert("Failed to push patch record modifications updating payload.");
+      toast.error("Failed to push patch record modifications updating payload.");
     } finally {
       setUpdating(false);
     }

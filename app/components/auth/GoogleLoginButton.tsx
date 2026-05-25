@@ -2,6 +2,7 @@
 import { useEffect, useCallback } from 'react';
 import { api } from '@/app/lib/api/client';
 import { useRouter } from 'next/navigation';
+import {toast} from "sonner";
 
 export default function GoogleLoginButton() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function GoogleLoginButton() {
       document.cookie = `access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax;`;
       router.push(data.user?.role === 'seller' ? '/seller/dashboard' : '/customer/overview');
     } catch {
-      alert("Google login failed.");
+      toast.error("Google login failed.");
     }
   }, [router]);
 

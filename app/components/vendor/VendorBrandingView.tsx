@@ -1,5 +1,6 @@
 'use client';
 
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { ArrowLeft, Upload, ImageIcon, Loader2, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,20 +42,20 @@ export default function VendorBrandingView({ onBack }: VendorBrandingViewProps) 
       setCoverFile(null);
       
       queryClient.invalidateQueries({ queryKey: ["vendorProfile"] });
-      alert("Store asset branding deployed successfully!");
+      toast.error("Store asset branding deployed successfully!");
     },
     onError: (err: unknown) => {
       console.error("Storefront branding update failed:", err);
       const errorInstance = err as { response?: { data?: { message?: string } } };
       const backendMessage = errorInstance.response?.data?.message || "Verify maximum multi-media file sizes.";
-      alert(`Asset submission failed: ${backendMessage}`);
+      toast.error(`Asset submission failed: ${backendMessage}`);
     }
   });
 
   const handleBrandingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!logoFile && !coverFile) {
-      alert("Please select at least one media slot asset string to modify.");
+      toast.error("Please select at least one media slot asset string to modify.");
       return;
     }
     uploadBrandingMutation.mutate();

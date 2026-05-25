@@ -1,5 +1,5 @@
 'use client';
-
+import { toast } from "sonner";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -95,14 +95,14 @@ export default function CheckoutPage() {
       if (paymentConfig?.authorization_url) {
         window.location.href = paymentConfig.authorization_url;
       } else {
-        alert("Payment gateway communication link dropped unexpectedly.");
+        toast.error("Payment gateway communication link dropped unexpectedly.");
       }
     },
     onError: (err: unknown) => {
       console.error("Checkout submission failed:", err);
       const errorInstance = err as { response?: { data?: { message?: string } } };
       const backendMessage = errorInstance.response?.data?.message || "Verify your balance parameters and connection status.";
-      alert(`Order placement stopped: ${backendMessage}`);
+      toast.error(`Order placement stopped: ${backendMessage}`);
     }
   });
 

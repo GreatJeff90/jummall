@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState, useEffect } from "react";
 import { ChevronDown, Eye, EyeOff, AlertTriangle, Trash2, User, Lock, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -57,7 +57,7 @@ export default function AccountSettings() {
       setProfileSuccess(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to modify user configuration variables matrix.");
+      toast.error("Failed to modify user configuration variables matrix.");
     } finally {
       setProfileLoading(false);
     }

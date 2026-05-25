@@ -1,5 +1,5 @@
 'use client';
-
+import {toast} from "sonner";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ShieldCheck, XCircle, ChevronRight } from "lucide-react";
@@ -25,7 +25,7 @@ export default function SellerOrderDetailsPage() {
     mutationFn: () => api.post(`/orders/${orderId}/advance`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
-      alert("Order status advanced.");
+      toast.error("Order status advanced.");
     }
   });
 
@@ -34,7 +34,7 @@ export default function SellerOrderDetailsPage() {
     mutationFn: (code: string) => api.post(`/orders/${orderId}/verify-code`, { code }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
-      alert("Funds released to your wallet.");
+      toast.error("Funds released to your wallet.");
     }
   });
 
@@ -43,7 +43,7 @@ export default function SellerOrderDetailsPage() {
     mutationFn: () => api.post(`/orders/${orderId}/cancel`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sellerOrderDetail", orderId] });
-      alert("Order cancelled.");
+      toast.error("Order cancelled.");
     }
   });
 
