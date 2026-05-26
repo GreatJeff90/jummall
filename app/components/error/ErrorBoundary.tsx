@@ -12,9 +12,9 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(_: Error) {
-    return { hasError: true };
-  }
+  static getDerivedStateFromError(error: Error) {
+  return { hasError: true };
+}
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);

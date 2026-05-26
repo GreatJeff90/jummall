@@ -1,4 +1,5 @@
 'use client';
+
 import { toast } from "sonner";
 import React from "react";
 import Image from "next/image";
@@ -10,7 +11,8 @@ import { useCart } from "@/app/hooks/useEcosystem";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { checkoutSchema, CheckoutInput } from "@/app/lib/validations";
 import { api } from "@/app/lib/api/client";
-import { createMarketplaceOrderAPI, initializeOrderPaymentAPI, CartItemAPI } from "../lib/api/auth";
+import { initializeOrderPaymentAPI, CartItemAPI } from "../lib/api/auth";
+import { Skeleton } from "../components/ui/skeleton/Skeleton";
 
 interface SellerDeliveryQuote {
   vendor_id: string;
@@ -18,11 +20,57 @@ interface SellerDeliveryQuote {
   delivery_fee: number;
 }
 
-// Structured wrapper to bind your validated inputs with an tracking idempotency signature
 interface IdempotentCheckoutPayload {
   formData: CheckoutInput;
   idempotencyKey: string;
 }
+
+// Mirror layout skeleton matching the checkout side-by-side structure
+const CheckoutPageSkeleton = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-pulse w-full">
+    {/* Left Form Panel Skeleton */}
+    <div className="lg:col-span-7 bg-white border border-slate-100 p-6 rounded-sm space-y-6">
+      <Skeleton className="h-6 w-32" />
+      <hr className="border-slate-100" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-11 w-full" /></div>
+        <div className="space-y-2"><Skeleton className="h-3 w-16" /><Skeleton className="h-11 w-full" /></div>
+      </div>
+      <div className="space-y-2"><Skeleton className="h-3 w-28" /><Skeleton className="h-11 w-full" /></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-11 w-full" /></div>
+        <div className="space-y-2"><Skeleton className="h-3 w-12" /><Skeleton className="h-11 w-full" /></div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2"><Skeleton className="h-3 w-12" /><Skeleton className="h-11 w-full" /></div>
+        <div className="space-y-2"><Skeleton className="h-3 w-24" /><Skeleton className="h-11 w-full" /></div>
+      </div>
+      <Skeleton className="h-12 w-full mt-4" />
+    </div>
+
+    {/* Right Sidebar Summary Skeleton */}
+    <div className="lg:col-span-5 bg-slate-50 border border-slate-100 p-6 rounded-sm space-y-5">
+      <Skeleton className="h-4 w-24" />
+      <div className="space-y-4">
+        {[1, 2].map((i) => (
+          <div key={i} className="flex gap-4 items-center">
+            <Skeleton className="w-14 h-16 bg-white" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-3 w-3/4" />
+              <Skeleton className="h-2.5 w-1/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <hr className="border-slate-200" />
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-4 w-1/2 pt-2" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function CheckoutPage() {
   const { 
@@ -58,12 +106,10 @@ export default function CheckoutPage() {
   const totalDeliveryFee = deliveryQuotes.reduce((sum, quote) => sum + quote.delivery_fee, 0);
   const dynamicTotalAmount = subtotal + (cartItems.length > 0 ? totalDeliveryFee : 0);
 
-  // --- ENFORCED IDEMPOTENT ORDER MUTATION PIPELINE ---
   const orderSubmissionMutation = useMutation({
     mutationFn: async ({ formData, idempotencyKey }: IdempotentCheckoutPayload) => {
       if (cartItems.length === 0) throw new Error("Your cart is empty.");
 
-      // STEP A: Deploy Marketplace order with fixed Idempotency verification configurations
       const response = await api.post("/orders", {
         items: cartItems.map(item => ({
           product_id: item.product_id,
@@ -80,7 +126,6 @@ export default function CheckoutPage() {
         }
       }, {
         headers: {
-          // Send as direct standard request header
           "Idempotency-Key": idempotencyKey
         }
       });
@@ -88,7 +133,6 @@ export default function CheckoutPage() {
       const freshOrder = response.data;
       const orderTargetId = freshOrder.id || freshOrder.order_id;
 
-      // STEP B: Process redirection parameter configurations via the gateway
       return await initializeOrderPaymentAPI(orderTargetId);
     },
     onSuccess: (paymentConfig) => {
@@ -107,10 +151,7 @@ export default function CheckoutPage() {
   });
 
   const onValidSubmit = (data: CheckoutInput) => {
-    // Safety lock validation: block initialization routines while active requests stream in
     if (orderSubmissionMutation.isPending) return;
-
-    // Generate a cryptographically secure isolation string on tap event millisecond
     const cleanIdempotencyToken = crypto.randomUUID();
 
     orderSubmissionMutation.mutate({
@@ -125,17 +166,9 @@ export default function CheckoutPage() {
 
   return (
     <main className="bg-white min-h-screen font-sans">
-      
       {/* --- BREADCRUMB HEADER --- */}
       <div className="relative h-44 md:h-32 md:mb-12 w-full flex items-center overflow-hidden border-b border-slate-100 select-none">
-        <Image 
-          src="/breadcrumb-1.jpg" 
-          alt="Checkout Header Background" 
-          fill 
-          sizes="100vw"
-          className="object-cover"
-          priority
-        />
+        <Image src="/breadcrumb-1.jpg" alt="Checkout Header Background" fill sizes="100vw" className="object-cover" priority />
         <div className="absolute inset-0 bg-white/40" />
         <div className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-16 flex flex-col items-start text-left">
           <h1 className="text-3xl font-black text-[#0F172A] font-montserrat uppercase tracking-tight">Checkout</h1>
@@ -151,10 +184,7 @@ export default function CheckoutPage() {
         </h1>
 
         {loadingCart && !cartData ? (
-          <div className="w-full bg-white border border-slate-100 rounded-sm p-24 flex flex-col items-center justify-center text-center space-y-3 min-h-[400px]">
-            <Loader2 size={32} className="animate-spin text-[#149FCD]" />
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Assembling active order parameters...</p>
-          </div>
+          <CheckoutPageSkeleton />
         ) : cartItems.length === 0 ? (
           <div className="w-full bg-slate-50 border border-dashed border-slate-200 p-16 flex flex-col items-center justify-center text-center rounded-sm min-h-[350px] select-none">
             <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 mb-4 shadow-2xs">
@@ -170,7 +200,6 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-200">
-            
             {/* Billing Information Form Field Blocks */}
             <form onSubmit={handleSubmit(onValidSubmit)} className="lg:col-span-7 bg-white border border-slate-100 p-6 rounded-sm space-y-5 shadow-sm">
               <h2 className="text-lg font-black text-slate-800 uppercase tracking-wide border-b border-slate-50 pb-3 text-left select-none">
@@ -240,7 +269,7 @@ export default function CheckoutPage() {
               >
                 {orderSubmissionMutation.isPending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin text-[#149fcd]" /> Finalizing registration signature...
+                    <Loader2 size={16} className="animate-spin text-white" /> Finalizing registration signature...
                   </>
                 ) : loadingQuotes ? (
                   <>

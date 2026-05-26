@@ -6,25 +6,40 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  Star, CheckCircle2, ShoppingBag, Eye, Heart, 
-  ArrowLeftRight, LayoutGrid, List, ChevronDown, Loader2, CheckCircle
+  ShoppingBag, LayoutGrid, Loader2
 } from "lucide-react";
 import { fetchPublicProducts, addProductToCartAPI } from "../../lib/api/auth";
+import { Skeleton } from "../../components/ui/skeleton/Skeleton";
 
 interface ShopProductGridProps {
   state?: string;
 }
+
+// Mirror skeleton grid matching exactly the grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 layout structure
+const ProductGridSkeleton = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+      <div key={i} className="flex flex-col w-full">
+        {/* Matches aspect-square bg-slate-100 rounded-3xl precisely */}
+        <Skeleton className="aspect-square w-full rounded-3xl bg-slate-100 mb-4" />
+        <div className="space-y-2">
+          {/* Product name lines mirror matching typographic weights */}
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-1/3" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default function ShopProductGrid({ state = "" }: ShopProductGridProps) {
   const [sortBy, setSortBy] = useState("Default");
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedSuccessId, setAddedSuccessId] = useState<string | null>(null);
 
-  // Use TanStack Query to manage data fetching and loading states
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['publicProducts', state, sortBy],
     queryFn: async () => {
-      // Pass state as an object if your API expects it, or just the string
       const data = await fetchPublicProducts({ state });
       const sortedData = Array.isArray(data) ? [...data] : [];
       
@@ -57,7 +72,9 @@ export default function ShopProductGrid({ state = "" }: ShopProductGridProps) {
       <div className="flex justify-between mb-10 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <button className="w-10 h-10 border flex items-center justify-center"><LayoutGrid size={20} /></button>
-          <span className="text-[13px] text-slate-400">Showing {products.length} products</span>
+          <span className="text-[13px] text-slate-400">
+            {isLoading ? "Loading..." : `Showing ${products.length} products`}
+          </span>
         </div>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border px-4 py-2 text-sm">
           <option value="Default">Default sorting</option>
@@ -66,7 +83,7 @@ export default function ShopProductGrid({ state = "" }: ShopProductGridProps) {
       </div>
 
       {isLoading ? (
-        <div className="min-h-[400px] flex items-center justify-center"><Loader2 className="animate-spin" size={32} /></div>
+        <ProductGridSkeleton />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (

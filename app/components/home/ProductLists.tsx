@@ -3,14 +3,35 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Loader2, ShoppingBag } from "lucide-react";
+import { Star, ShoppingBag } from "lucide-react";
 import { useProducts } from "@/app/hooks/useEcosystem";
 import { ProductItemBackend } from "../../lib/api/auth";
+import { Skeleton } from "../../components/ui/skeleton/Skeleton";
+
+// Specific row item skeleton matching layout constraints precisely
+const ProductItemSkeleton = () => (
+  <div className="flex gap-4 border-b border-slate-100 pb-6 last:border-0 w-full animate-pulse">
+    <Skeleton className="w-32 h-32 rounded-lg shrink-0" />
+    <div className="flex flex-col justify-center space-y-2 flex-1 min-w-0">
+      <Skeleton className="h-3 w-1/4" />
+      <Skeleton className="h-4 w-5/6" />
+      <Skeleton className="h-3 w-1/3" />
+      <Skeleton className="h-4 w-24 pt-0.5" />
+    </div>
+  </div>
+);
+
+// Wrapper mapping the dual-column side-by-side feed framework
+const ProductListColumnSkeleton = () => (
+  <div className="space-y-6 w-full">
+    {[1, 2, 3].map((i) => (
+      <ProductItemSkeleton key={i} />
+    ))}
+  </div>
+);
 
 const ProductItem = ({ product }: { product: ProductItemBackend }) => (
   <div className="flex gap-4 group border-b border-slate-100 pb-6 last:border-0 text-left">
-    
-    {/* Product Image wrapped inside detail link anchor */}
     <Link 
       href={`/shop/${product.id}`} 
       className="relative w-32 h-32 flex-shrink-0 bg-slate-50 border border-slate-100/40 rounded-lg overflow-hidden block z-0"
@@ -36,14 +57,12 @@ const ProductItem = ({ product }: { product: ProductItemBackend }) => (
         )}
       </div>
 
-      {/* Product Title wrapped inside detail link anchor */}
       <Link href={`/shop/${product.id}`} className="block group/title">
         <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug group-hover/title:text-[#149fcd] transition-colors" title={product.name}>
           {product.name}
         </h3>
       </Link>
 
-      {/* Star Ratings Summary Block */}
       <div className="flex items-center gap-0.5 text-orange-400">
         {[...Array(5)].map((_, i) => (
           <Star 
@@ -62,12 +81,10 @@ const ProductItem = ({ product }: { product: ProductItemBackend }) => (
         </span>
       </div>
     </div>
-
   </div>
 );
 
 export default function ProductLists() {
-  // 1. Leverage separate parallel query cache lines instead of manual Promise.all side effects
   const { data: rawSaleData, isLoading: loadingSale } = useProducts({ tag: "on-sale" });
   const { data: rawTrendingData, isLoading: loadingTrending } = useProducts({ tag: "trending" });
 
@@ -81,15 +98,6 @@ export default function ProductLists() {
 
   const loading = loadingSale || loadingTrending;
 
-  if (loading && saleProducts.length === 0 && trendingProducts.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-2 min-h-[350px]">
-        <Loader2 size={32} className="animate-spin text-[#149fcd]" />
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Loading catalog matrix blocks...</p>
-      </div>
-    );
-  }
-
   return (
     <section className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-slate-50">
       
@@ -99,7 +107,9 @@ export default function ProductLists() {
           On Sale
         </h2>
         <div className="space-y-6">
-          {saleProducts.length === 0 ? (
+          {loading && saleProducts.length === 0 ? (
+            <ProductListColumnSkeleton />
+          ) : saleProducts.length === 0 ? (
             <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1 select-none">
               <ShoppingBag size={20} className="stroke-1" />
               <p className="text-xs font-medium">No active discounted items found.</p>
@@ -116,7 +126,9 @@ export default function ProductLists() {
           Trending Products
         </h2>
         <div className="space-y-6">
-          {trendingProducts.length === 0 ? (
+          {loading && trendingProducts.length === 0 ? (
+            <ProductListColumnSkeleton />
+          ) : trendingProducts.length === 0 ? (
             <div className="py-12 bg-slate-50 border border-dashed border-slate-100 flex flex-col items-center justify-center rounded text-slate-400 gap-1 select-none">
               <ShoppingBag size={20} className="stroke-1" />
               <p className="text-xs font-medium">No trending items discovered.</p>
