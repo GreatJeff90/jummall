@@ -105,7 +105,8 @@ api.interceptors.response.use(
     }
 
     try {
-      const refreshResponse = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshToken });
+      // Use 'api' instance instead of 'axios' to ensure interceptors/config are applied
+      const refreshResponse = await api.post("/auth/refresh", { refresh_token: refreshToken });
       const { access_token, refresh_token } = refreshResponse.data.tokens || refreshResponse.data;
 
       setTokens(access_token, refresh_token);
