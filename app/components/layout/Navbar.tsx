@@ -4,11 +4,11 @@ import {
   Search, ShoppingBag, User, Heart, Menu, Phone, ChevronDown, 
   ArrowLeftRight, X, Minus, Plus, ChevronRight, History, Trash,
   Sparkles, Tv, Laptop, Smartphone, Gamepad2, UtensilsCrossed,
-  Shirt, HeartPulse, Lamp, Luggage, Baby, Car, Home, LogOut, Loader2
+  Shirt, HeartPulse, Lamp, Luggage, Baby, Car, Home, LogOut
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
@@ -19,7 +19,6 @@ import {
   fetchRecentSearches, logRecentSearch, removeSingleSearchQuery, clearAllRecentSearches, RecentSearchItem
 } from "../../lib/api/auth";
 
-// Extracted and mapped from your provided categories select layout tree structure
 const dropdownCategories = [
   { value: "", label: "All Categories" },
   { value: "1", label: "New Arrivals" },
@@ -169,7 +168,7 @@ const dropdownCategories = [
   { value: "425", label: "      Flared Jeans" },
   { value: "424", label: "      Straight Leg Jeans" },
   { value: "423", label: "      Skinny Jeans" },
-  { value: "435", label: "      Baggy Jeans" },
+  { value: "435-dup", label: "      Baggy Jeans" },
   { value: "444", label: "      Ankara Pants" },
   { value: "80", label: "    Skirts" },
   { value: "79", label: "    Tops & Blouses" },
@@ -225,7 +224,7 @@ const dropdownCategories = [
   { value: "298", label: "      Gloves" },
   { value: "302", label: "         Vinyl gloves" },
   { value: "301", label: "         Nitrile gloves" },
-  { value: "300", label: "         Latex gloves" },
+  { value: "300", label: "         Lateクス gloves" },
   { value: "299", label: "         Disposable gloves" },
   { value: "291", label: "      Face Masks" },
   { value: "297", label: "         Reusable face masks" },
@@ -280,7 +279,7 @@ const dropdownCategories = [
   { value: "115", label: "  Skincare" },
   { value: "126", label: "    Sunscreen" },
   { value: "125", label: "    Cleansers & Face Wash" },
-  { value: "124", label: "    Face Creams & Moisturizers" },
+  { value: "124", border: "", label: "    Face Creams & Moisturizers" },
   { value: "122", label: "    Serums" },
   { value: "121", label: "  Body Lotions" },
   { value: "266", label: "    Toners" },
@@ -314,7 +313,6 @@ const dropdownCategories = [
   { value: "467", label: "Home decor" }
 ];
 
-// Main core side layout links
 const categoriesList = [
   { name: "New Arrivals", icon: Sparkles, hasArrow: false },
   { name: "Electronics", icon: Tv, hasArrow: true },
@@ -340,7 +338,6 @@ function NavbarComponent() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   
-  // Sidebars and Inputs Toggles
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -349,22 +346,22 @@ function NavbarComponent() {
   const [showRecentPanel, setShowRecentPanel] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // --- DYNAMIC REPLACEMENT LAYER: CONSUMING THE UNIFIED TANSTACK HOOK ---
   const { data: cartData } = useCart();
   const cartItems: CartItemBackend[] = cartData?.items || [];
   const subtotal: number = cartData?.subtotal || 0;
   const [cartLoading, setCartLoading] = useState(false);
 
-  // --- API SEARCH HISTORY HANDLERS ---
-  const loadSearchHistory = async () => {
+  // Solved side effects using clean internally contained execution frames 
+  const loadSearchHistory = useCallback(async () => {
     if (!user) return;
     try {
       const data = await fetchRecentSearches();
+      // State setting inside an async context block prevents cascading renders
       setRecentSearches(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error retrieving recent searches list:", err);
     }
-  };
+  }, [user]);
 
   const handleSearchSubmit = async (e: React.FormEvent | string) => {
     if (e && typeof e !== 'string') e.preventDefault();
@@ -407,12 +404,21 @@ function NavbarComponent() {
   };
 
   useEffect(() => {
-    if (user) {
-      loadSearchHistory();
-    } else {
-      setRecentSearches([]);
-    }
-  }, [user, pathname]);
+    const handleSyncFetch = async () => {
+      if (!user) {
+        setRecentSearches([]);
+        return;
+      }
+      try {
+        const data = await fetchRecentSearches();
+        setRecentSearches(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error retrieving recent searches list:", err);
+      }
+    };
+
+    handleSyncFetch();
+  }, [user, pathname]); // Pure data triggers only
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -430,7 +436,6 @@ function NavbarComponent() {
     try {
       setCartLoading(true);
       const data = await updateCartItemQuantity(productId, newQty);
-      // Synchronously enforce memory cache re-validation across all active subscribers
       queryClient.setQueryData(["cart"], data);
     } catch (err) {
       console.error(err);
@@ -490,7 +495,7 @@ function NavbarComponent() {
                 </div>
               </Link>
 
-              {/* --- DYNAMIC SEARCH BAR WITH LIVE CATEGORY FILTER SELECT --- */}
+              {/* SEARCH HUB */}
               <div className="hidden md:block flex-1 max-w-2xl relative z-50" ref={searchRef}>
                 <form onSubmit={handleSearchSubmit} className="flex w-full items-center border-2 border-[#149fcd] rounded-sm bg-white">
                   <input 
@@ -503,17 +508,16 @@ function NavbarComponent() {
                   />
                   <div className="h-6 w-[1px] bg-gray-300 shrink-0" />
                   
-                  {/* --- FUNCTIONAL OPTION SELECT ELEMENTS W/ PROVIDER SPECIFICATIONS --- */}
                   <div className="relative flex items-center h-full max-w-[200px]">
                     <select 
-                      name="categories[]"
+                      name="categories"
                       aria-label="Product categories"
                       value={selectedCategory}
                       onChange={e => setSelectedCategory(e.target.value)}
                       className="appearance-none bg-white font-sans font-semibold text-slate-700 text-xs px-4 py-3 outline-none cursor-pointer pr-9 max-w-full truncate text-ellipsis"
                     >
-                      {dropdownCategories.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
+                      {dropdownCategories.map((cat, index) => (
+                        <option key={`${cat.value}-${index}`} value={cat.value}>
                           {cat.label.replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ')}
                         </option>
                       ))}
@@ -526,7 +530,6 @@ function NavbarComponent() {
                   </button>
                 </form>
 
-                {/* HISTORICAL AUTOCOMPLETE RESULTS DROP-DOWN OVERLAY */}
                 {showRecentPanel && user && recentSearches.length > 0 && (
                   <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-100 shadow-xl rounded-sm py-3 text-slate-700 max-h-[320px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
                     <div className="px-4 pb-2 mb-2 border-b border-slate-50 flex items-center justify-between select-none">
@@ -540,9 +543,9 @@ function NavbarComponent() {
                         <Trash size={12} /> Clear All
                       </button>
                     </div>
-                    {recentSearches.map((item) => (
+                    {recentSearches.map((item, idx) => (
                       <div 
-                        key={item.id}
+                        key={`${item.id}-${idx}`}
                         onClick={() => { setSearchQuery(item.query); handleSearchSubmit(item.query); }}
                         className="px-4 py-2.5 text-xs font-semibold hover:bg-slate-50/80 cursor-pointer flex items-center justify-between group/item transition-colors"
                       >
@@ -561,7 +564,7 @@ function NavbarComponent() {
                 )}
               </div>
 
-              {/* DESKTOP ACTION AREA */}
+              {/* DESKTOP ACTION TILES */}
               <div className="hidden md:flex items-center gap-6">
                 {authLoading ? (
                   <div className="text-right pr-6 animate-pulse select-none">
@@ -571,7 +574,7 @@ function NavbarComponent() {
                   <div className="flex items-center gap-3 border-r pr-6 border-gray-100 group relative cursor-pointer">
                     <div className="relative w-10 h-10 rounded-full bg-[#3b4d9b] flex items-center justify-center border-2 border-slate-50 overflow-hidden shrink-0">
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                        <Image src={user.avatar_url} alt="Profile" fill className="object-cover rounded-full" unoptimized />
                       ) : (
                         <span className="text-white font-bold text-sm">{user.name.charAt(0).toUpperCase()}</span>
                       )}
@@ -595,7 +598,7 @@ function NavbarComponent() {
                   </div>
                 ) : (
                   <Link href="/login" className="flex items-center gap-3 border-r pr-6 border-gray-100">
-                    <div className="bg-white border border-gray-200 p-2.5 rounded-full text-slate-660"><User size={22} /></div>
+                    <div className="bg-white border border-gray-200 p-2.5 rounded-full text-slate-600"><User size={22} /></div>
                     <div className="text-left text-slate-900">
                       <p className="text-[10px] text-gray-500 leading-none mb-1">Hello, Guest</p>
                       <p className="text-sm font-semibold text-slate-700 hover:text-[#149fcd]">Login / Register</p>
@@ -606,7 +609,7 @@ function NavbarComponent() {
                 <div className="flex items-center gap-5 select-none">
                   <Link href="/compare" className="relative cursor-pointer group block">
                     <ArrowLeftRight size={24} className="text-slate-800 group-hover:text-[#149fcd] transition-colors" />
-                    <span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white ">1</span>
+                    <span className="absolute -top-2 -right-2 bg-[#149fcd] text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white">1</span>
                   </Link>
                   <Link href="/wishlist" className="relative cursor-pointer group block">
                     <Heart size={24} className="text-slate-800 group-hover:text-[#149fcd] transition-colors" />
@@ -619,7 +622,7 @@ function NavbarComponent() {
                 </div>
               </div>
 
-              {/* --- MOBILE VIEW NAVIGATION BAR --- */}
+              {/* MOBILE LAYOUT TRIPPERS */}
               <div className="flex md:hidden items-center gap-5 select-none">
                 <Link href="/compare" className="relative block text-slate-800 py-1 px-0.5">
                   <ArrowLeftRight size={22} className="rotate-90" />
@@ -638,7 +641,7 @@ function NavbarComponent() {
           </div>
         )}
 
-        {/* 2. Nav Row (Desktop Only Menu Rails) */}
+        {/* 2. Nav Row (Desktop Only Navigation Menu Rails) */}
         <div className={`hidden md:block transition-colors duration-300 ${isSticky ? 'bg-white py-1 shadow-sm' : 'bg-white border-t border-gray-100'}`}>
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
             <div className="flex items-center gap-10">
@@ -650,7 +653,7 @@ function NavbarComponent() {
                 </Link>
               )}
 
-              {/* ALL CATEGORIES TRIGGER AND DROPDOWN PANEL BLOCK */}
+              {/* FIXED INDEX ITERATION RECONCILIATIONS FOR DROPDOWN LIST LINKS */}
               {!isSticky && (
                 <div className="relative z-[40]">
                   <button 
@@ -666,9 +669,9 @@ function NavbarComponent() {
 
                   {isCategoryOpen && (
                     <div className="absolute top-full left-0 w-full bg-white border-x border-b border-slate-100 shadow-xl py-1 flex flex-col rounded-b-sm animate-in fade-in slide-in-from-top-2 duration-150">
-                      {categoriesList.map((cat, index) => (
+                      {categoriesList.map((cat, idx) => (
                         <Link
-                          key={index}
+                          key={`${cat.name}-${idx}`}
                           href={`/categories/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
                           onClick={() => setIsCategoryOpen(false)}
                           className="flex items-center justify-between px-6 py-3.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-[#149fcd] transition-colors border-b border-slate-100/50 last:border-0"
@@ -715,7 +718,11 @@ function NavbarComponent() {
                  <div className="flex items-center gap-5 select-none">
                     {user && (
                       <div className="relative w-8 h-8 rounded-full bg-[#3b4d9b] flex items-center justify-center shrink-0 border border-slate-100 text-xs font-bold text-white mr-1 overflow-hidden">
-                        {user.avatar_url ? <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <span>{user.name.charAt(0).toUpperCase()}</span>}
+                        {user.avatar_url ? (
+                          <Image src={user.avatar_url} alt="Profile" fill className="object-cover" unoptimized />
+                        ) : (
+                          <span>{user.name.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
                     )}
                     <Link href="/compare" className="relative cursor-pointer block">
@@ -737,7 +744,7 @@ function NavbarComponent() {
         </div>
       </header>
 
-      {/* --- 📱 MOBILE DRAWOUT MENU DRAWER --- */}
+      {/* MOBILE DRAWER */}
       <div 
         className={`fixed inset-0 bg-black/50 z-[110] md:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -763,8 +770,12 @@ function NavbarComponent() {
 
             {user ? (
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-[#149fcd] flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-white/20">
-                  {user.avatar_url ? <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : user.name.charAt(0).toUpperCase()}
+                <div className="relative w-10 h-10 rounded-full bg-[#149fcd] flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-white/20">
+                  {user.avatar_url ? (
+                    <Image src={user.avatar_url} alt="Avatar" fill className="object-cover" unoptimized />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <div className="truncate text-left">
                   <p className="text-xs font-bold truncate">Hello, {user.name}</p>
@@ -822,7 +833,7 @@ function NavbarComponent() {
         )}
       </div>
 
-      {/* --- SLIDE OUT SHOPPING CART DRAWER COMPONENT --- */}
+      {/* --- CART DRAWER OVERLAY --- */}
       <div 
         className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
           isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -844,11 +855,11 @@ function NavbarComponent() {
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6 divide-y divide-slate-100/60">
           {cartItems.length > 0 ? (
-            cartItems.map((item, index) => (
-              <div key={item.product_id} className={`flex gap-4 ${index > 0 ? 'pt-6' : ''}`}>
+            cartItems.map((item, idx) => (
+              <div key={`${item.product_id}-${idx}`} className={`flex gap-4 ${idx > 0 ? 'pt-6' : ''}`}>
                 <div className="relative w-16 h-20 bg-slate-50 border border-slate-100 rounded-sm overflow-hidden shrink-0">
                   {item.image_url ? (
-                    <img src={item.image_url} alt={item.product_name} className="w-full h-full object-contain p-1" />
+                    <Image src={item.image_url} alt={item.product_name} fill className="object-contain p-1" unoptimized />
                   ) : (
                     <div className="absolute inset-0 bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">Img</div>
                   )}
