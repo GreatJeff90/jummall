@@ -10,27 +10,27 @@ export interface SignupPayload {
   email: string;
   phone: string;
   role: "buyer" | "seller";
-  password?: string; // Included password down into payload contract
+  password?: string;
 }
 
 export interface VerifyEmailPayload {
   email: string;
-  code: string;    // Clean contract match mapping straight to backend 'code' property
-  purpose: string; // Tells server specific intent behind token challenge check
+  code: string;
+  purpose: string;
 }
 
 export interface RequestPhoneOtpPayload {
   phone: string;
-  email: string;   // Added email index so server matches token stubs correctly
+  email: string;
 }
 
 export interface VerifyPhonePayload {
   phone: string;
-  otp: string;     // Retained hook reference matching page view component fields
+  otp: string;
 }
 
 export interface LoginPayload {
-  email: string; // Changed from username to email to match backend payload requirement
+  email: string;
   password?: string;
 }
 
@@ -38,45 +38,24 @@ export interface LoginPayload {
 // FUNCTIONAL AUTHENTICATION FLOW ACTIONS
 // =========================================================
 
-/**
- * STEP 1: Initial Account Registration Request
- * @route POST /auth/signup
- * @returns 201 status code signaling a pending user identity verification stub
- */
 export const registerAccount = async (payload: SignupPayload) => {
   const response = await api.post("/auth/signup", payload);
   return response.data;
 };
 
-/**
- * STEP 2: Verify Email OTP Verification Box
- * @route POST /auth/verify-otp
- * @returns AuthResult (User database record structure data but no active session access tokens yet)
- */
 export const verifyEmailOtp = async (payload: VerifyEmailPayload) => {
   const response = await api.post("/auth/verify-otp", payload);
   return response.data;
 };
 
-/**
- * STEP 3: Request SMS/WhatsApp Verification OTP Pin to Phone Link
- * @route POST /auth/phone/request-otp
- * @returns 200 status code signaling a pending phone verification gateway step status
- */
 export const requestPhoneOtp = async (payload: RequestPhoneOtpPayload) => {
-  const response = await api.post("/auth/phone/request-otp", payload); // Transmits both phone and email keys
+  const response = await api.post("/auth/phone/request-otp", payload);
   return response.data;
 };
 
-/**
- * STEP 4 & 5: Submit Phone OTP & Receive Access Tokens
- * @route POST /auth/phone/verify-otp
- * @returns Complete AuthResult (User data + short-lived Access/Refresh Session tokens payload)
- */
 export const verifyPhoneOtp = async (payload: VerifyPhonePayload) => {
   const response = await api.post("/auth/phone/verify-otp", payload);
   
-  // Destructure tokens securely from the underlying response structure to persist layout tracking sessions
   const data = response.data;
   if (data?.tokens) {
     const { access_token, refresh_token } = data.tokens;
@@ -89,11 +68,6 @@ export const verifyPhoneOtp = async (payload: VerifyPhonePayload) => {
   return data;
 };
 
-/**
- * ACCOUNT SESSION LOGIN
- * @route POST /auth/login
- * @returns Complete AuthResult (User data + short-lived Access/Refresh Session tokens payload)
- */
 export const loginAccount = async (payload: LoginPayload) => {
   const response = await api.post("/auth/login", payload);
   
@@ -140,10 +114,9 @@ export const resetPasswordConfirm = async (payload: ResetPasswordPayload) => {
  */
 export const fetchCurrentUser = async () => {
   const response = await api.get("/auth/me");
-  return response.data; // Returns structural User details shape
+  return response.data;
 };
 
-// Add these model definitions to the bottom of src/lib/api/auth.ts
 // =========================================================
 // TYPE INTERFACES CONTRACT DEFINITIONS
 // =========================================================
@@ -172,7 +145,7 @@ export interface OrderDetailResponse {
   shipping_address: string;
   shipping_status: string;
   total_amount: number;
-  items: OrderItem[]; // Tied cleanly to the structured interface above, no more 'any' errors!
+  items: OrderItem[];
 }
 
 // =========================================================
@@ -184,12 +157,7 @@ export interface OrderDetailResponse {
  * @route GET /orders/mine
  */
 export const fetchMyOrders = async (): Promise<OrderDetailResponse[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/orders/mine", {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const response = await api.get("/orders/mine");
   return response.data;
 };
 
@@ -198,12 +166,7 @@ export const fetchMyOrders = async (): Promise<OrderDetailResponse[]> => {
  * @route GET /orders/{order_id}
  */
 export const fetchOrderDetails = async (orderId: string): Promise<OrderDetailResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get(`/orders/${orderId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const response = await api.get(`/orders/${orderId}`);
   return response.data;
 };
 
@@ -226,26 +189,19 @@ export interface ReviewResponse {
  * @route GET /products/{product_id}/reviews/me
  */
 export const fetchMyProductReview = async (productId: string): Promise<ReviewResponse | null> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
   try {
-    const response = await api.get(`/products/${productId}/reviews/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get(`/products/${productId}/reviews/me`);
     return response.data;
   } catch {
-    return null; // Return clean fallback if no review exists yet
+    return null;
   }
 };
-
 /**
  * SUBMIT OR UPDATE A PRODUCT REVIEW
  * @route POST /products/{product_id}/reviews
  */
 export const upsertProductReview = async (productId: string, payload: ReviewPayload): Promise<ReviewResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post(`/products/${productId}/reviews`, payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post(`/products/${productId}/reviews`, payload);
   return response.data;
 };
 
@@ -276,10 +232,7 @@ export interface AddressPayload {
  * @route GET /addresses
  */
 export const fetchMyAddresses = async (): Promise<AddressItem[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/addresses", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/addresses");
   return response.data;
 };
 
@@ -288,10 +241,7 @@ export const fetchMyAddresses = async (): Promise<AddressItem[]> => {
  * @route POST /addresses
  */
 export const createAddress = async (payload: AddressPayload): Promise<AddressItem> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/addresses", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/addresses", payload);
   return response.data;
 };
 
@@ -300,10 +250,7 @@ export const createAddress = async (payload: AddressPayload): Promise<AddressIte
  * @route PATCH /addresses/{address_id}
  */
 export const updateAddressDetails = async (addressId: string, payload: AddressPayload): Promise<AddressItem> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch(`/addresses/${addressId}`, payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch(`/addresses/${addressId}`, payload);
   return response.data;
 };
 
@@ -312,10 +259,7 @@ export const updateAddressDetails = async (addressId: string, payload: AddressPa
  * @route DELETE /addresses/{address_id}
  */
 export const deleteAddressRecord = async (addressId: string): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.delete(`/addresses/${addressId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.delete(`/addresses/${addressId}`);
 };
 
 /**
@@ -323,16 +267,13 @@ export const deleteAddressRecord = async (addressId: string): Promise<void> => {
  * @route POST /addresses/{address_id}/default
  */
 export const setDefaultAddressRecord = async (addressId: string): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.post(`/addresses/${addressId}/default`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.post(`/addresses/${addressId}/default`);
 };
 
 export interface UpdateProfilePayload {
   name: string;
   phone: string;
-  dob?: string; // Optional Date of Birth
+  dob?: string;
 }
 
 export interface ChangePasswordPayload {
@@ -346,10 +287,7 @@ export interface ChangePasswordPayload {
  * @route PATCH /auth/me
  */
 export const updateProfileInfo = async (payload: UpdateProfilePayload) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch("/auth/me", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch("/auth/me", payload);
   return response.data;
 };
 
@@ -358,10 +296,7 @@ export const updateProfileInfo = async (payload: UpdateProfilePayload) => {
  * @route POST /auth/change-password
  */
 export const changeAccountPassword = async (payload: ChangePasswordPayload) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/auth/change-password", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/auth/change-password", payload);
   return response.data;
 };
 
@@ -388,10 +323,7 @@ export interface CartResponse {
  * @route GET /cart
  */
 export const fetchMyCart = async (): Promise<CartResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/cart", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/cart");
   return response.data;
 };
 
@@ -400,10 +332,7 @@ export const fetchMyCart = async (): Promise<CartResponse> => {
  * @route PATCH /cart/items/{product_id}
  */
 export const updateCartItemQuantity = async (productId: string, quantity: number): Promise<CartResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch(`/cart/items/${productId}`, { quantity }, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch(`/cart/items/${productId}`, { quantity });
   return response.data;
 };
 
@@ -412,10 +341,7 @@ export const updateCartItemQuantity = async (productId: string, quantity: number
  * @route DELETE /cart/items/{product_id}
  */
 export const removeCartItem = async (productId: string): Promise<CartResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.delete(`/cart/items/${productId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.delete(`/cart/items/${productId}`);
   return response.data;
 };
 
@@ -424,10 +350,7 @@ export const removeCartItem = async (productId: string): Promise<CartResponse> =
  * @route DELETE /cart
  */
 export const clearEntireCart = async (): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.delete("/cart", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.delete("/cart");
 };
 
 export interface ProductItemBackend {
@@ -437,7 +360,7 @@ export interface ProductItemBackend {
   description?: string;
   category?: string;
   image_url?: string;
-  badges?: string[]; // Array collections for tags like ["New", "Sale", "Hot"]
+  badges?: string[];
   rating_average?: number;
   reviews_count?: number;
   is_verified_store?: boolean;
@@ -459,18 +382,14 @@ export const fetchPublicProducts = async (params?: {
 interface ProductFilters {
   category?: string;
   tag?: string;
-  state?: string; // Add this line
+  state?: string;
 }
-
 /**
  * ADD PRODUCT ITEM TO CHECKOUT BASKET REGISTER
  * @route POST /cart/items
  */
 export const addProductToCartAPI = async (productId: string, quantity: number = 1) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/cart/items", { product_id: productId, quantity }, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/cart/items", { product_id: productId, quantity });
   return response.data;
 };
 
@@ -481,11 +400,11 @@ export interface ProductItemBackend {
   description?: string;
   category?: string;
   image_url?: string;
-  badges?: string[]; 
+  badges?: string[];
   rating_average?: number;
   reviews_count?: number;
   is_verified_store?: boolean;
-  vendor_name?: string; // Add this line right here to satisfy the compiler!
+  vendor_name?: string;
 }
 
 export interface RecentSearchItem {
@@ -499,10 +418,7 @@ export interface RecentSearchItem {
  * @route GET /search/recent
  */
 export const fetchRecentSearches = async (): Promise<RecentSearchItem[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/search/recent", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/search/recent");
   return response.data;
 };
 
@@ -511,10 +427,7 @@ export const fetchRecentSearches = async (): Promise<RecentSearchItem[]> => {
  * @route POST /search/recent
  */
 export const logRecentSearch = async (query: string): Promise<RecentSearchItem> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/search/recent", { query }, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/search/recent", { query });
   return response.data;
 };
 
@@ -523,10 +436,7 @@ export const logRecentSearch = async (query: string): Promise<RecentSearchItem> 
  * @route DELETE /search/recent/{query}
  */
 export const removeSingleSearchQuery = async (query: string): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.delete(`/search/recent/${encodeURIComponent(query)}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.delete(`/search/recent/${encodeURIComponent(query)}`);
 };
 
 /**
@@ -534,10 +444,7 @@ export const removeSingleSearchQuery = async (query: string): Promise<void> => {
  * @route DELETE /search/recent
  */
 export const clearAllRecentSearches = async (): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.delete("/search/recent", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.delete("/search/recent");
 };
 
 export interface DailyChartPoint {
@@ -550,8 +457,8 @@ export interface SellerAnalyticsOverviewResponse {
   revenue_change_percentage: number;
   yesterday_revenue: number;
   total_orders_count: number;
-  total_visitors_count: string; // e.g., "1.8K"
-  conversion_rate: number;      // e.g., 3.4
+  total_visitors_count: string;
+  conversion_rate: number;
   chart_trend_data: DailyChartPoint[];
 }
 
@@ -560,10 +467,7 @@ export interface SellerAnalyticsOverviewResponse {
  * @route GET /seller/analytics/overview
  */
 export const fetchSellerAnalyticsOverview = async (): Promise<SellerAnalyticsOverviewResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/seller/analytics/overview", {
-    headers: { Authorization: `Bearer ${token}` } // Ensure this header block is explicitly present!
-  });
+  const response = await api.get("/seller/analytics/overview");
   return response.data;
 };
 
@@ -581,16 +485,16 @@ export interface User {
   email: string;
   role: "customer" | "seller" | "admin";
   avatar_url?: string;
-  vendor_profile?: VendorProfile; // Add this line right here to satisfy the type compiler!
+  vendor_profile?: VendorProfile;
 }
 
 export interface SellerRecentOrder {
   id: string;
   product_name: string;
-  created_at_human: string; // e.g., "10 mins ago"
+  created_at_human: string;
   price: number;
-  status: string;           // e.g., "Paid" or "Preparing"
-  fallback_initial: string; // e.g., "P" or "M"
+  status: string;
+  fallback_initial: string;
 }
 
 export interface SellerDashboardTask {
@@ -606,14 +510,11 @@ export interface SellerAnalyticsOverviewResponse {
   total_orders_count: number;
   total_visitors_count: string;
   conversion_rate: number;
-  
-  // Dynamic metrics properties to strip out the hardcoded layers
   unread_notifications_count: number;
   pending_orders_count: number;
   in_transit_orders_count: number;
   unread_chats_count: number;
   completed_orders_count: number;
-  
   action_tasks: SellerDashboardTask[];
   recent_orders: SellerRecentOrder[];
 }
@@ -639,11 +540,7 @@ export interface SellerOrdersResponse {
  * @route GET /seller/orders
  */
 export const fetchSellerOrders = async (params?: { status?: string }): Promise<SellerOrdersResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/seller/orders", {
-    params,
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/seller/orders", { params });
   return response.data;
 };
 
@@ -669,10 +566,7 @@ export interface SellerCatalogMetricsResponse {
  * @route GET /products/mine
  */
 export const fetchMySellerProducts = async (): Promise<SellerCatalogMetricsResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/products/mine", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/products/mine");
   return response.data;
 };
 
@@ -681,35 +575,25 @@ export const fetchMySellerProducts = async (): Promise<SellerCatalogMetricsRespo
  * @route PATCH /products/{product_id}
  */
 export const updateSellerProductStatus = async (productId: string, isActive: boolean): Promise<SellerProductItem> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch(`/products/${productId}`, { is_active: isActive }, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch(`/products/${productId}`, { is_active: isActive });
   return response.data;
 };
-
 /**
  * DISMISS/DELETE SINGLE ENTRY 
  * @route DELETE /products/{product_id}
  */
 export const deleteSellerProduct = async (productId: string): Promise<void> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  await api.delete(`/products/${productId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  await api.delete(`/products/${productId}`);
 };
 
 /**
  * CREATE NEW PRODUCT LISTING ENVELOPE ENTRY
  * @route POST /products
  */
-
 export const createSellerProductAPI = async (formData: FormData): Promise<Record<string, unknown>> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
   const response = await api.post("/products", formData, {
     headers: { 
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data" // Necessary wrapper payload formatting for multi-media handling
+      "Content-Type": "multipart/form-data" 
     }
   });
   return response.data;
@@ -741,11 +625,7 @@ export interface ChatThreadBackend {
  * @route GET /chats
  */
 export const fetchActiveChatThreadsAPI = async (params?: { filter?: string }): Promise<ChatThreadBackend[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/chats", {
-    params,
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/chats", { params });
   return response.data;
 };
 
@@ -754,10 +634,7 @@ export const fetchActiveChatThreadsAPI = async (params?: { filter?: string }): P
  * @route POST /chats/{chat_id}/read
  */
 export const markThreadAsReadAPI = async (chatId: string): Promise<{ success: boolean }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post(`/chats/${chatId}/read`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post(`/chats/${chatId}/read`, {});
   return response.data;
 };
 
@@ -786,10 +663,7 @@ export interface MyStoreProfileResponse {
  * @route GET /store/me
  */
 export const fetchMyStoreProfileAPI = async (): Promise<MyStoreProfileResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/store/me", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/store/me");
   return response.data;
 };
 
@@ -798,64 +672,9 @@ export const fetchMyStoreProfileAPI = async (): Promise<MyStoreProfileResponse> 
  * @route PATCH /store/me
  */
 export const updateMyStoreProfileAPI = async (payload: { is_vacation_mode?: boolean; shop_name?: string }): Promise<MyStoreProfileResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch("/store/me", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch("/store/me", payload);
   return response.data;
 };
-
-export interface StorefrontBanner {
-  _id: string;
-  tagline: string;
-  title: string;
-  discount_text: string;
-  price_label: string;
-  image_key: string;
-  image_url: string;
-  sort_order: number;
-}
-
-export interface StorefrontCategory {
-  name: string;
-  slug: string;
-  product_count: number;
-  active_product_count: number;
-}
-
-export interface StorefrontProductItem {
-  _id: string;
-  seller_id: string;
-  name: string;
-  description: string;
-  category: string;
-  condition: 'new' | 'used' | 'refurbished';
-  price: number;
-  compare_at_price: number;
-  sku: string;
-  stock: number;
-  low_stock_threshold: number;
-  tags: string[];
-  images: {
-    object_name: string;
-    url: string;
-    is_main: boolean;
-  }[];
-  sold: number;
-  rating: number;
-  review_count: number;
-  is_active: boolean;
-  is_ad: boolean;
-}
-
-export interface StorefrontHomeResponse {
-  banners: StorefrontBanner[];
-  categories: StorefrontCategory[];
-  trending: StorefrontProductItem[];
-  new_arrivals: StorefrontProductItem[];
-  on_sale: StorefrontProductItem[];
-}
-
 /**
  * FETCH COMPOSITE HOME LANDING PAGE PAYLOAD
  * @route GET /storefront/home
@@ -891,11 +710,8 @@ export interface VerificationStatusSummary {
  * INITIALIZE DOJAH SDK VERIFICATION SESSION
  * @route POST /seller/verification/start
  */
-export const startSellerVerificationAPI = async (): Promise<DojahLaunchConfig> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/seller/verification/start", {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+export const startSellerVerificationAPI = async (payload: { first_name: string; middle_name: string; last_name: string }): Promise<DojahLaunchConfig> => {
+  const response = await api.post("/seller/verification/start", payload);
   return response.data;
 };
 
@@ -907,10 +723,7 @@ export const completeSellerVerificationAPI = async (payload: {
   reference_id: string; 
   sdk_result: Record<string, unknown>; 
 }): Promise<{ summary: VerificationStatusSummary }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/seller/verification/complete", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/seller/verification/complete", payload);
   return response.data;
 };
 
@@ -919,10 +732,7 @@ export const completeSellerVerificationAPI = async (payload: {
  * @route GET /seller/verification/status
  */
 export const fetchSellerVerificationStatusAPI = async (): Promise<{ summary: VerificationStatusSummary }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/seller/verification/status", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/seller/verification/status");
   return response.data;
 };
 
@@ -938,10 +748,7 @@ export interface AutoReplyRuleAPI {
  * @route GET /seller/auto-replies
  */
 export const fetchAutoRepliesAPI = async (): Promise<AutoReplyRuleAPI[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/seller/auto-replies", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/seller/auto-replies");
   return response.data;
 };
 
@@ -950,10 +757,7 @@ export const fetchAutoRepliesAPI = async (): Promise<AutoReplyRuleAPI[]> => {
  * @route POST /seller/auto-replies
  */
 export const createAutoReplyAPI = async (payload: { trigger_type: 'welcome' | 'away'; message_content: string; is_enabled: boolean }): Promise<AutoReplyRuleAPI> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/seller/auto-replies", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/seller/auto-replies", payload);
   return response.data;
 };
 
@@ -962,10 +766,7 @@ export const createAutoReplyAPI = async (payload: { trigger_type: 'welcome' | 'a
  * @route PATCH /seller/auto-replies/{reply_id}
  */
 export const updateAutoReplyAPI = async (replyId: string, payload: { message_content?: string; is_enabled?: boolean }): Promise<AutoReplyRuleAPI> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch(`/seller/auto-replies/${replyId}`, payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch(`/seller/auto-replies/${replyId}`, payload);
   return response.data;
 };
 
@@ -982,10 +783,7 @@ export interface UserProfileResponse {
  * @route GET /auth/me
  */
 export const fetchAuthMeAPI = async (): Promise<UserProfileResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/auth/me", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/auth/me");
   return response.data;
 };
 
@@ -994,10 +792,7 @@ export const fetchAuthMeAPI = async (): Promise<UserProfileResponse> => {
  * @route PATCH /auth/me
  */
 export const updateAuthMeAPI = async (payload: { name: string }): Promise<UserProfileResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.patch("/auth/me", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.patch("/auth/me", payload);
   return response.data;
 };
 
@@ -1006,10 +801,7 @@ export const updateAuthMeAPI = async (payload: { name: string }): Promise<UserPr
  * @route POST /auth/change-password
  */
 export const changePasswordAPI = async (payload: Record<string, string>): Promise<{ success: boolean; message?: string }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/auth/change-password", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/auth/change-password", payload);
   return response.data;
 };
 
@@ -1031,10 +823,7 @@ export interface UnreadCountResponse {
  * @route GET /notifications
  */
 export const fetchNotificationsAPI = async (): Promise<NotificationItemAPI[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/notifications", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/notifications");
   return response.data;
 };
 
@@ -1043,10 +832,7 @@ export const fetchNotificationsAPI = async (): Promise<NotificationItemAPI[]> =>
  * @route POST /notifications/read
  */
 export const markNotificationsAsReadAPI = async (payload?: { notification_ids?: string[] }): Promise<{ success: boolean }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/notifications/read", payload || {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/notifications/read", payload || {});
   return response.data;
 };
 
@@ -1055,10 +841,7 @@ export const markNotificationsAsReadAPI = async (payload?: { notification_ids?: 
  * @route GET /notifications/unread_count
  */
 export const fetchNotificationUnreadCountAPI = async (): Promise<UnreadCountResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/notifications/unread_count", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/notifications/unread_count");
   return response.data;
 };
 
@@ -1080,7 +863,7 @@ export interface CreateOrderPayload {
 
 export interface OrderInstanceAPI {
   id: string;
-  order_id: string; // fallback alias matching server returns
+  order_id: string;
   total_amount: number;
   status: string;
 }
@@ -1096,23 +879,16 @@ export interface PaystackInitResponse {
  * @route POST /orders
  */
 export const createMarketplaceOrderAPI = async (payload: CreateOrderPayload): Promise<OrderInstanceAPI> => {
-  // Let's confirm your active token key matches the storage key used during login
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  
-  const response = await api.post("/orders", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/orders", payload);
   return response.data;
 };
+
 /**
  * INITIALIZE PAYSTACK TRANSACTION GATEWAY FOR ACTIVE ORDER
  * @route POST /orders/{order_id}/pay
  */
 export const initializeOrderPaymentAPI = async (orderId: string): Promise<PaystackInitResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post(`/orders/${orderId}/pay`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post(`/orders/${orderId}/pay`, {});
   return response.data;
 };
 
@@ -1135,10 +911,7 @@ export interface UserCartResponse {
  * @route GET /cart/mine
  */
 export const fetchMyCurrentCartAPI = async (): Promise<UserCartResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/cart/mine", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/cart/mine");
   return response.data;
 };
 
@@ -1166,10 +939,7 @@ export interface StorefrontProductItem {
   name: string;
   description: string;
   category: string;
-  
-  // Broadened to include refurbished, clearing the type declarations overlap crash
   condition: 'new' | 'used' | 'refurbished';
-  
   price: number;
   compare_at_price: number;
   sku: string;
@@ -1235,10 +1005,7 @@ export interface FavouriteProductAPI {
  * @route GET /favourites
  */
 export const fetchFavouritesAPI = async (): Promise<FavouriteProductAPI[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/favourites", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/favourites");
   return response.data;
 };
 
@@ -1247,10 +1014,7 @@ export const fetchFavouritesAPI = async (): Promise<FavouriteProductAPI[]> => {
  * @route DELETE /favourites/{product_id}
  */
 export const removeFavouriteAPI = async (productId: string): Promise<{ success: boolean }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.delete(`/favourites/${productId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.delete(`/favourites/${productId}`);
   return response.data;
 };
 
@@ -1283,10 +1047,7 @@ export interface UploadedImageAsset {
  * @route POST /products/upload-url
  */
 export const requestSignedUploadUrlAPI = async (payload: SignedUrlPayload): Promise<SignedUrlResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/products/upload-url", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/products/upload-url", payload);
   return response.data;
 };
 
@@ -1294,7 +1055,6 @@ export const requestSignedUploadUrlAPI = async (payload: SignedUrlPayload): Prom
  * COMPILATION DISPATCH PROMISE: upload raw binary stream straight to Google Cloud Storage
  */
 export const uploadFileBinaryToGCS = async (uploadUrl: string, file: File, headers: Record<string, string>) => {
-  // Use a clean axios instance to completely bypass default application bearer headers
   await axios.put(uploadUrl, file, {
     headers: {
       ...headers,
@@ -1329,10 +1089,7 @@ export interface SavedBankAccountDetails {
  * @route GET /payouts/banks
  */
 export const fetchPayoutBanksAPI = async (): Promise<BankItemAPI[]> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.get("/payouts/banks", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/payouts/banks");
   return response.data;
 };
 
@@ -1341,10 +1098,7 @@ export const fetchPayoutBanksAPI = async (): Promise<BankItemAPI[]> => {
  * @route POST /payouts/resolve
  */
 export const resolveBankAccountAPI = async (payload: ResolveAccountPayload): Promise<ResolveAccountResponse> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/payouts/resolve", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/payouts/resolve", payload);
   return response.data;
 };
 
@@ -1353,14 +1107,11 @@ export const resolveBankAccountAPI = async (payload: ResolveAccountPayload): Pro
  * @route GET /payouts/bank-account
  */
 export const fetchSavedBankAPI = async (): Promise<SavedBankAccountDetails | null> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
   try {
-    const response = await api.get("/payouts/bank-account", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get("/payouts/bank-account");
     return response.data;
   } catch {
-    return null; // Return cleanly if account config hasn't been set yet
+    return null;
   }
 };
 
@@ -1369,10 +1120,7 @@ export const fetchSavedBankAPI = async (): Promise<SavedBankAccountDetails | nul
  * @route POST /payouts/bank-account
  */
 export const saveBankAccountAPI = async (payload: SavedBankAccountDetails): Promise<{ success: boolean }> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const response = await api.post("/payouts/bank-account", payload, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/payouts/bank-account", payload);
   return response.data;
 };
 
@@ -1401,7 +1149,7 @@ export interface ProductAsset {
  */
 export const fetchCategoriesAPI = async (): Promise<CategoriesFetchResponse> => {
   const response = await api.get("/categories", {
-    params: { only_active: true } // Keeps list clean and active
+    params: { only_active: true }
   });
   return response.data;
 };
@@ -1421,6 +1169,3 @@ export interface BankItemAPI {
   code: string;
   name: string;
 }
-
-
-
