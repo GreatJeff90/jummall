@@ -30,6 +30,9 @@ export default function Home() {
 
         {/* --- SECTION 4: CIRCULAR CATEGORIES --- */}
         <FlashDeals />
+
+        {/* --- SECTION 8: NEW ARRIVALS --- */}
+        <NewArrivals />
         
 
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
@@ -49,8 +52,7 @@ export default function Home() {
           <TabletHero />
         </div>
 
-        {/* --- SECTION 8: NEW ARRIVALS --- */}
-        <NewArrivals />
+        
 
         {/* --- SECTION 9: PRODUCT LISTS (ON SALE & TRENDING) --- */}
         <ProductLists />
