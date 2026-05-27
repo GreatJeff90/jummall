@@ -11,6 +11,7 @@ import BestSellers from "./components/home/BestSellers";
 import EscrowPromise from "./components/home/EscrowPromise";
 import RecentlyViewed from "./components/home/RecentlyViewed";
 import NewsletterSubscribe from "./components/home/NewsletterSubscribe";
+import AppPromotion from "./components/home/AppPromotion";
 // import TabletHero from "./components/home/TabletHero";
 // import GadgetSection from "./components/home/GadgetSection";
 import NewArrivals from "./components/home/NewArrivals";
@@ -57,6 +58,8 @@ export default function Home() {
         <RecentlyViewed />
 
         <NewsletterSubscribe />
+
+        <AppPromotion />
 
      {/* --- SECTION 4: GADGETS & COMPUTERS --- */}
         {/* New section featuring the sidebar navigation and speaker products */}
