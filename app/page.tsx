@@ -33,6 +33,9 @@ export default function Home() {
 
         {/* --- SECTION 8: NEW ARRIVALS --- */}
         <NewArrivals />
+
+         {/* --- SECTION 6: ADVERTISEMENT BANNERS --- */}
+        <AdBanner />
         
 
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
@@ -40,8 +43,7 @@ export default function Home() {
 
        
 
-        {/* --- SECTION 6: ADVERTISEMENT BANNERS --- */}
-        <AdBanner />
+       
 
      {/* --- SECTION 4: GADGETS & COMPUTERS --- */}
         {/* New section featuring the sidebar navigation and speaker products */}
