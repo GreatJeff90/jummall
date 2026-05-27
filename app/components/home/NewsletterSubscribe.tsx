@@ -29,9 +29,9 @@ export default function NewsletterSubscribe() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12 font-sans select-none">
-      {/* Master Container: Deep Luxury Teal Gradient Box Canvas */}
-      <div className="w-full bg-gradient-to-br from-[#104E5B] via-[#116273] to-[#14839C] rounded-[32px] p-8 sm:p-12 md:p-16 relative overflow-hidden flex flex-col items-center justify-center text-center shadow-lg">
+    <section className="max-w-7xl mx-auto px-4 py-8 md:py-12 font-sans select-none">
+      {/* Master Container: Deep Luxury Teal Gradient Box Canvas with Responsive Padding */}
+      <div className="w-full bg-gradient-to-br from-[#104E5B] via-[#116273] to-[#14839C] rounded-[32px] p-6 sm:p-12 md:p-16 relative overflow-hidden flex flex-col items-center justify-center text-center shadow-lg">
         
         {/* ================= BACKGROUND FLOATING ACCENT PARTICLES ================= */}
         <div className="absolute top-12 left-12 w-2 h-2 rounded-full bg-amber-400 opacity-80 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse" />
@@ -44,7 +44,7 @@ export default function NewsletterSubscribe() {
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
         {/* ================= CONTENT BODY SECTION ================= */}
-        <div className="max-w-2xl mx-auto relative z-10 space-y-5">
+        <div className="w-full max-w-2xl mx-auto relative z-10 space-y-5">
           
           {/* Top Pill Subtitle Badge */}
           <div className="w-full flex justify-center">
@@ -53,8 +53,8 @@ export default function NewsletterSubscribe() {
             </span>
           </div>
 
-          {/* Main Strategic Header Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-[44px] font-black font-montserrat text-white tracking-tight leading-[1.05] uppercase">
+          {/* Main Strategic Header Title with Responsive Sizing */}
+          <h2 className="text-2xl sm:text-4xl md:text-[44px] font-black font-montserrat text-white tracking-tight leading-[1.1] md:leading-[1.05] uppercase">
             Get 5% off your<br />first order.
           </h2>
 
@@ -64,14 +64,18 @@ export default function NewsletterSubscribe() {
           </p>
 
           {/* ================= INTERACTIVE SUBSCRIPTION SYSTEM FORM ================= */}
-          <div className="pt-4 max-w-lg mx-auto">
+          <div className="pt-2 sm:pt-4 w-full max-w-lg mx-auto">
             {hasSubscribed ? (
               <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center justify-center gap-3 text-white animate-in fade-in zoom-in-95 duration-300">
                 <MailCheck className="text-amber-400 stroke-[2.5]" size={20} />
                 <span className="text-xs font-black uppercase tracking-wider">Verification link dispatched successfully!</span>
               </div>
             ) : (
-              <form onSubmit={handleSubscribeSubmit} className="w-full bg-white/5 backdrop-blur-md border border-white/10 p-2 rounded-[22px] flex items-center shadow-inner relative group focus-within:border-white/20 focus-within:bg-white/10 transition-all">
+              /* Converted layout element package to automatically stack items on mobile screens */
+              <form 
+                onSubmit={handleSubscribeSubmit} 
+                className="w-full bg-white/5 sm:bg-white/5 backdrop-blur-md border border-white/10 p-2 rounded-2xl sm:rounded-[22px] flex flex-col sm:flex-row items-center shadow-inner relative gap-2 sm:gap-0 group focus-within:border-white/20 focus-within:bg-white/10 transition-all"
+              >
                 <input
                   type="email"
                   required
@@ -79,13 +83,13 @@ export default function NewsletterSubscribe() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
-                  className="flex-1 bg-transparent border-none outline-none text-white placeholder-slate-300/60 font-semibold px-4 text-xs sm:text-sm h-12 disabled:opacity-50"
+                  className="w-full sm:flex-1 bg-transparent border-none outline-none text-white placeholder-slate-300/60 font-semibold px-4 text-xs sm:text-sm h-12 disabled:opacity-50 text-center sm:text-left"
                 />
                 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#FFD13B] hover:bg-[#ffc61a] text-slate-900 font-black text-xs uppercase tracking-widest px-6 sm:px-8 h-12 rounded-[16px] transition-all duration-300 shadow-md active:scale-98 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto bg-[#FFD13B] hover:bg-[#ffc61a] text-slate-900 font-black text-xs uppercase tracking-widest px-6 sm:px-8 h-12 rounded-xl sm:rounded-[16px] transition-all duration-300 shadow-md active:scale-98 flex items-center justify-center gap-2 shrink-0"
                 >
                   {isSubmitting ? (
                     <Loader2 className="animate-spin" size={16} />
@@ -98,7 +102,7 @@ export default function NewsletterSubscribe() {
           </div>
 
           {/* Bottom Compliance Privacy Note Layout Line */}
-          <p className="text-[10px] font-medium text-slate-300/60 pt-2 select-none">
+          <p className="text-[10px] font-medium text-slate-300/60 pt-2 select-none leading-normal">
             By subscribing, you agree to our <Link href="/terms" className="underline hover:text-white transition-colors">Terms & Privacy</Link>. Unsubscribe anytime.
           </p>
 
