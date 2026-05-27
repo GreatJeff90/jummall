@@ -4,10 +4,12 @@ import HeroSlider from "./components/home/HeroSlider";
 import CategoryShowcase from "./components/home/CategoryShowcase";
 import FeatureSection from "./components/home/FeatureSection";
 import FlashDeals from "./components/home/FlashDeals"
-import TrendingProducts from "./components/home/TrendingProducts";
+// import TrendingProducts from "./components/home/TrendingProducts";
 import AdBanner from "./components/home/AdBanner";
 import TopVendors from "./components/home/TopVendors";
 import BestSellers from "./components/home/BestSellers";
+import EscrowPromise from "./components/home/EscrowPromise";
+import RecentlyViewed from "./components/home/RecentlyViewed";
 import TabletHero from "./components/home/TabletHero";
 import GadgetSection from "./components/home/GadgetSection";
 import NewArrivals from "./components/home/NewArrivals";
@@ -49,9 +51,9 @@ export default function Home() {
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
         {/* <TrendingProducts /> */}
 
-       
+        <EscrowPromise />
 
-       
+        <RecentlyViewed />
 
      {/* --- SECTION 4: GADGETS & COMPUTERS --- */}
         {/* New section featuring the sidebar navigation and speaker products */}
