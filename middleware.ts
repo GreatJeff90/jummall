@@ -10,6 +10,17 @@ const PROTECTED_ROUTES = [
 
 export function middleware(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;
+
+  // 1. Structural safety gate: Completely ignore Next.js internals, public static images, and the login page itself
+  if (
+    currentPath.startsWith("/_next") || 
+    currentPath.startsWith("/api") ||
+    currentPath === "/login" ||
+    currentPath.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
   const needsAuth = PROTECTED_ROUTES.some((rx) => rx.test(currentPath));
   
   if (!needsAuth) return NextResponse.next();
@@ -30,5 +41,13 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/customer/:path*", "/seller/:path*", "/checkout/:path*"],
+  /* Enhanced matcher filter: Excludes internal next framework asset compilers 
+    so your dev terminal isn't overwhelmed during HMR ticks.
+  */
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
+    "/customer/:path*", 
+    "/seller/:path*", 
+    "/checkout/:path*"
+  ],
 };
