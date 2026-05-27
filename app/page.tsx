@@ -19,12 +19,13 @@ export default function Home() {
         {/* --- SECTION 1: MAIN HERO SLIDER --- */}
         <HeroSlider />
 
-        {/* --- SECTION 2: CIRCULAR CATEGORIES --- */}
-        <CategoryShowcase />
+        
 
-        {/* --- SECTION 3: FEATURE TRUST BAR --- */}
+        {/* --- SECTION 2: FEATURE TRUST BAR --- */}
         <FeatureSection />
 
+        {/* --- SECTION 3: CIRCULAR CATEGORIES --- */}
+        <CategoryShowcase />
         
 
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
