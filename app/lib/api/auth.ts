@@ -1169,3 +1169,10 @@ export interface BankItemAPI {
   code: string;
   name: string;
 }
+
+export const fetchActivePromotions = async (page = 1, pageSize = 10) => {
+  const response = await api.get('/api/promotions/active', {
+    params: { page, page_size: pageSize }
+  });
+  return response.data;
+};

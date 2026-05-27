@@ -3,6 +3,7 @@
 import HeroSlider from "./components/home/HeroSlider";
 import CategoryShowcase from "./components/home/CategoryShowcase";
 import FeatureSection from "./components/home/FeatureSection";
+import FlashDeals from "./components/home/FlashDeals"
 import TrendingProducts from "./components/home/TrendingProducts";
 import AdBanner from "./components/home/AdBanner";
 import TabletHero from "./components/home/TabletHero";
@@ -26,6 +27,9 @@ export default function Home() {
 
         {/* --- SECTION 3: CIRCULAR CATEGORIES --- */}
         <CategoryShowcase />
+
+        {/* --- SECTION 4: CIRCULAR CATEGORIES --- */}
+        <FlashDeals />
         
 
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
