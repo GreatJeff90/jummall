@@ -10,10 +10,11 @@ import TopVendors from "./components/home/TopVendors";
 import BestSellers from "./components/home/BestSellers";
 import EscrowPromise from "./components/home/EscrowPromise";
 import RecentlyViewed from "./components/home/RecentlyViewed";
-import TabletHero from "./components/home/TabletHero";
-import GadgetSection from "./components/home/GadgetSection";
+import NewsletterSubscribe from "./components/home/NewsletterSubscribe";
+// import TabletHero from "./components/home/TabletHero";
+// import GadgetSection from "./components/home/GadgetSection";
 import NewArrivals from "./components/home/NewArrivals";
-import ProductLists from "./components/home/ProductLists";  
+// import ProductLists from "./components/home/ProductLists";  
 import LatestNews from "./components/home/LatestNews";
 
 export default function Home() {
@@ -55,19 +56,21 @@ export default function Home() {
 
         <RecentlyViewed />
 
+        <NewsletterSubscribe />
+
      {/* --- SECTION 4: GADGETS & COMPUTERS --- */}
         {/* New section featuring the sidebar navigation and speaker products */}
-        <GadgetSection />
+        {/* <GadgetSection /> */}
 
         {/* --- SECTION 7: SECONDARY PROMO (TABLET COLLECTION) --- */}
         <div className="mb-20">
-          <TabletHero />
+          {/* <TabletHero /> */}
         </div>
 
         
 
         {/* --- SECTION 9: PRODUCT LISTS (ON SALE & TRENDING) --- */}
-        <ProductLists />
+        {/* <ProductLists /> */}
 
         {/* --- SECTION 10: LATEST NEWS & ARTICLES --- */}
         <LatestNews />
