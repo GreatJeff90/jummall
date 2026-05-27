@@ -7,6 +7,7 @@ import FlashDeals from "./components/home/FlashDeals"
 import TrendingProducts from "./components/home/TrendingProducts";
 import AdBanner from "./components/home/AdBanner";
 import TopVendors from "./components/home/TopVendors";
+import BestSellers from "./components/home/BestSellers";
 import TabletHero from "./components/home/TabletHero";
 import GadgetSection from "./components/home/GadgetSection";
 import NewArrivals from "./components/home/NewArrivals";
@@ -40,10 +41,13 @@ export default function Home() {
 
         {/* --- SECTION 9: TOP VENDORS --- */}
         <TopVendors />
+
+          {/* --- SECTION 10: BEST SELLERS --- */}
+        <BestSellers />
         
 
         {/* --- SECTION 5: TRENDING PRODUCTS --- */}
-        <TrendingProducts />
+        {/* <TrendingProducts /> */}
 
        
 
