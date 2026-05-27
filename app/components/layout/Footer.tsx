@@ -1,14 +1,11 @@
 'use client';
 
 import { 
-  Phone, 
   Mail, 
   MapPin, 
-  ChevronUp,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube
+  Phone,
+  ArrowUp,
+  Instagram
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,172 +15,227 @@ export default function Footer() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const socialLinks = [
-    { icon: Facebook, href: "#", color: "hover:text-blue-600 hover:border-blue-600" },
-    { icon: Twitter, href: "#", color: "hover:text-sky-500 hover:border-sky-500" },
-    { icon: Instagram, href: "#", color: "hover:text-pink-600 hover:border-pink-600" },
-    { icon: Youtube, href: "#", color: "hover:text-red-600 hover:border-red-600" }
-  ];
-
   return (
-    <footer className="w-full font-sans text-left">
+    <footer className="w-full bg-[#12363F] text-[#9FB5B9] font-sans text-[13px] select-none text-left border-t border-[#1a4a56]">
       
-      {/* --- NEWSLETTER BANNER --- */}
-      <section className="bg-[#149fcd] py-12 md:py-16 px-4 sm:px-6 md:px-16 relative overflow-hidden">
-        {/* Decorative background shape - hidden on mobile to prevent layout shifting */}
-        <div className="absolute left-0 top-0 h-full opacity-30 pointer-events-none hidden sm:block">
-          <Image src="/shape-1.png" alt="" width={400} height={300} className="object-contain" />
-        </div>
-
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-10 relative z-10">
-          <div className="text-white text-center lg:text-left space-y-1">
-            <p className="text-[11px] md:text-[14px] uppercase font-bold tracking-wider opacity-90">
-              Be among the first 50 and get 5% off your first order
-            </p>
-            <h2 className="text-[28px] sm:text-[36px] md:text-[50px] font-black leading-tight tracking-tight">
-              Subscribe to our Newsletter
-            </h2>
-          </div>
-
-          <div className="relative w-full max-w-xl flex flex-col items-center pt-2 lg:pt-0">
-            {/* Paper Plane - Hidden on mobile, visible from sm up */}
-            <div className="absolute -top-14 -left-8 z-10 hidden sm:block">
-              <div className="relative">
-                <Image src="/plane.png" alt="Plane" width={40} height={40} />
-                <svg width="450" height="150" className="absolute top-6 left-6 -z-10 opacity-60" viewBox="0 0 399 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0.499634 1.00049C8.5 20.0005 54.2733 13.6435 60.5 40.0005C65.6128 61.6426 26.4546 130.331 15 90.0005C-9 5.5 176.5 127.5 218.5 106.5C301.051 65.2247 202 -57.9188 344.5 40.0003C364 53.3997 384 22 399 22" stroke="white" strokeOpacity="0.4" strokeDasharray="6 6" strokeWidth="2"></path>
-                </svg>
+      {/* ================= PRIMARY FOOTER CORES MATRIX ================= */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-16 pt-16 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
+          
+          {/* COLUMN 1: BRAND PLATFORM ROOT SUMMARY (4 COLS) */}
+          <div className="lg:col-span-4 space-y-6 flex flex-col items-start text-left">
+            <Link href="/" className="block">
+              <div className="relative w-[150px] h-[42px]">
+                <Image 
+                  src="/Jummall.png" 
+                  alt="Jummall Logo" 
+                  fill 
+                  className="object-contain object-left" 
+                  priority 
+                  unoptimized
+                />
               </div>
-            </div>
+            </Link>
+            
+            <p className="text-white font-black font-montserrat text-base tracking-tight leading-snug">
+              One marketplace. Endless possibilities.
+            </p>
+            
+            <p className="text-[#9FB5B9]/80 font-medium leading-relaxed max-w-xs">
+              Made in Lagos, Nigeria.<br />
+              Shipping nationwide since 2024.
+            </p>
 
-            {/* Responsive Input Group: Stacks on mobile, inline on sm viewports */}
-            <div className="flex flex-col sm:flex-row w-full bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-xl relative z-20 gap-1 sm:gap-0 p-1 sm:p-0">
-              <input 
-                type="email" 
-                placeholder="Enter Your Email" 
-                className="w-full px-5 py-4 sm:px-8 sm:py-5 outline-none text-slate-500 text-sm md:text-[16px] font-medium rounded-t-lg sm:rounded-none" 
-              />
-              <button className="bg-[#010F1C] text-white font-bold px-6 py-4 sm:px-10 sm:py-5 text-sm md:text-[16px] hover:bg-slate-900 transition-all rounded-b-lg sm:rounded-none shrink-0 uppercase tracking-wider">
-                Subscribe
-              </button>
-            </div>
-
-            {/* Mailman Mascot Illustration */}
-            <div className="hidden lg:block absolute -right-10 z-10 translate-y-[-10%]">
-              <Image 
-                src="/shape-4.png" 
-                alt="Mailman" 
-                width={130} 
-                height={220} 
-                className="object-contain" 
-              />
+            {/* Premium Circular Minimal Social Tracks */}
+            <div className="flex items-center gap-2 pt-2">
+              {[
+                { label: "X", icon: () => <span className="font-black text-xs font-montserrat">X</span>, href: "#" },
+                { label: "IG", icon: () => <Instagram size={14} className="stroke-[2.5]" />, href: "#" },
+                { label: "TK", icon: () => <span className="font-black text-xs font-sans">ت</span>, href: "#" },
+                { label: "FB", icon: () => <span className="font-black text-xs font-montserrat">f</span>, href: "#" },
+                { label: "LN", icon: () => <span className="font-black text-xs font-montserrat">in</span>, href: "#" }
+              ].map((social, i) => (
+                <Link 
+                  key={i} 
+                  href={social.href} 
+                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#9FB5B9] hover:bg-[#149fcd] hover:text-white hover:border-[#149fcd] transition-all"
+                  aria-label={social.label}
+                >
+                  <social.icon />
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* --- MAIN FOOTER --- */}
-      <div className="bg-white pt-16 md:pt-24 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10 md:gap-12 mb-12 md:mb-20">
-            
-            {/* Column 1: Logo and About - Spans full width on mobile, 4 cols on desktop */}
-            <div className="sm:col-span-2 md:col-span-4 space-y-6 md:space-y-8 text-center sm:text-left flex flex-col items-center sm:items-start">
-              <Link href="/">
-                <Image src="/jummall-logo.png" alt="Jummall" width={150} height={45} priority />
-              </Link>
-              <p className="text-[13px] text-[#55585B] leading-relaxed font-medium max-w-sm sm:max-w-[280px]">
-                Jummall is a trusted multi-vendor e-commerce marketplace designed for emerging markets. Shop from multiple vendors in one transaction.
-              </p>
-              <div className="flex gap-3 justify-center sm:justify-start">
-                {socialLinks.map((social, i) => (
-                  <Link key={i} href={social.href} className={`w-9 h-9 rounded-lg border border-[#E0E2E3] flex items-center justify-center text-[#55585B] transition-all bg-white shadow-xs group ${social.color}`}>
-                    <social.icon size={15} className="group-hover:scale-105 transition-transform" />
+          {/* COLUMN 2: MY ACCOUNT LAYER LINKS (2 COLS) */}
+          <div className="lg:col-span-2 space-y-4 flex flex-col items-start text-left">
+            <h4 className="text-white font-black font-montserrat uppercase text-xs tracking-widest select-none">
+              My Account
+            </h4>
+            <ul className="space-y-3 font-semibold text-[#9FB5B9]/90">
+              {[
+                { label: "Sign in", href: "/login" },
+                { label: "Register", href: "/register" },
+                { label: "Track order", href: "/profile/orders" },
+                { label: "Wishlist", href: "/profile/wishlist" },
+                { label: "Returns", href: "/returns-exchange" },
+                { label: "My addresses", href: "/profile/addresses" }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="hover:text-white transition-colors block">
+                    {link.label}
                   </Link>
-                ))}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* COLUMN 3: MARKETPLACE CHANNELS RAILS (2 COLS) */}
+          <div className="lg:col-span-2 space-y-4 flex flex-col items-start text-left">
+            <h4 className="text-white font-black font-montserrat uppercase text-xs tracking-widest select-none">
+              Shop
+            </h4>
+            <ul className="space-y-3 font-semibold text-[#9FB5B9]/90">
+              {[
+                { label: "All categories", href: "/categories" },
+                { label: "New arrivals", href: "/shop?sort=newest" },
+                { label: "Best sellers", href: "/shop?sort=best" },
+                { label: "Today's deals", href: "/shop?sort=deals" },
+                { label: "Top vendors", href: "/vendors" },
+                { label: "Gift cards", href: "/gift-cards" }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="hover:text-white transition-colors block">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* COLUMN 4: INFORMATION & LEGAL POLICIES (2 COLS) */}
+          <div className="lg:col-span-2 space-y-4 flex flex-col items-start text-left">
+            <h4 className="text-white font-black font-montserrat uppercase text-xs tracking-widest select-none">
+              Information
+            </h4>
+            <ul className="space-y-3 font-semibold text-[#9FB5B9]/90">
+              {[
+                { label: "About us", href: "/about" },
+                { label: "Blog", href: "/blog" },
+                { label: "FAQs", href: "/faqs" },
+                { label: "Terms & conditions", href: "/terms" },
+                { label: "Privacy policy", href: "/privacy" },
+                { label: "Seller agreement", href: "/seller-agreement" }
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <Link href={link.href} className="hover:text-white transition-colors block">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* COLUMN 5: TALK TO US / CONTACT ANCHORS TRACK (2 COLS) */}
+          <div className="lg:col-span-2 space-y-4 flex flex-col items-start text-left">
+            <h4 className="text-white font-black font-montserrat uppercase text-xs tracking-widest select-none">
+              Talk to us
+            </h4>
+            <div className="space-y-3.5 font-semibold text-[#9FB5B9]/90 w-full">
+              <div className="flex items-center gap-2.5 group cursor-pointer">
+                <Phone size={14} className="text-[#9FB5B9]/60 group-hover:text-white transition-colors" />
+                <span className="hover:text-white transition-colors tracking-tight">+234 905 599 9999</span>
               </div>
-            </div>
+              <div className="flex items-center gap-2.5 group cursor-pointer">
+                <Mail size={14} className="text-[#9FB5B9]/60 group-hover:text-white transition-colors" />
+                <span className="hover:text-white transition-colors truncate">support@jummall.com</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <MapPin size={14} className="text-[#9FB5B9]/60" />
+                <span>Lagos, Nigeria</span>
+              </div>
 
-            {/* Spacer for structural balance on large screens */}
-            <div className="hidden md:block md:col-span-1"></div>
-
-            {/* Column 2 - My Account */}
-            <div className="md:col-span-2 space-y-4 md:space-y-6">
-              <h4 className="text-[15px] md:text-[18px] font-black text-[#010F1C] uppercase tracking-wider border-b border-slate-50 sm:border-0 pb-2 sm:pb-0">
-                My Account
-              </h4>
-              <ul className="space-y-3 text-xs md:text-[14px] text-[#55585B]">
-                {['Track Orders', 'Shipping', 'Wishlist', 'My Account', 'Order History'].map((item) => (
-                  <li key={item} className="hover:text-[#149fcd] cursor-pointer transition-colors font-semibold">{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 3 - Information */}
-            <div className="md:col-span-2 space-y-4 md:space-y-6">
-              <h4 className="text-[15px] md:text-[18px] font-black text-[#010F1C] uppercase tracking-wider border-b border-slate-50 sm:border-0 pb-2 sm:pb-0">
-                Information
-              </h4>
-              <ul className="space-y-3 text-xs md:text-[14px] text-[#55585B]">
-                {['About Us', 'Latest News', 'Contact Us', 'FAQs', 'Terms & Conditions'].map((item) => (
-                  <li key={item} className="hover:text-[#149fcd] cursor-pointer transition-colors font-semibold">{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 4 - Talk To Us */}
-            <div className="sm:col-span-2 md:col-span-3 space-y-4 md:space-y-6">
-              <h4 className="text-[15px] md:text-[18px] font-black text-[#010F1C] uppercase tracking-wider border-b border-slate-50 sm:border-0 pb-2 sm:pb-0">
-                Talk To Us
-              </h4>
-              <div className="space-y-5">
-                <div>
-                  <p className="text-[10px] font-bold text-[#55585B] uppercase tracking-widest mb-1">Got Questions? Call us</p>
-                  <p className="text-[20px] md:text-[22px] font-black text-[#010F1C] tracking-tight hover:text-[#149fcd] cursor-pointer transition-colors">
-                    +2347039340610
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-[#55585B] group cursor-pointer">
-                    <Mail size={16} className="text-[#149fcd] shrink-0" />
-                    <span className="text-xs md:text-[14px] font-semibold group-hover:text-[#149fcd] truncate">support@jummall.com</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-[#55585B]">
-                    <MapPin size={16} className="text-[#149fcd] shrink-0" />
-                    <span className="text-xs md:text-[14px] font-semibold">Abuja, Nigeria</span>
-                  </div>
-                </div>
+              {/* 24/7 Response Speed Parameter Alert Box Component Layout */}
+              <div className="bg-[#18424D] border border-white/5 rounded-xl p-3.5 mt-2 text-left space-y-1 shadow-inner select-none">
+                <p className="text-white font-black text-[11px] uppercase tracking-wide">24/7 Support</p>
+                <p className="text-[11px] text-[#9FB5B9]/70 leading-normal font-medium">
+                  We typically reply in <span className="text-[#FFD13B] font-black">&lt; 5 minutes</span>
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Bottom Copyright and Payment Partners Bar */}
-          <div className="border-t border-[#E0E2E3] pt-8 flex flex-col-reverse md:flex-row items-center justify-between gap-6 relative">
-            <p className="text-[11px] md:text-[13px] text-[#55585B] uppercase tracking-wider font-semibold text-center md:text-left leading-relaxed">
-              © 2026 JUMMALL MARKETPLACE. ALL RIGHTS RESERVED.
-            </p>
-            
-            <div className="relative w-[180px] h-[45px] md:w-[220px] md:h-[60px]">
-              <Image 
-                src="/secured_by_paystack.png" 
-                alt="Secured by Paystack" 
-                fill 
-                className="object-contain"
-              />
-            </div>
-
-            {/* Back to top button positioned responsively on tiny viewport thresholds */}
-            <button 
-              type="button"
-              onClick={scrollToTop}
-              className="absolute -top-6 right-2 sm:right-0 bg-[#010F1C] text-white p-3 md:p-4 rounded-full shadow-xl hover:bg-[#149fcd] transition-all hover:-translate-y-1 z-20 border border-white/10"
-              title="Scroll to Top"
-            >
-              <ChevronUp size={20} />
-            </button>
-          </div>
         </div>
       </div>
+
+      {/* ================= TRANSACTIONS CHANNELS ROW MIDDLE BAR ================= */}
+      <div className="w-full border-t border-[#1a4a56] bg-[#0F2D35]/50 py-5 px-4 sm:px-6 md:px-16 select-none">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          {/* Secure Payment System Nodes Stack */}
+          <div className="flex items-center flex-wrap gap-3">
+            <span className="text-[10px] font-black tracking-widest uppercase text-white/40 block mr-1">Secure payments</span>
+            
+            {/* Securing escrow paystack engine layout token badge */}
+            <div className="bg-[#12363F] border border-white/5 px-2.5 py-1.5 rounded-lg flex items-center grayscale opacity-60">
+              <span className="text-[7px] font-bold text-[#9FB5B9]/40 uppercase tracking-wider block mr-1 select-none">Secured by</span>
+              <span className="text-[10px] font-black text-[#00c5ff] tracking-tighter">paystack</span>
+            </div>
+
+            {['VISA', 'Mastercard', 'Verve', 'Bank Transfer'].map((pay) => (
+              <span key={pay} className="bg-[#12363F] border border-white/5 text-white/80 font-black tracking-wide text-[10px] uppercase px-3 py-1.5 rounded-lg">
+                {pay}
+              </span>
+            ))}
+          </div>
+
+          {/* App Availability Distribution Track Download Anchors */}
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black tracking-widest uppercase text-white/40 block mr-1">App available on</span>
+            {['iOS', 'Android'].map((platform) => (
+              <span key={platform} className="bg-[#12363F] border border-white/5 text-white/80 font-black tracking-wide text-[10px] uppercase px-3.5 py-1.5 rounded-lg cursor-pointer hover:border-[#149fcd] transition-all">
+                {platform}
+              </span>
+            ))}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ================= COPYRIGHT COMPLIANCE TERMINAL BASE ROW ================= */}
+      <div className="w-full bg-[#0B2329] py-5 px-4 sm:px-6 md:px-16 border-t border-white/5 select-none">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-center sm:text-left">
+          
+          {/* Main localization statement text node */}
+          <p className="text-[11px] font-black tracking-wider uppercase text-[#9FB5B9]/60 flex items-center justify-center sm:justify-start gap-1.5">
+            © 2026 Jummall · Made in Nigeria 
+            <span className="inline-block w-4 h-2.5 relative rounded-xs overflow-hidden border border-white/10"><span className="absolute top-0 left-0 w-1/3 h-full bg-[#008751]" /><span className="absolute top-0 left-1/3 w-1/3 h-full bg-white" /><span className="absolute top-0 left-2/3 w-1/3 h-full bg-[#008751]" /></span>
+          </p>
+
+          {/* Legal references node indexes rows */}
+          <div className="flex items-center justify-center gap-5 text-[11px] font-black uppercase tracking-wider text-[#9FB5B9]/50">
+            <Link href="/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
+            <span className="text-white/5 select-none">|</span>
+            <span className="cursor-pointer hover:text-white transition-colors">Cookie preferences</span>
+            <span className="text-white/5 select-none">|</span>
+            <span className="text-[#FFD13B] font-black tracking-tight select-none">Naira ₦</span>
+            <span className="text-white/5 select-none">|</span>
+            <span className="text-white select-none">EN •</span>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ================= SCROLL BACK TO TOP FLOATING LAUNCH TOOL ================= */}
+      <button 
+        type="button"
+        onClick={scrollToTop}
+        className="fixed bottom-6 right-6 bg-[#149fcd] hover:bg-[#118eb8] text-white p-3 rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 active:scale-95 z-50 border border-white/10 select-none group"
+        title="Scroll to Top"
+      >
+        <ArrowUp size={18} className="stroke-[3] group-hover:animate-pulse" />
+      </button>
+
     </footer>
   );
 }

@@ -59,7 +59,7 @@ export default function Home() {
 
         <NewsletterSubscribe />
 
-        <AppPromotion />
+        
 
      {/* --- SECTION 4: GADGETS & COMPUTERS --- */}
         {/* New section featuring the sidebar navigation and speaker products */}
@@ -77,6 +77,8 @@ export default function Home() {
 
         {/* --- SECTION 10: LATEST NEWS & ARTICLES --- */}
         <LatestNews />
+
+        <AppPromotion />
       </main>
     </div>
   );
